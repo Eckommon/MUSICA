@@ -1,0 +1,23 @@
+{
+  "intent_version": "0",
+  "intent_id": "M1-WARM-001",
+  "title": "Warm Ambient Drift",
+  "duration_seconds": 12.0,
+  "use_case": "ambient",
+  "raw_prompt": "Create a warm spacious ambient cue with gentle motion and a stable, comforting center.",
+  "style_profile": "warm_ambient",
+  "seed": 202,
+  "semantic_targets": {
+    "energy": 0.34,
+    "tension": 0.24,
+    "density": 0.42,
+    "motion": 0.30,
+    "brightness": 0.44,
+    "warmth": 0.76
+  },
+  "tempo": {"bpm": null, "min_bpm": 68, "max_bpm": 98},
+  "tonal": {"center": null, "mode": null},
+  "preserve_on_edit": ["tempo", "melody_identity", "rhythm_identity"],
+  "exclusions": ["aggressive percussion", "distorted lead"],
+  "provenance": {"actor": "user", "source": "canonical-m1-fixture", "confidence": 1.0}
+}

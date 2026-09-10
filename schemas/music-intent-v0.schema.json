@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/music-intent-v0.schema.json",
+  "title": "MUSICA Music Intent v0",
+  "description": "Canonical compact creative input / 공식 간결 창작 입력",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "intent_version", "intent_id", "title", "duration_seconds", "use_case",
+    "raw_prompt", "style_profile", "seed", "semantic_targets", "tempo",
+    "tonal", "preserve_on_edit", "exclusions", "provenance"
+  ],
+  "properties": {
+    "intent_version": {"const": "0"},
+    "intent_id": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1, "maxLength": 160},
+    "duration_seconds": {"type": "number", "minimum": 8, "maximum": 300},
+    "use_case": {"enum": ["advertisement", "song", "score", "game", "ambient", "other"]},
+    "raw_prompt": {"type": ["string", "null"]},
+    "style_profile": {"enum": ["dark_electronic", "warm_ambient", "kinetic_minimal"]},
+    "seed": {"type": "integer", "minimum": 0, "maximum": 2147483647},
+    "semantic_targets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["energy", "tension", "density", "motion", "brightness", "warmth"],
+      "properties": {
+        "energy": {"type": "number", "minimum": 0, "maximum": 1},
+        "tension": {"type": "number", "minimum": 0, "maximum": 1},
+        "density": {"type": "number", "minimum": 0, "maximum": 1},
+        "motion": {"type": "number", "minimum": 0, "maximum": 1},
+        "brightness": {"type": "number", "minimum": 0, "maximum": 1},
+        "warmth": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "tempo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bpm", "min_bpm", "max_bpm"],
+      "properties": {
+        "bpm": {"type": ["number", "null"], "minimum": 20, "maximum": 300},
+        "min_bpm": {"type": "number", "minimum": 20, "maximum": 300},
+        "max_bpm": {"type": "number", "minimum": 20, "maximum": 300}
+      }
+    },
+    "tonal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["center", "mode"],
+      "properties": {
+        "center": {"type": ["string", "null"], "enum": [null, "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]},
+        "mode": {"type": ["string", "null"], "enum": [null, "major", "minor"]}
+      }
+    },
+    "preserve_on_edit": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"enum": ["tempo", "melody_identity", "rhythm_identity"]}
+    },
+    "exclusions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor", "source", "confidence"],
+      "properties": {
+        "actor": {"enum": ["user", "ai", "import", "deterministic_transform"]},
+        "source": {"type": "string", "minLength": 1},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    }
+  }
+}

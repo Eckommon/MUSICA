@@ -1,6 +1,10 @@
-"""Free/local deterministic MIDI and WAV preview renderers for MUSICA M0-R2.
+"""Free/local deterministic MIDI and WAV preview renderers for MUSICA.
 
-MUSICA M0-R2용 무료·로컬 결정론 MIDI/WAV 프리뷰 렌더러.
+MUSICA용 무료·로컬 결정론 MIDI/WAV 프리뷰 렌더러.
+
+The local synth is an evidence renderer, not a production-quality instrument. M1 adds
+bounded interpretation of CC11 expression, CC74 brightness, and CC71 warmth so semantic
+timbre controls are audible and testable without proprietary services.
 """
 
 from __future__ import annotations
@@ -14,7 +18,7 @@ from typing import Any
 
 from .contracts import ContractError, validate_contract
 
-RENDERER_VERSION = "0.0.1"
+RENDERER_VERSION = "0.1.0"
 DEFAULT_SAMPLE_RATE = 22050
 
 
@@ -53,7 +57,7 @@ def midi_bytes(ir: dict[str, Any]) -> bytes:
     ppq = int(ir["timing"]["ppq"])
     tempo_events = ir["tempo_events"]
     if len(tempo_events) != 1 or int(tempo_events[0]["tick"]) != 0:
-        raise ContractError("M0 MIDI renderer supports exactly one tempo event at tick 0")
+        raise ContractError("MUSICA MIDI renderer supports exactly one tempo event at tick 0")
 
     bpm = float(tempo_events[0]["bpm"])
     micros = int(round(60_000_000 / bpm))
@@ -105,12 +109,31 @@ def _envelope(index: int, count: int, sample_rate: int) -> float:
     return min(attack_gain, release_gain)
 
 
-def _voice_sample(channel: int, note: int, phase_time: float, progress: float) -> float:
+def _control_at(track: dict[str, Any], controller: int, tick: int, default: int) -> float:
+    value = int(default)
+    for event in track["events"]:
+        if event["type"] != "control" or int(event["controller"]) != controller:
+            continue
+        if int(event["tick"]) > tick:
+            break
+        value = int(event["value"])
+    return max(0.0, min(1.0, value / 127.0))
+
+
+def _voice_sample(
+    channel: int,
+    note: int,
+    phase_time: float,
+    progress: float,
+    brightness: float,
+    warmth: float,
+    program: int,
+) -> float:
     if channel == 9:
-        if note == 36:  # kick-like deterministic sine drop
+        if note == 36:
             freq = 54.0 + 36.0 * (1.0 - progress)
             return math.sin(2.0 * math.pi * freq * phase_time) * math.exp(-5.0 * progress)
-        if note == 38:  # snare-like deterministic inharmonic partials
+        if note == 38:
             return (
                 0.55 * math.sin(2.0 * math.pi * 181.0 * phase_time)
                 + 0.30 * math.sin(2.0 * math.pi * 337.0 * phase_time)
@@ -122,12 +145,33 @@ def _voice_sample(channel: int, note: int, phase_time: float, progress: float) -
         ) * math.exp(-12.0 * progress)
 
     freq = _note_frequency(note)
-    if channel == 1:  # bass preview
-        return math.sin(2.0 * math.pi * freq * phase_time) + 0.22 * math.sin(
-            2.0 * math.pi * freq * 2.0 * phase_time
+    fundamental = math.sin(2.0 * math.pi * freq * phase_time)
+    second = math.sin(2.0 * math.pi * freq * 2.0 * phase_time)
+    third = math.sin(2.0 * math.pi * freq * 3.0 * phase_time)
+    sub = math.sin(2.0 * math.pi * freq * 0.5 * phase_time)
+
+    # Program contributes only a small deterministic preview signature. It is not a
+    # General MIDI sound emulation and must not be interpreted as one.
+    program_bias = (int(program) % 12) / 11.0 if int(program) % 12 else 0.0
+    bright_gain = 0.05 + 0.32 * brightness
+    edge_gain = 0.02 + 0.12 * brightness * (1.0 - warmth)
+    warm_gain = 0.02 + 0.16 * warmth
+    program_gain = 0.015 * program_bias
+
+    if channel == 1:
+        return (
+            fundamental
+            + (0.10 + bright_gain * 0.45) * second
+            + edge_gain * 0.35 * third
+            + warm_gain * sub
+            + program_gain * math.sin(2.0 * math.pi * freq * 1.5 * phase_time)
         )
-    return math.sin(2.0 * math.pi * freq * phase_time) + 0.18 * math.sin(
-        2.0 * math.pi * freq * 2.0 * phase_time
+    return (
+        fundamental
+        + bright_gain * second
+        + edge_gain * third
+        + warm_gain * 0.45 * sub
+        + program_gain * math.sin(2.0 * math.pi * freq * 2.5 * phase_time)
     )
 
 
@@ -140,7 +184,7 @@ def wav_bytes(
     if duration_seconds <= 0:
         raise ContractError("WAV duration must be positive")
     if sample_rate < 8000:
-        raise ContractError("WAV sample rate is below the M0 minimum")
+        raise ContractError("WAV sample rate is below the MUSICA minimum")
 
     bpm = float(ir["tempo_events"][0]["bpm"])
     ppq = int(ir["timing"]["ppq"])
@@ -149,15 +193,20 @@ def wav_bytes(
 
     for track in ir["tracks"]:
         channel = int(track["channel"])
+        program = int(track["program"])
         track_gain = 0.105 if channel == 9 else (0.11 if channel == 1 else 0.095)
         for event in track["events"]:
             if event["type"] != "note":
                 continue
-            start_seconds = (float(event["tick"]) / ppq) * (60.0 / bpm)
+            tick = int(event["tick"])
+            start_seconds = (float(tick) / ppq) * (60.0 / bpm)
             note_seconds = (float(event["duration"]) / ppq) * (60.0 / bpm)
             start = max(0, int(round(start_seconds * sample_rate)))
             count = max(1, int(round(note_seconds * sample_rate)))
             velocity_gain = float(event["velocity"]) / 127.0
+            expression = _control_at(track, 11, tick, 100) if channel != 9 else 1.0
+            brightness = _control_at(track, 74, tick, 64)
+            warmth = _control_at(track, 71, tick, 64)
             note = int(event["note"])
 
             for local_index in range(count):
@@ -166,9 +215,17 @@ def wav_bytes(
                     break
                 phase_time = local_index / sample_rate
                 progress = local_index / max(1, count - 1)
-                value = _voice_sample(channel, note, phase_time, progress)
+                value = _voice_sample(
+                    channel,
+                    note,
+                    phase_time,
+                    progress,
+                    brightness,
+                    warmth,
+                    program,
+                )
                 value *= _envelope(local_index, count, sample_rate)
-                value *= velocity_gain * track_gain
+                value *= velocity_gain * expression * track_gain
                 mix[index] += value
 
     peak = max((abs(value) for value in mix), default=0.0)
@@ -188,7 +245,10 @@ def wav_bytes(
 
 
 def render_wav(
-    ir: dict[str, Any], path: str | Path, duration_seconds: float, sample_rate: int = DEFAULT_SAMPLE_RATE
+    ir: dict[str, Any],
+    path: str | Path,
+    duration_seconds: float,
+    sample_rate: int = DEFAULT_SAMPLE_RATE,
 ) -> Path:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)

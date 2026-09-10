@@ -4,10 +4,8 @@ import copy
 import json
 from pathlib import Path
 
-import pytest
-
 from musica.compiler import compile_blueprint
-from musica.contracts import ContractError, clone_for_revision, validate_revision
+from musica.contracts import clone_for_revision, validate_revision
 from musica.evidence import sha256_file
 from musica.m0_demo import run_demo
 from musica.render import midi_bytes, wav_bytes
@@ -50,12 +48,12 @@ def test_semantic_edit_preserves_protected_targets_and_emits_explainable_diff():
     assert any("L-TEMPO" in item for item in candidate["provenance"]["rejected_mechanisms"])
 
 
-def test_semantic_runtime_does_not_pretend_unimplemented_axes_exist():
+def test_m0_canonical_tension_control_remains_supported_after_m1_expansion():
     parent = load(BLUEPRINT_PATH)
     control = load(CONTROL_PATH)
-    control["name"] = "warmth"
-    with pytest.raises(ContractError, match="implements only 'tension'"):
-        apply_semantic_control(parent, control)
+    candidate, diff = apply_semantic_control(parent, control)
+    assert candidate["project"]["revision_id"] == "rev-002"
+    assert diff
 
 
 def test_prohibited_tempo_mutation_is_blocked_by_hard_lock():

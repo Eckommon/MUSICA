@@ -1,0 +1,23 @@
+{
+  "intent_version": "0",
+  "intent_id": "M1-DARK-001",
+  "title": "Dark Electronic Pulse",
+  "duration_seconds": 12.0,
+  "use_case": "score",
+  "raw_prompt": "Create a dark electronic cue that steadily increases pressure without changing its core motif.",
+  "style_profile": "dark_electronic",
+  "seed": 101,
+  "semantic_targets": {
+    "energy": 0.58,
+    "tension": 0.56,
+    "density": 0.52,
+    "motion": 0.57,
+    "brightness": 0.30,
+    "warmth": 0.36
+  },
+  "tempo": {"bpm": null, "min_bpm": 96, "max_bpm": 124},
+  "tonal": {"center": null, "mode": null},
+  "preserve_on_edit": ["tempo", "melody_identity", "rhythm_identity"],
+  "exclusions": ["vocals", "trailer brass"],
+  "provenance": {"actor": "user", "source": "canonical-m1-fixture", "confidence": 1.0}
+}

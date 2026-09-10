@@ -1,0 +1,23 @@
+{
+  "intent_version": "0",
+  "intent_id": "M1-KINETIC-001",
+  "title": "Kinetic Minimal Drive",
+  "duration_seconds": 12.0,
+  "use_case": "advertisement",
+  "raw_prompt": "Create a precise kinetic minimal cue with strong forward motion, sparse materials, and a focused pulse.",
+  "style_profile": "kinetic_minimal",
+  "seed": 303,
+  "semantic_targets": {
+    "energy": 0.66,
+    "tension": 0.48,
+    "density": 0.46,
+    "motion": 0.72,
+    "brightness": 0.62,
+    "warmth": 0.28
+  },
+  "tempo": {"bpm": null, "min_bpm": 108, "max_bpm": 138},
+  "tonal": {"center": null, "mode": null},
+  "preserve_on_edit": ["tempo", "melody_identity", "rhythm_identity"],
+  "exclusions": ["lush pads", "swing groove"],
+  "provenance": {"actor": "user", "source": "canonical-m1-fixture", "confidence": 1.0}
+}

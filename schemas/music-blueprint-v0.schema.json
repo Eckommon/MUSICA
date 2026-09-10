@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/music-blueprint-v0.schema.json",
+  "title": "MUSICA Music Blueprint v0",
+  "description": "Human/AI-facing canonical creative state / 인간·AI 대상 공식 창작 상태",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "blueprint_version",
+    "project",
+    "intent",
+    "musical_context",
+    "form",
+    "roles",
+    "semantics",
+    "materials",
+    "locks",
+    "constraints",
+    "render_intent",
+    "provenance"
+  ],
+  "properties": {
+    "blueprint_version": {"const": "0"},
+    "project": {"$ref": "#/$defs/project"},
+    "intent": {"$ref": "#/$defs/intent"},
+    "musical_context": {"$ref": "#/$defs/musicalContext"},
+    "form": {"$ref": "#/$defs/form"},
+    "roles": {"$ref": "#/$defs/roles"},
+    "semantics": {"$ref": "#/$defs/semantics"},
+    "materials": {"$ref": "#/$defs/materials"},
+    "locks": {"type": "array", "items": {"$ref": "#/$defs/lock"}},
+    "constraints": {"type": "array", "items": {"$ref": "#/$defs/constraint"}},
+    "render_intent": {"$ref": "#/$defs/renderIntent"},
+    "provenance": {"$ref": "#/$defs/provenance"}
+  },
+  "$defs": {
+    "normalized": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    "semanticVector": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "energy": {"$ref": "#/$defs/normalized"},
+        "tension": {"$ref": "#/$defs/normalized"},
+        "density": {"$ref": "#/$defs/normalized"},
+        "motion": {"$ref": "#/$defs/normalized"},
+        "brightness": {"$ref": "#/$defs/normalized"},
+        "warmth": {"$ref": "#/$defs/normalized"},
+        "roughness": {"$ref": "#/$defs/normalized"},
+        "intimacy": {"$ref": "#/$defs/normalized"},
+        "width": {"$ref": "#/$defs/normalized"},
+        "depth": {"$ref": "#/$defs/normalized"},
+        "clarity": {"$ref": "#/$defs/normalized"},
+        "punch": {"$ref": "#/$defs/normalized"},
+        "complexity": {"$ref": "#/$defs/normalized"},
+        "stability": {"$ref": "#/$defs/normalized"},
+        "organicity": {"$ref": "#/$defs/normalized"},
+        "syntheticity": {"$ref": "#/$defs/normalized"}
+      }
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "title", "revision_id", "parent_revision_id", "duration_seconds"],
+      "properties": {
+        "project_id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "revision_id": {"type": "string", "minLength": 1},
+        "parent_revision_id": {"type": ["string", "null"]},
+        "duration_seconds": {"type": "number", "exclusiveMinimum": 0, "maximum": 3600}
+      }
+    },
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "use_case", "references", "exclusions", "uncertainties"],
+      "properties": {
+        "summary": {"type": "string", "minLength": 1},
+        "use_case": {"enum": ["advertisement", "song", "score", "game", "ambient", "other"]},
+        "references": {"type": "array", "items": {"type": "string"}},
+        "exclusions": {"type": "array", "items": {"type": "string"}},
+        "uncertainties": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "musicalContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tempo", "meter", "tonal_center", "mode"],
+      "properties": {
+        "tempo": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["bpm", "policy"],
+          "properties": {
+            "bpm": {"type": "number", "minimum": 20, "maximum": 300},
+            "policy": {"enum": ["fixed", "range", "adaptive"]}
+          }
+        },
+        "meter": {"type": "string", "pattern": "^[1-9][0-9]*/(1|2|4|8|16|32)$"},
+        "tonal_center": {"type": ["string", "null"]},
+        "mode": {"type": ["string", "null"]},
+        "mode_candidates": {"type": "array", "items": {"type": "string"}},
+        "confidence": {"$ref": "#/$defs/normalized"}
+      }
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["section_id", "label", "start", "end", "purpose", "semantic_targets", "locks", "constraints"],
+      "properties": {
+        "section_id": {"type": "string", "minLength": 1},
+        "label": {"type": "string", "minLength": 1},
+        "start": {"type": "number", "minimum": 0},
+        "end": {"type": "number", "exclusiveMinimum": 0},
+        "purpose": {"type": "string"},
+        "semantic_targets": {"$ref": "#/$defs/semanticVector"},
+        "locks": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "constraints": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "form": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sections"],
+      "properties": {
+        "sections": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/section"}}
+      }
+    },
+    "part": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["part_id", "instrument_family", "role", "register", "presence", "importance", "mutable"],
+      "properties": {
+        "part_id": {"type": "string", "minLength": 1},
+        "instrument_family": {"type": "string", "minLength": 1},
+        "role": {"enum": ["pulse", "propulsion", "foundation", "harmonic_support", "tension", "motif", "lead", "counterline", "atmosphere", "transition", "impact", "spatial_bed"]},
+        "register": {"enum": ["sub", "low", "low_mid", "mid", "high_mid", "high", "full"]},
+        "presence": {"$ref": "#/$defs/normalized"},
+        "importance": {"$ref": "#/$defs/normalized"},
+        "mutable": {"type": "boolean"}
+      }
+    },
+    "roles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instruments_or_parts"],
+      "properties": {
+        "instruments_or_parts": {"type": "array", "minItems": 3, "items": {"$ref": "#/$defs/part"}}
+      }
+    },
+    "sectionOverride": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["section_id", "values"],
+      "properties": {
+        "section_id": {"type": "string"},
+        "values": {"$ref": "#/$defs/semanticVector"}
+      }
+    },
+    "semanticCurvePoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["time", "values"],
+      "properties": {
+        "time": {"type": "number", "minimum": 0},
+        "values": {"$ref": "#/$defs/semanticVector"}
+      }
+    },
+    "semantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["global", "curves", "section_overrides"],
+      "properties": {
+        "global": {"$ref": "#/$defs/semanticVector"},
+        "curves": {"type": "array", "items": {"$ref": "#/$defs/semanticCurvePoint"}},
+        "section_overrides": {"type": "array", "items": {"$ref": "#/$defs/sectionOverride"}}
+      }
+    },
+    "materials": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["harmony", "melody", "rhythm", "texture", "sound_design", "mix_intent"],
+      "properties": {
+        "harmony": {"type": "object", "additionalProperties": true},
+        "melody": {"type": "object", "additionalProperties": true},
+        "rhythm": {"type": "object", "additionalProperties": true},
+        "texture": {"type": "object", "additionalProperties": true},
+        "sound_design": {"type": "object", "additionalProperties": true},
+        "mix_intent": {"type": "object", "additionalProperties": true}
+      }
+    },
+    "lock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lock_id", "strength", "target", "mode", "inheriting"],
+      "properties": {
+        "lock_id": {"type": "string", "minLength": 1},
+        "strength": {"enum": ["HARD", "SOFT", "ADVISORY"]},
+        "target": {"type": "string", "pattern": "^/"},
+        "mode": {"enum": ["exact", "identity"]},
+        "inheriting": {"type": "boolean"},
+        "value": {},
+        "tolerance": {"type": "number", "minimum": 0},
+        "identity_basis": {"type": "object", "additionalProperties": true},
+        "reason": {"type": "string"}
+      }
+    },
+    "constraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["constraint_id", "target", "op", "value", "hardness"],
+      "properties": {
+        "constraint_id": {"type": "string", "minLength": 1},
+        "target": {"type": "string", "pattern": "^/"},
+        "op": {"enum": ["between", "eq", "gte", "lte"]},
+        "value": {},
+        "hardness": {"enum": ["hard", "soft"]},
+        "reason": {"type": "string"}
+      }
+    },
+    "renderTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_id", "backend", "deterministic_required"],
+      "properties": {
+        "target_id": {"type": "string", "minLength": 1},
+        "backend": {"type": "string", "minLength": 1},
+        "deterministic_required": {"type": "boolean"},
+        "seed": {"type": ["integer", "null"]},
+        "profile": {"type": ["string", "null"]}
+      }
+    },
+    "renderIntent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["targets", "quality_preferences"],
+      "properties": {
+        "targets": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/renderTarget"}},
+        "quality_preferences": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["created_from_intent_id", "actor", "change_reason", "source_revision"],
+      "properties": {
+        "created_from_intent_id": {"type": "string", "minLength": 1},
+        "actor": {"enum": ["user", "ai", "deterministic_transform", "import"]},
+        "change_reason": {"type": "string", "minLength": 1},
+        "source_revision": {"type": ["string", "null"]},
+        "selected_mechanisms": {"type": "array", "items": {"type": "string"}},
+        "rejected_mechanisms": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

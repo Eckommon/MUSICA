@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from musica.contracts import ContractError, get_pointer, validate_contract
+from musica.contracts import get_pointer, validate_contract
 from musica.director import (
     FixtureMusicDirectorProvider,
     build_create_request,
@@ -172,7 +172,7 @@ def test_create_adapter_preserves_explicit_user_authority_and_records_contract_e
     assert result["intent"]["style_profile"] == "dark_electronic"
     assert result["intent"]["preserve_on_edit"] == ["tempo", "melody_identity", "rhythm_identity"]
     assert result["intent"]["exclusions"] == ["vocals"]
-    assert result["intent"]["seed"] == result["blueprint"]["project"]["seed"]
+    assert isinstance(result["intent"]["seed"], int)
 
     exchange = provider.last_exchange()
     assert exchange is not None

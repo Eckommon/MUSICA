@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/studio-error-v0.schema.json",
+  "title": "MUSICA Studio Error v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["error_version", "code", "message", "retryable"],
+  "properties": {
+    "error_version": {"const": "0"},
+    "code": {"enum": ["invalid_request", "not_found", "conflict", "path_escape", "provider_error", "integrity_error", "internal_error"]},
+    "message": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "retryable": {"type": "boolean"}
+  }
+}

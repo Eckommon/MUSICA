@@ -123,12 +123,25 @@
     "melody": {
       "main_motif_id": "motif-A",
       "contour": "down-up-hold",
-      "range": "D4-A4"
+      "range": "D4-A4",
+      "motif_length_beats": 4.0,
+      "motif_notes": [
+        {"offset_beats": 0.0, "pitch": 62, "duration_beats": 0.75, "velocity": 82},
+        {"offset_beats": 1.0, "pitch": 65, "duration_beats": 0.75, "velocity": 76},
+        {"offset_beats": 2.0, "pitch": 69, "duration_beats": 1.50, "velocity": 80}
+      ]
     },
     "rhythm": {
       "drum_pattern_id": "drum-grid-A",
       "subdivision": "1/8",
-      "syncopation": 0.28
+      "syncopation": 0.28,
+      "pattern_length_beats": 4.0,
+      "drum_events": [
+        {"offset_beats": 0.0, "note": 36, "duration_beats": 0.18, "velocity": 108},
+        {"offset_beats": 1.0, "note": 42, "duration_beats": 0.12, "velocity": 66},
+        {"offset_beats": 2.0, "note": 38, "duration_beats": 0.18, "velocity": 96},
+        {"offset_beats": 3.0, "note": 42, "duration_beats": 0.12, "velocity": 70}
+      ]
     },
     "texture": {
       "layer_count": 4,

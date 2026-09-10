@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/director-proposal-v0.schema.json",
+  "title": "MUSICA Director Proposal v0",
+  "description": "Non-authoritative typed proposal emitted by a Music Director provider / Music Director provider가 출력하는 비권위 typed 제안",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["proposal_version", "proposal_id", "request_id", "mode", "provider", "interpretation", "payload"],
+  "properties": {
+    "proposal_version": {"const": "0"},
+    "proposal_id": {"type": "string", "minLength": 1, "maxLength": 160},
+    "request_id": {"type": "string", "minLength": 1, "maxLength": 160},
+    "mode": {"enum": ["create", "edit"]},
+    "provider": {"$ref": "#/$defs/provider"},
+    "interpretation": {"$ref": "#/$defs/interpretation"},
+    "payload": {
+      "oneOf": [
+        {"$ref": "#/$defs/createPayload"},
+        {"$ref": "#/$defs/editPayload"}
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"mode": {"const": "create"}}, "required": ["mode"]},
+      "then": {"properties": {"payload": {"$ref": "#/$defs/createPayload"}}}
+    },
+    {
+      "if": {"properties": {"mode": {"const": "edit"}}, "required": ["mode"]},
+      "then": {"properties": {"payload": {"$ref": "#/$defs/editPayload"}}}
+    }
+  ],
+  "$defs": {
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider_id", "provider_version", "model_id"],
+      "properties": {
+        "provider_id": {"type": "string", "minLength": 1, "maxLength": 120},
+        "provider_version": {"type": "string", "minLength": 1, "maxLength": 80},
+        "model_id": {"type": "string", "minLength": 1, "maxLength": 160}
+      }
+    },
+    "interpretation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "confidence", "assumptions", "alternatives"],
+      "properties": {
+        "summary": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "assumptions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "alternatives": {"type": "array", "maxItems": 5, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "semanticTargets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["energy", "tension", "density", "motion", "brightness", "warmth"],
+      "properties": {
+        "energy": {"type": "number", "minimum": 0, "maximum": 1},
+        "tension": {"type": "number", "minimum": 0, "maximum": 1},
+        "density": {"type": "number", "minimum": 0, "maximum": 1},
+        "motion": {"type": "number", "minimum": 0, "maximum": 1},
+        "brightness": {"type": "number", "minimum": 0, "maximum": 1},
+        "warmth": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "tempo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bpm", "min_bpm", "max_bpm"],
+      "properties": {
+        "bpm": {"type": ["number", "null"], "minimum": 20, "maximum": 300},
+        "min_bpm": {"type": "number", "minimum": 20, "maximum": 300},
+        "max_bpm": {"type": "number", "minimum": 20, "maximum": 300}
+      }
+    },
+    "tonal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["center", "mode"],
+      "properties": {
+        "center": {"type": ["string", "null"], "enum": [null, "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]},
+        "mode": {"type": ["string", "null"], "enum": [null, "major", "minor"]}
+      }
+    },
+    "createPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind", "title", "duration_seconds", "use_case", "style_profile", "seed",
+        "semantic_targets", "tempo", "tonal", "preserve_on_edit", "exclusions"
+      ],
+      "properties": {
+        "kind": {"const": "create_intent"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 160},
+        "duration_seconds": {"type": "number", "minimum": 8, "maximum": 300},
+        "use_case": {"enum": ["advertisement", "song", "score", "game", "ambient", "other"]},
+        "style_profile": {"enum": ["dark_electronic", "warm_ambient", "kinetic_minimal"]},
+        "seed": {"type": "integer", "minimum": 0, "maximum": 2147483647},
+        "semantic_targets": {"$ref": "#/$defs/semanticTargets"},
+        "tempo": {"$ref": "#/$defs/tempo"},
+        "tonal": {"$ref": "#/$defs/tonal"},
+        "preserve_on_edit": {
+          "type": "array", "uniqueItems": true,
+          "items": {"enum": ["tempo", "melody_identity", "rhythm_identity"]}
+        },
+        "exclusions": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "editPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "operation", "value", "scope", "protected_targets", "interpretation_notes"],
+      "properties": {
+        "kind": {"const": "semantic_edit"},
+        "name": {"enum": ["energy", "tension", "density", "motion", "brightness", "warmth"]},
+        "operation": {"enum": ["set", "increase", "decrease"]},
+        "value": {"type": "number", "minimum": 0, "maximum": 1},
+        "scope": {"type": "string", "minLength": 1, "maxLength": 120},
+        "protected_targets": {
+          "type": "array", "uniqueItems": true,
+          "items": {
+            "enum": [
+              "/musical_context/tempo/bpm",
+              "/materials/melody/main_motif_id",
+              "/materials/rhythm/drum_pattern_id"
+            ]
+          }
+        },
+        "interpretation_notes": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/director-request-v0.schema.json",
+  "title": "MUSICA Director Request v0",
+  "description": "Bounded user-language request presented to a Music Director provider / Music Director provider에 전달되는 제한형 사용자 자연어 요청",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["request_version", "request_id", "mode", "user_text", "locale", "user_hints", "context"],
+  "properties": {
+    "request_version": {"const": "0"},
+    "request_id": {"type": "string", "minLength": 1, "maxLength": 160},
+    "mode": {"enum": ["create", "edit"]},
+    "user_text": {"type": "string", "minLength": 1, "maxLength": 4000},
+    "locale": {"type": "string", "minLength": 2, "maxLength": 35},
+    "user_hints": {"$ref": "#/$defs/userHints"},
+    "context": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/editContext"}
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"mode": {"const": "create"}}, "required": ["mode"]},
+      "then": {"properties": {"context": {"type": "null"}}}
+    },
+    {
+      "if": {"properties": {"mode": {"const": "edit"}}, "required": ["mode"]},
+      "then": {"properties": {"context": {"$ref": "#/$defs/editContext"}}}
+    }
+  ],
+  "$defs": {
+    "userHints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["duration_seconds", "use_case", "style_profile", "seed", "preserve_on_edit", "exclusions"],
+      "properties": {
+        "duration_seconds": {"type": ["number", "null"], "minimum": 8, "maximum": 300},
+        "use_case": {
+          "type": ["string", "null"],
+          "enum": [null, "advertisement", "song", "score", "game", "ambient", "other"]
+        },
+        "style_profile": {
+          "type": ["string", "null"],
+          "enum": [null, "dark_electronic", "warm_ambient", "kinetic_minimal"]
+        },
+        "seed": {"type": ["integer", "null"], "minimum": 0, "maximum": 2147483647},
+        "preserve_on_edit": {
+          "type": "array", "uniqueItems": true,
+          "items": {"enum": ["tempo", "melody_identity", "rhythm_identity"]}
+        },
+        "exclusions": {
+          "type": "array", "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "semanticSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["energy", "tension", "density", "motion", "brightness", "warmth"],
+      "properties": {
+        "energy": {"type": "number", "minimum": 0, "maximum": 1},
+        "tension": {"type": "number", "minimum": 0, "maximum": 1},
+        "density": {"type": "number", "minimum": 0, "maximum": 1},
+        "motion": {"type": "number", "minimum": 0, "maximum": 1},
+        "brightness": {"type": "number", "minimum": 0, "maximum": 1},
+        "warmth": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["section_id", "label", "start", "end"],
+      "properties": {
+        "section_id": {"type": "string", "minLength": 1},
+        "label": {"type": "string", "minLength": 1},
+        "start": {"type": "number", "minimum": 0},
+        "end": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "hardLock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lock_id", "target", "mode"],
+      "properties": {
+        "lock_id": {"type": "string", "minLength": 1},
+        "target": {
+          "enum": [
+            "/musical_context/tempo/bpm",
+            "/materials/melody/main_motif_id",
+            "/materials/rhythm/drum_pattern_id"
+          ]
+        },
+        "mode": {"enum": ["exact", "identity"]}
+      }
+    },
+    "editContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_id", "revision_id", "blueprint_sha256", "duration_seconds",
+        "sections", "hard_locks", "semantic_global", "supported_semantic_axes"
+      ],
+      "properties": {
+        "project_id": {"type": "string", "minLength": 1},
+        "revision_id": {"type": "string", "minLength": 1},
+        "blueprint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "duration_seconds": {"type": "number", "minimum": 8, "maximum": 300},
+        "sections": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/section"}},
+        "hard_locks": {"type": "array", "items": {"$ref": "#/$defs/hardLock"}},
+        "semantic_global": {"$ref": "#/$defs/semanticSnapshot"},
+        "supported_semantic_axes": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"enum": ["energy", "tension", "density", "motion", "brightness", "warmth"]}
+        }
+      }
+    }
+  }
+}

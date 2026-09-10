@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://eckommon.github.io/MUSICA/schemas/openai-adapter-exchange-v0.schema.json",
   "title": "MUSICA OpenAI Adapter Exchange v0",
-  "description": "Secret-free provenance for one OpenAI Responses adapter exchange / OpenAI Responses adapter 1회 교환의 secret-free provenance",
+  "description": "Secret-free provenance for one successful OpenAI Responses adapter exchange / OpenAI Responses adapter 성공 교환의 secret-free provenance",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -10,6 +10,7 @@
     "provider_id", "provider_version", "requested_model_id", "response_model_id",
     "response_id", "response_status", "request_payload_sha256", "raw_response_sha256",
     "structured_body_sha256", "director_proposal_sha256", "usage",
+    "attempt_count", "max_attempts", "timeout_seconds",
     "network_used", "credential_source", "secret_recorded"
   ],
   "properties": {
@@ -37,6 +38,9 @@
         "total_tokens": {"type": ["integer", "null"], "minimum": 0}
       }
     },
+    "attempt_count": {"type": "integer", "minimum": 1},
+    "max_attempts": {"type": "integer", "minimum": 1, "maximum": 5},
+    "timeout_seconds": {"type": "number", "exclusiveMinimum": 0, "maximum": 300},
     "network_used": {"type": "boolean"},
     "credential_source": {"enum": ["OPENAI_API_KEY environment", "injected-no-secret"]},
     "secret_recorded": {"const": false}

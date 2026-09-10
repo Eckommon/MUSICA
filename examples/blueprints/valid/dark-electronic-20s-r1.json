@@ -1,0 +1,207 @@
+{
+  "blueprint_version": "0",
+  "project": {
+    "project_id": "MUSICA-M0-DEMO-001",
+    "title": "Dark Electronic 20s",
+    "revision_id": "rev-001",
+    "parent_revision_id": null,
+    "duration_seconds": 20.0
+  },
+  "intent": {
+    "summary": "A dark 20-second electronic instrumental that becomes more tense toward the end.",
+    "use_case": "advertisement",
+    "references": [],
+    "exclusions": ["no vocals", "no cinematic trailer brass"],
+    "uncertainties": []
+  },
+  "musical_context": {
+    "tempo": {"bpm": 112, "policy": "fixed"},
+    "meter": "4/4",
+    "tonal_center": "D",
+    "mode": "minor",
+    "confidence": 0.95
+  },
+  "form": {
+    "sections": [
+      {
+        "section_id": "S01",
+        "label": "reveal",
+        "start": 0.0,
+        "end": 6.0,
+        "purpose": "establish dark motif and pulse",
+        "semantic_targets": {"energy": 0.36, "tension": 0.38, "motion": 0.34},
+        "locks": [],
+        "constraints": []
+      },
+      {
+        "section_id": "S02",
+        "label": "build",
+        "start": 6.0,
+        "end": 14.0,
+        "purpose": "increase motion while preserving motif identity",
+        "semantic_targets": {"energy": 0.55, "tension": 0.55, "motion": 0.58},
+        "locks": ["L-MELODY-IDENTITY"],
+        "constraints": []
+      },
+      {
+        "section_id": "S03",
+        "label": "resolve-pressure",
+        "start": 14.0,
+        "end": 20.0,
+        "purpose": "raise urgency without changing motif or drum identity",
+        "semantic_targets": {"energy": 0.68, "tension": 0.70, "motion": 0.66},
+        "locks": ["L-MELODY-IDENTITY", "L-DRUM-PATTERN"],
+        "constraints": ["C-TEMPO-RANGE"]
+      }
+    ]
+  },
+  "roles": {
+    "instruments_or_parts": [
+      {
+        "part_id": "P-BASS",
+        "instrument_family": "bass_synth",
+        "role": "propulsion",
+        "register": "low",
+        "presence": 0.76,
+        "importance": 0.80,
+        "mutable": true
+      },
+      {
+        "part_id": "P-SYNTH",
+        "instrument_family": "dark_synth",
+        "role": "motif",
+        "register": "mid",
+        "presence": 0.70,
+        "importance": 0.92,
+        "mutable": true
+      },
+      {
+        "part_id": "P-DRUMS",
+        "instrument_family": "electronic_drums",
+        "role": "pulse",
+        "register": "full",
+        "presence": 0.72,
+        "importance": 0.84,
+        "mutable": false
+      }
+    ]
+  },
+  "semantics": {
+    "global": {
+      "energy": 0.55,
+      "tension": 0.56,
+      "density": 0.48,
+      "motion": 0.54,
+      "brightness": 0.28,
+      "warmth": 0.34,
+      "roughness": 0.40,
+      "intimacy": 0.42,
+      "width": 0.62,
+      "depth": 0.64,
+      "clarity": 0.58,
+      "punch": 0.57,
+      "complexity": 0.44,
+      "stability": 0.48,
+      "organicity": 0.20,
+      "syntheticity": 0.88
+    },
+    "curves": [
+      {"time": 0.0, "values": {"tension": 0.38, "energy": 0.36}},
+      {"time": 14.0, "values": {"tension": 0.62, "energy": 0.62}},
+      {"time": 20.0, "values": {"tension": 0.70, "energy": 0.68}}
+    ],
+    "section_overrides": [
+      {"section_id": "S03", "values": {"tension": 0.70, "motion": 0.66}}
+    ]
+  },
+  "materials": {
+    "harmony": {
+      "progression": ["Dm", "Bb", "F", "C"],
+      "harmonic_rhythm": "one_chord_per_bar",
+      "tension_strategy": "suspensions_in_final_section"
+    },
+    "melody": {
+      "main_motif_id": "motif-A",
+      "contour": "down-up-hold",
+      "range": "D4-A4"
+    },
+    "rhythm": {
+      "drum_pattern_id": "drum-grid-A",
+      "subdivision": "1/8",
+      "syncopation": 0.28
+    },
+    "texture": {
+      "layer_count": 4,
+      "final_section_strategy": "add_upper_noise_bed"
+    },
+    "sound_design": {
+      "character": ["dark", "synthetic", "controlled"]
+    },
+    "mix_intent": {
+      "width": 0.62,
+      "focus": "motif_and_bass",
+      "loudness_policy": "preview-safe"
+    }
+  },
+  "locks": [
+    {
+      "lock_id": "L-TEMPO",
+      "strength": "HARD",
+      "target": "/musical_context/tempo/bpm",
+      "mode": "exact",
+      "inheriting": true,
+      "value": 112,
+      "tolerance": 0,
+      "reason": "Timing identity is accepted."
+    },
+    {
+      "lock_id": "L-MELODY-IDENTITY",
+      "strength": "HARD",
+      "target": "/materials/melody/main_motif_id",
+      "mode": "identity",
+      "inheriting": true,
+      "value": "motif-A",
+      "identity_basis": {"v0_policy": "explicit_identity_token"},
+      "reason": "Main motif must remain recognizable and v0 proves this by token identity."
+    },
+    {
+      "lock_id": "L-DRUM-PATTERN",
+      "strength": "HARD",
+      "target": "/materials/rhythm/drum_pattern_id",
+      "mode": "exact",
+      "inheriting": true,
+      "value": "drum-grid-A",
+      "reason": "Accepted drum grid must remain unchanged."
+    }
+  ],
+  "constraints": [
+    {
+      "constraint_id": "C-TEMPO-RANGE",
+      "target": "/musical_context/tempo/bpm",
+      "op": "between",
+      "value": [100, 120],
+      "hardness": "hard",
+      "reason": "M0 demo remains within the accepted tempo envelope."
+    }
+  ],
+  "render_intent": {
+    "targets": [
+      {
+        "target_id": "R-MIDI-LOCAL",
+        "backend": "deterministic-local-midi",
+        "deterministic_required": true,
+        "seed": 0,
+        "profile": "m0-preview"
+      }
+    ],
+    "quality_preferences": ["deterministic", "local", "no-paid-backend"]
+  },
+  "provenance": {
+    "created_from_intent_id": "INTENT-M0-001",
+    "actor": "ai",
+    "change_reason": "Create root M0 Blueprint from accepted demonstration intent.",
+    "source_revision": null,
+    "selected_mechanisms": ["minor_mode", "dark_synth_motif", "rising_section_tension"],
+    "rejected_mechanisms": []
+  }
+}

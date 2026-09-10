@@ -2,7 +2,7 @@ name: MUSICA CI
 
 on:
   push:
-    branches: [main, m2-project-version-engine-v0]
+    branches: [main, m3-r1-director-provider-boundary-v0]
   pull_request:
     branches: [main]
 
@@ -23,7 +23,7 @@ jobs:
           cache: pip
       - name: Install / 설치
         run: python -m pip install -e '.[dev]'
-      - name: Test contracts, runtime, Creative Core, and Project Engine / 계약·런타임·Creative Core·Project Engine 테스트
+      - name: Test contracts, runtime, Creative Core, Project Engine, and Director boundary / 계약·런타임·Creative Core·Project Engine·Director 경계 테스트
         run: pytest
       - name: Generate canonical M0 evidence / 공식 M0 근거 생성
         if: matrix.python-version == '3.12'
@@ -47,6 +47,11 @@ jobs:
           python -m musica.m2_demo
           --intent examples/intents/dark-electronic-12s.json
           --out artifacts/m2-project-version
+      - name: Generate canonical M3-R1 evidence / 공식 M3-R1 근거 생성
+        if: matrix.python-version == '3.12'
+        run: >-
+          python -m musica.m3_r1_demo
+          --out artifacts/m3-r1-director-boundary
       - name: Upload M0 evidence / M0 근거 업로드
         if: matrix.python-version == '3.12'
         uses: actions/upload-artifact@v4
@@ -67,4 +72,11 @@ jobs:
         with:
           name: musica-m2-project-version
           path: artifacts/m2-project-version
+          if-no-files-found: error
+      - name: Upload M3-R1 evidence / M3-R1 근거 업로드
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-m3-r1-director-boundary
+          path: artifacts/m3-r1-director-boundary
           if-no-files-found: error

@@ -49,20 +49,6 @@ def _load_schema(schema_name: str) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def validate_contract(instance: dict[str, Any], schema_name: str) -> None:
-    """Validate one object against a MUSICA JSON Schema."""
-
-    schema = _load_schema(schema_name)
-    validator = Draft202012Validator(schema)
-    errors = sorted(validator.iter_errors(instance), key=lambda err: list(err.absolute_path))
-    if errors:
-        details = []
-        for err in errors:
-            pointer = "/" + "/".join(str(p) for p in err.absolute_path)
-            details.append(f"{pointer or '/'}: {err.message}")
-        raise ContractError("schema validation failed: " + " | ".join(details))
-
-
 def _decode_pointer_token(token: str) -> str:
     return token.replace("~1", "/").replace("~0", "~")
 
@@ -89,6 +75,89 @@ def get_pointer(document: Any, pointer: str) -> Any:
         else:
             raise ContractError(f"unresolvable JSON Pointer: {pointer}")
     return current
+
+
+def _require_unique(values: list[str], label: str) -> None:
+    if len(values) != len(set(values)):
+        raise ContractError(f"{label} must be unique")
+
+
+def _validate_blueprint_invariants(blueprint: dict[str, Any]) -> None:
+    """Validate cross-field rules JSON Schema alone cannot express clearly."""
+
+    duration = float(blueprint["project"]["duration_seconds"])
+    sections = blueprint["form"]["sections"]
+    section_ids = [section["section_id"] for section in sections]
+    _require_unique(section_ids, "section_id")
+
+    previous_end = 0.0
+    for section in sections:
+        start = float(section["start"])
+        end = float(section["end"])
+        if end <= start:
+            raise ContractError(f"section {section['section_id']} end must be greater than start")
+        if start < previous_end:
+            raise ContractError(f"section {section['section_id']} overlaps or is out of order")
+        if end > duration:
+            raise ContractError(f"section {section['section_id']} exceeds project duration")
+        previous_end = end
+
+    part_ids = [part["part_id"] for part in blueprint["roles"]["instruments_or_parts"]]
+    _require_unique(part_ids, "part_id")
+
+    locks = blueprint.get("locks", [])
+    lock_ids = [lock["lock_id"] for lock in locks]
+    _require_unique(lock_ids, "lock_id")
+    lock_id_set = set(lock_ids)
+    for lock in locks:
+        actual = get_pointer(blueprint, lock["target"])
+        if "value" in lock and actual != lock["value"]:
+            raise ContractError(
+                f"lock {lock['lock_id']} declares value {lock['value']!r} but target contains {actual!r}"
+            )
+
+    constraints = blueprint.get("constraints", [])
+    constraint_ids = [constraint["constraint_id"] for constraint in constraints]
+    _require_unique(constraint_ids, "constraint_id")
+    constraint_id_set = set(constraint_ids)
+    for constraint in constraints:
+        get_pointer(blueprint, constraint["target"])
+
+    for section in sections:
+        unknown_locks = set(section.get("locks", [])) - lock_id_set
+        unknown_constraints = set(section.get("constraints", [])) - constraint_id_set
+        if unknown_locks:
+            raise ContractError(
+                f"section {section['section_id']} references unknown locks: {sorted(unknown_locks)}"
+            )
+        if unknown_constraints:
+            raise ContractError(
+                f"section {section['section_id']} references unknown constraints: {sorted(unknown_constraints)}"
+            )
+
+    for override in blueprint["semantics"].get("section_overrides", []):
+        if override["section_id"] not in set(section_ids):
+            raise ContractError(f"semantic override references unknown section: {override['section_id']}")
+
+    for point in blueprint["semantics"].get("curves", []):
+        if float(point["time"]) > duration:
+            raise ContractError(f"semantic curve point exceeds project duration: {point['time']}")
+
+
+def validate_contract(instance: dict[str, Any], schema_name: str) -> None:
+    """Validate one object against a MUSICA JSON Schema and v0 invariants."""
+
+    schema = _load_schema(schema_name)
+    validator = Draft202012Validator(schema)
+    errors = sorted(validator.iter_errors(instance), key=lambda err: list(err.absolute_path))
+    if errors:
+        details = []
+        for err in errors:
+            pointer = "/" + "/".join(str(p) for p in err.absolute_path)
+            details.append(f"{pointer or '/'}: {err.message}")
+        raise ContractError("schema validation failed: " + " | ".join(details))
+    if schema_name == "music-blueprint-v0.schema.json":
+        _validate_blueprint_invariants(instance)
 
 
 def _hard_locks(blueprint: dict[str, Any]) -> list[dict[str, Any]]:

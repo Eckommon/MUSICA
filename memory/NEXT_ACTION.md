@@ -2,67 +2,65 @@
 
 ## Exact resume point / 정확한 재개점
 
-**M0-R2 — Minimal Deterministic Music Loop / 최소 결정론 음악 루프**
+**M1 — CREATIVE CORE v0: INTENT → MUSIC BLUEPRINT / M1 — 창작 코어 v0: 의도 → 음악 설계도**
 
-M0-R1 executable contracts have passed repository CI. The next work is runtime proof, not more schema brainstorming.
+M0 is validated. The next problem is no longer whether MUSICA can preserve constraints and deterministically render a known Blueprint. The next problem is whether a user can provide a compact musical intention and receive a useful, editable Blueprint without manually authoring notes and events.
 
-M0-R1 실행 계약은 레포 CI를 통과했습니다. 다음 작업은 추가 스키마 브레인스토밍이 아니라 런타임 증명입니다.
+M0는 검증되었습니다. 다음 문제는 알려진 Blueprint를 제약 보존하며 결정론적으로 렌더링할 수 있는지가 아닙니다. 이제 사용자가 간결한 음악 의도를 제공했을 때 음표·이벤트를 직접 작성하지 않고 유용하고 편집 가능한 Blueprint를 받을 수 있는지를 증명해야 합니다.
 
-## Immediate objective / 즉시 목표
-
-Prove the smallest end-to-end MUSICA loop using only deterministic, free/local components where practical.
-
-가능한 범위에서 결정론적 무료·로컬 구성요소만 사용하여 MUSICA의 최소 end-to-end 루프를 증명합니다.
+## M1 product objective / M1 제품 목표
 
 ```text
-Validated Blueprint A
+User musical intent / 사용자 음악 의도
         ↓
-Deterministic semantic edit request
+Intent Contract / 의도 계약
         ↓
-Candidate Blueprint B
+Creative Planner / 창작 플래너
         ↓
-Lock / constraint validation
+Blueprint Composer / Blueprint 작곡기
         ↓
-Accepted Blueprint B + structured diff
+Validated Music Blueprint
         ↓
-Blueprint → Music IR compiler
+Semantic edit + locks
         ↓
-Validated Music IR
+M0 compiler/render path
         ↓
-MIDI renderer + simple local WAV renderer
-        ↓
-Artifact hashes + evidence manifest
+Audible result + explainable revision
 ```
 
-## Required M0-R2 implementation / 필수 M0-R2 구현
+## M1 required scope / M1 필수 범위
 
-1. Minimal semantic resolver for the canonical M0 command. / 공식 M0 명령용 최소 semantic resolver.
-2. Explicit candidate delta and selected/rejected mechanism record. / 명시적 후보 delta 및 선택·거절 메커니즘 기록.
-3. Structured Blueprint diff. / 구조화 Blueprint diff.
-4. Deterministic Blueprint → Music IR compiler. / 결정론적 Blueprint → Music IR 컴파일러.
-5. Standards-compliant deterministic MIDI file writer. / 표준 호환 결정론 MIDI 파일 writer.
-6. Free/local audible WAV preview renderer with no proprietary service. / 독점 서비스 없는 무료·로컬 청취 WAV preview renderer.
-7. SHA-256 evidence manifest binding revision, compiler, renderer, config, and output artifacts. / 리비전·컴파일러·렌더러·설정·산출물을 묶는 SHA-256 근거 manifest.
-8. Automated tests proving lock preservation, invalid-edit blocking, deterministic compilation, MIDI/WAV validity, and hash reproducibility. / lock 보존·금지 수정 차단·결정론 컴파일·MIDI/WAV 유효성·hash 재현성을 증명하는 자동 테스트.
+1. **Music Intent v0 contract / 음악 의도 v0 계약** — duration, use case, mood/semantic targets, style family, tonal/tempo preferences, exclusions, seed, confidence/provenance.
+2. **Deterministic Creative Planner / 결정론 창작 플래너** — transforms a bounded Intent into form, tempo/key/mode, roles, harmony strategy, motif/rhythm plan, semantic curves, and default locks/constraints.
+3. **Blueprint Composer / Blueprint 작곡기** — generates explicit motif/rhythm/harmony material from the plan under a reproducible seed.
+4. **Multi-axis semantic runtime / 다축 의미 런타임** — implement a useful M1 subset beyond `tension`, prioritized around `energy`, `tension`, `density`, `motion`, `brightness`, and `warmth` with explicit mechanism registry and claim boundaries.
+5. **Style profiles / 스타일 프로필** — at least three materially different bounded profiles sufficient to prove the architecture is not hard-coded to one dark-electronic demo.
+6. **Intent→Blueprint evidence / 의도→Blueprint 근거** — at least three different canonical intents compile and render successfully through the existing M0 path.
+7. **Lock-aware revision / lock 인지 리비전** — at least two different semantic edits preserve protected material and produce explainable diffs.
+8. **Determinism / 결정론성** — same intent + profile + seed yields identical canonical Blueprint and compiled artifacts under the tested path.
+9. **Bilingual docs and CI evidence / 한영문 문서 및 CI 근거**.
 
-## M0 acceptance gate / M0 수용 게이트
+## Explicit boundary / 명시적 경계
 
-Follow `docs/M0_ACCEPTANCE.md`. M0 may become **VALIDATED** only after all M0-R2 runtime criteria pass CI and the implementation is merged.
+M1 does not yet need to claim arbitrary free-form natural-language understanding. The Intent Contract is the canonical boundary. A deterministic local parser may support a limited convenience subset, while a later AI Music Director provider can populate the same contract.
 
-`docs/M0_ACCEPTANCE.md`를 따릅니다. M0-R2 런타임 기준이 CI를 모두 통과하고 구현이 병합된 후에만 M0를 **VALIDATED**로 승격할 수 있습니다.
+M1은 아직 임의 자유형 자연어의 범용 이해를 주장할 필요가 없습니다. Intent Contract가 공식 경계입니다. 결정론 로컬 parser는 제한된 편의 입력을 지원할 수 있으며, 이후 AI Music Director provider도 동일한 계약을 생성하도록 연결합니다.
 
-## Explicit non-goals / 명시적 비목표
+## Product sequence after M1 / M1 이후 제품 순서
 
-Do not yet build a full DAW, VST host, neural audio foundation model, collaborative cloud backend, or polished production UI.
+The preferred sequence remains:
 
-아직 완전한 DAW, VST host, 신경망 오디오 파운데이션 모델, 협업 클라우드 백엔드, 완성형 production UI를 구축하지 않습니다.
-
-## Development discipline / 개발 규율
+권장 순서는 다음과 같습니다.
 
 ```text
-Issue → Branch → Implementation → Tests → PR → CI evidence → Merge → State update
+M1 Creative Core
+→ M2 Project & Version Engine
+→ M3 AI Music Director Provider Layer
+→ M4 MUSICA Studio usable application MVP
+→ M5 Renderer/DAW interoperability & quality expansion
+→ M6 Product hardening / packaging / release candidate
 ```
 
-No implementation claim may be inferred from design or schema existence alone.
+Each milestone must preserve the repository evidence discipline and may be revised only through repository-backed decisions.
 
-설계 또는 스키마 존재만으로 구현 상태를 추론하지 않습니다.
+각 마일스톤은 레포 근거 규율을 유지해야 하며, 변경 시 레포 기반 결정으로만 수정합니다.

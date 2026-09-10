@@ -1,0 +1,18 @@
+{
+  "blueprint_version": "0",
+  "project": {"project_id": "BAD-001", "title": "Invalid semantic demo", "revision_id": "rev-001", "parent_revision_id": null, "duration_seconds": 8},
+  "intent": {"summary": "Schema rejection example", "use_case": "other", "references": [], "exclusions": [], "uncertainties": []},
+  "musical_context": {"tempo": {"bpm": 100, "policy": "fixed"}, "meter": "4/4", "tonal_center": "C", "mode": "minor"},
+  "form": {"sections": [{"section_id": "S01", "label": "all", "start": 0, "end": 8, "purpose": "negative test", "semantic_targets": {"energy": 1.20}, "locks": [], "constraints": []}]},
+  "roles": {"instruments_or_parts": [
+    {"part_id": "P1", "instrument_family": "synth", "role": "lead", "register": "mid", "presence": 0.7, "importance": 0.8, "mutable": true},
+    {"part_id": "P2", "instrument_family": "bass", "role": "foundation", "register": "low", "presence": 0.7, "importance": 0.8, "mutable": true},
+    {"part_id": "P3", "instrument_family": "drums", "role": "pulse", "register": "full", "presence": 0.7, "importance": 0.8, "mutable": true}
+  ]},
+  "semantics": {"global": {"energy": 1.20}, "curves": [], "section_overrides": []},
+  "materials": {"harmony": {}, "melody": {}, "rhythm": {}, "texture": {}, "sound_design": {}, "mix_intent": {}},
+  "locks": [],
+  "constraints": [],
+  "render_intent": {"targets": [{"target_id": "R1", "backend": "test", "deterministic_required": true, "seed": 0, "profile": "test"}], "quality_preferences": []},
+  "provenance": {"created_from_intent_id": "BAD-INTENT", "actor": "ai", "change_reason": "Negative schema test.", "source_revision": null}
+}

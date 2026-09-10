@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/openai-adapter-failure-v0.schema.json",
+  "title": "MUSICA OpenAI Adapter Failure v0",
+  "description": "Secret-free fail-closed classification for an unsuccessful adapter exchange.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["failure_version", "classification", "message", "http_status", "response_status", "request_payload_sha256", "network_used", "credential_source", "secret_recorded"],
+  "properties": {
+    "failure_version": {"const": "0"},
+    "classification": {"enum": ["auth", "rate_limit", "server", "timeout", "transport", "incomplete", "refusal", "invalid_output"]},
+    "message": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "http_status": {"type": ["integer", "null"], "minimum": 100, "maximum": 599},
+    "response_status": {"type": ["string", "null"], "maxLength": 80},
+    "request_payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "network_used": {"type": "boolean"},
+    "credential_source": {"enum": ["OPENAI_API_KEY environment", "injected-no-secret"]},
+    "secret_recorded": {"const": false}
+  }
+}

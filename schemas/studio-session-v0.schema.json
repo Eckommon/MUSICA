@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/studio-session-v0.schema.json",
+  "title": "MUSICA Studio Session v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["session_version", "session_id", "provider_mode", "project_slug", "project_relpath", "project_id", "current_branch", "head_revision_id", "integrity_status", "branches", "sections", "semantic_state", "hard_locks", "pending_preview", "audio_available", "midi_available"],
+  "properties": {
+    "session_version": {"const": "0"},
+    "session_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"},
+    "provider_mode": {"enum": ["fixture", "openai"]},
+    "project_slug": {"type": ["string", "null"], "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"},
+    "project_relpath": {"type": ["string", "null"], "maxLength": 256},
+    "project_id": {"type": ["string", "null"]},
+    "current_branch": {"type": ["string", "null"]},
+    "head_revision_id": {"type": ["string", "null"]},
+    "integrity_status": {"enum": ["EMPTY", "PASS"]},
+    "branches": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["section_id", "name", "start", "end"],
+        "properties": {
+          "section_id": {"type": "string", "minLength": 1},
+          "name": {"type": "string", "minLength": 1},
+          "start": {"type": "number", "minimum": 0},
+          "end": {"type": "number", "exclusiveMinimum": 0}
+        }
+      }
+    },
+    "semantic_state": {
+      "type": "object",
+      "additionalProperties": {"type": "number", "minimum": 0, "maximum": 1}
+    },
+    "hard_locks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["lock_id", "target", "mode"],
+        "properties": {
+          "lock_id": {"type": "string", "minLength": 1},
+          "target": {"type": "string", "pattern": "^/"},
+          "mode": {"enum": ["exact", "identity"]}
+        }
+      }
+    },
+    "pending_preview": {"anyOf": [{"type": "null"}, {"$ref": "studio-preview-v0.schema.json"}]},
+    "audio_available": {"type": "boolean"},
+    "midi_available": {"type": "boolean"}
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/openai-director-create-body-v0.schema.json",
+  "title": "MUSICA OpenAI Director Create Body v0",
+  "description": "Narrow structured body the OpenAI model may propose for create mode. User policy, seed, provider metadata, acceptance, Blueprint state, and project mutation are intentionally absent.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["interpretation", "title", "duration_seconds", "use_case", "style_profile", "semantic_targets", "tempo", "tonal"],
+  "properties": {
+    "interpretation": {"$ref": "#/$defs/interpretation"},
+    "title": {"type": "string", "minLength": 1, "maxLength": 160},
+    "duration_seconds": {"type": "number", "minimum": 8, "maximum": 300},
+    "use_case": {"enum": ["advertisement", "song", "score", "game", "ambient", "other"]},
+    "style_profile": {"enum": ["dark_electronic", "warm_ambient", "kinetic_minimal"]},
+    "semantic_targets": {"$ref": "#/$defs/semanticTargets"},
+    "tempo": {"$ref": "#/$defs/tempo"},
+    "tonal": {"$ref": "#/$defs/tonal"}
+  },
+  "$defs": {
+    "interpretation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "confidence", "assumptions", "alternatives"],
+      "properties": {
+        "summary": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "assumptions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "alternatives": {"type": "array", "maxItems": 5, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "semanticTargets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["energy", "tension", "density", "motion", "brightness", "warmth"],
+      "properties": {
+        "energy": {"type": "number", "minimum": 0, "maximum": 1},
+        "tension": {"type": "number", "minimum": 0, "maximum": 1},
+        "density": {"type": "number", "minimum": 0, "maximum": 1},
+        "motion": {"type": "number", "minimum": 0, "maximum": 1},
+        "brightness": {"type": "number", "minimum": 0, "maximum": 1},
+        "warmth": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "tempo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bpm", "min_bpm", "max_bpm"],
+      "properties": {
+        "bpm": {"type": ["number", "null"], "minimum": 20, "maximum": 300},
+        "min_bpm": {"type": "number", "minimum": 20, "maximum": 300},
+        "max_bpm": {"type": "number", "minimum": 20, "maximum": 300}
+      }
+    },
+    "tonal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["center", "mode"],
+      "properties": {
+        "center": {"type": ["string", "null"], "enum": [null, "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]},
+        "mode": {"type": ["string", "null"], "enum": [null, "major", "minor"]}
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/openai-director-edit-body-v0.schema.json",
+  "title": "MUSICA OpenAI Director Edit Body v0",
+  "description": "Narrow structured body the OpenAI model may propose for edit mode. Exact time scope, protected targets, acceptance, arbitrary paths, and project mutation are resolved or controlled by MUSICA code.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["interpretation", "name", "operation", "value", "scope_kind", "section_id", "interpretation_notes"],
+  "properties": {
+    "interpretation": {"$ref": "#/$defs/interpretation"},
+    "name": {"enum": ["energy", "tension", "density", "motion", "brightness", "warmth"]},
+    "operation": {"enum": ["set", "increase", "decrease"]},
+    "value": {"type": "number", "minimum": 0, "maximum": 1},
+    "scope_kind": {"enum": ["whole_project", "final_section", "section_id"]},
+    "section_id": {"type": ["string", "null"], "maxLength": 120},
+    "interpretation_notes": {"type": "array", "items": {"type": "string", "minLength": 1}}
+  },
+  "$defs": {
+    "interpretation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "confidence", "assumptions", "alternatives"],
+      "properties": {
+        "summary": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "assumptions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "alternatives": {"type": "array", "maxItems": 5, "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}

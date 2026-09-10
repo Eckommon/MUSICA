@@ -2,11 +2,11 @@
 
 ## Project phase / 프로젝트 단계
 
-**M0 — CONTROLLABLE MUSIC BLUEPRINT / M0 — 제어 가능한 음악 설계도**
+**M0 — CONTROLLABLE MUSIC BLUEPRINT: VALIDATED / M0 — 제어 가능한 음악 설계도: 검증 완료**
 
-Foundation design is accepted. M0-R1 executable contracts are implemented and tested; compiler/rendering work belongs to M0-R2.
+M0-R1 executable contracts and M0-R2 minimal deterministic runtime are merged and repository-backed evidence satisfies the M0 acceptance gate.
 
-기반 설계는 승인되었습니다. M0-R1 실행 계약은 구현 및 테스트되었으며, 컴파일·렌더링 작업은 M0-R2 범위입니다.
+M0-R1 실행 계약과 M0-R2 최소 결정론 런타임이 병합되었고, 레포 기반 근거가 M0 수용 게이트를 충족합니다.
 
 ## Canonical core proposition / 공식 핵심 명제
 
@@ -14,65 +14,60 @@ Foundation design is accepted. M0-R1 executable contracts are implemented and te
 >
 > **MUSICA는 누구나 의도로 음악을 만들 수 있게 하되, 모든 음악적 결정을 검사하고, 잠그고, 편집하고, 재현하고, 프로그래밍할 수 있게 하는 시스템이다.**
 
-## Accepted foundation package / 승인 기반 패키지
+## M0 canonical evidence / M0 공식 근거
 
-- `docs/design/MUSICA_DESIGN_PACKAGE_v0.1.md`
-- `docs/design/ARCHITECTURE_v0.1.md`
-- `docs/design/MUSIC_BLUEPRINT_v0.md`
-- `docs/design/SEMANTIC_CONTROL_MODEL_v0.md`
-- `docs/design/LOCK_CONSTRAINT_MODEL_v0.md`
+- M0-R1 merge / 병합: `5260f29c62a39bd0912532ca99e54c79f40046a6`
+- M0-R2 merge / 병합: `b8132d8524fec5fc9f22214a9fa4aee21849379b`
+- M0-R2 validated PR CI / 검증 PR CI: `34505670926` — Python 3.11 **SUCCESS**, Python 3.12 **SUCCESS**, evidence generation/upload **SUCCESS**
+- Durable record / 영속 근거: `evidence/M0_R2_VALIDATION.md`
+- M0 acceptance contract / 수용 계약: `docs/M0_ACCEPTANCE.md`
 
-Status / 상태: **ACCEPTED-FOUNDATION**.
+## Validated capabilities / 검증된 기능
 
-## M0-R1 evidence / M0-R1 근거
+The following are repository-evidenced at M0 scope only.
 
-Implemented / 구현됨:
+다음 항목은 M0 범위에서만 레포 근거로 검증되었습니다.
 
-- `schemas/music-blueprint-v0.schema.json`
-- `schemas/semantic-control-v0.schema.json`
-- `schemas/lock-constraint-v0.schema.json`
-- `schemas/music-ir-v0.schema.json`
-- `src/musica/contracts.py`
-- canonical valid/invalid examples / 공식 정상·비정상 예제
-- `tests/test_contracts.py`
-- `.github/workflows/contracts.yml`
-- `docs/M0_ACCEPTANCE.md`
+- strict Music Blueprint v0 machine contract / 엄격한 Music Blueprint v0 기계 계약
+- bounded Semantic Control v0 contract / 제한된 Semantic Control v0 계약
+- HARD lock and constraint fail-closed validation / HARD lock·constraint 실패 폐쇄 검증
+- separate Music IR v0 contract / 분리된 Music IR v0 계약
+- deterministic structured Blueprint diff / 결정론 구조화 Blueprint diff
+- bounded runtime `tension` semantic edit / 제한된 런타임 `tension` 의미 수정
+- deterministic Blueprint → Music IR compiler / 결정론 Blueprint → Music IR 컴파일러
+- deterministic Standard MIDI File output / 결정론 Standard MIDI File 출력
+- deterministic free/local audible PCM WAV preview / 결정론 무료·로컬 청취 PCM WAV 프리뷰
+- SHA-256 evidence manifest and reproducibility tests / SHA-256 근거 manifest 및 재현성 테스트
 
-Validated CI evidence / 검증된 CI 근거:
+## Claim boundaries / 주장 경계
 
-- GitHub Actions workflow: `MUSICA Contracts`
-- Run: **34504587688**
-- Python 3.11: **SUCCESS**
-- Python 3.12: **SUCCESS**
+M0 does **not** validate or imply:
 
-## Accepted architectural decisions / 승인 아키텍처 결정
+M0는 다음을 검증하거나 암시하지 않습니다.
 
-1. Natural language is an input surface, not canonical state. / 자연어는 입력 인터페이스이며 공식 상태 자체가 아님.
-2. `Music Blueprint` is the human/AI-facing canonical creative state. / `Music Blueprint`는 인간·AI 대상 공식 창작 상태.
-3. `Music IR` is a separate lower-level executable representation. / `Music IR`은 별도의 하위 실행 표현.
-4. Semantic v0 vocabulary is bounded and normalized; subjective values are controls, not scientific ground truth. / 의미 v0 어휘는 제한·정규화되며 주관 값은 과학적 절대값이 아니라 제어값.
-5. Lock and constraint targets use JSON Pointer paths in M0. / M0 lock·constraint target은 JSON Pointer 경로를 사용.
-6. HARD locks fail closed and inherited HARD lock semantics cannot be silently removed or weakened. / HARD lock은 실패 폐쇄하며 상속 의미를 몰래 제거·약화할 수 없음.
-7. v0 identity lock proves explicit identity-token preservation only; perceptual melody equivalence is not yet claimed. / v0 identity lock은 명시 identity-token 보존만 증명하며 지각적 멜로디 동일성은 아직 주장하지 않음.
-8. Renderer backends remain adapters to the core. / 렌더러 백엔드는 코어의 어댑터로 유지.
+- production-quality audio generation / 상용 수준 오디오 생성
+- arbitrary natural-language music understanding / 임의 자연어 음악 이해
+- general composition intelligence / 범용 작곡 지능
+- perceptual melody identity / 지각적 멜로디 동일성
+- full DAW functionality / 완전한 DAW 기능
+- VST hosting or professional sampler integration / VST hosting 또는 전문 sampler 통합
+- external generative-audio backend integration / 외부 생성형 오디오 백엔드 통합
+- polished application UI / 완성형 앱 UI
 
 ## Evidence status / 근거 상태
 
 - Core product proposition: **ACCEPTED**
 - Foundation design package v0.1: **ACCEPTED**
 - Repository SoT contract: **IMPLEMENTED**
-- Blueprint JSON Schema v0: **IMPLEMENTED + TESTED**
-- Semantic Control contract v0: **IMPLEMENTED + TESTED**
-- Lock/Constraint contract v0: **IMPLEMENTED + TESTED**
-- Music IR schema v0: **IMPLEMENTED + TESTED (schema only)**
-- Cross-field/revision contract validator: **IMPLEMENTED + TESTED**
-- HARD lock/constraint fail-closed behavior: **TESTED at contract level**
-- Compiler Blueprint → Music IR: **NOT IMPLEMENTED**
-- Semantic resolver: **NOT IMPLEMENTED**
-- Structured diff/provenance engine: **NOT IMPLEMENTED**
-- MIDI renderer: **NOT IMPLEMENTED**
-- WAV renderer: **NOT IMPLEMENTED**
-- Application/UI: **NOT IMPLEMENTED**
+- M0-R1 executable contracts: **IMPLEMENTED + TESTED + MERGED**
+- M0-R2 deterministic runtime loop: **IMPLEMENTED + TESTED + MERGED**
+- M0 milestone: **VALIDATED**
+- General intent → Blueprint generation: **NOT IMPLEMENTED**
+- Multi-axis semantic runtime: **NOT IMPLEMENTED**
+- Persistent project/version store: **NOT IMPLEMENTED**
+- AI Music Director provider integration: **NOT IMPLEMENTED**
+- User application/UI: **NOT IMPLEMENTED**
+- Production renderer adapters: **NOT IMPLEMENTED**
 
 ## Resume authority / 재개 권위
 
@@ -83,10 +78,11 @@ Before substantive work inspect, in order / 실질 작업 전 순서대로 확�
 3. `docs/design/MUSICA_DESIGN_PACKAGE_v0.1.md`
 4. normative design specifications / 규범 설계 명세
 5. `docs/M0_ACCEPTANCE.md`
-6. this file / 본 파일
-7. `memory/NEXT_ACTION.md`
-8. relevant Issue/PR/workflow evidence / 관련 Issue·PR·workflow 근거
+6. `evidence/M0_R2_VALIDATION.md`
+7. this file / 본 파일
+8. `memory/NEXT_ACTION.md`
+9. relevant Issue/PR/CI evidence / 관련 Issue·PR·CI 근거
 
-Never infer runtime capability from schema/design acceptance alone.
+Repository evidence remains authoritative over conversation or model memory.
 
-스키마·설계 승인만으로 런타임 기능을 추론하지 않습니다.
+레포 근거는 계속해서 대화 또는 모델 기억보다 우선합니다.

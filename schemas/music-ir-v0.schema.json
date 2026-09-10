@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/music-ir-v0.schema.json",
+  "title": "MUSICA Music IR v0",
+  "description": "Lower-level executable representation / 하위 실행 표현",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ir_version", "source_blueprint_revision", "timing", "tempo_events", "tracks", "compile_provenance"],
+  "properties": {
+    "ir_version": {"const": "0"},
+    "source_blueprint_revision": {"type": "string", "minLength": 1},
+    "timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ppq"],
+      "properties": {
+        "ppq": {"type": "integer", "minimum": 24, "maximum": 9600}
+      }
+    },
+    "tempo_events": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tick", "bpm"],
+        "properties": {
+          "tick": {"type": "integer", "minimum": 0},
+          "bpm": {"type": "number", "minimum": 20, "maximum": 300}
+        }
+      }
+    },
+    "tracks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/track"}
+    },
+    "compile_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["compiler_id", "compiler_version", "lowering_policy"],
+      "properties": {
+        "compiler_id": {"type": "string", "minLength": 1},
+        "compiler_version": {"type": "string", "minLength": 1},
+        "lowering_policy": {"type": "string", "minLength": 1},
+        "approximations": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  },
+  "$defs": {
+    "track": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["track_id", "part_id", "channel", "program", "events"],
+      "properties": {
+        "track_id": {"type": "string", "minLength": 1},
+        "part_id": {"type": "string", "minLength": 1},
+        "channel": {"type": "integer", "minimum": 0, "maximum": 15},
+        "program": {"type": "integer", "minimum": 0, "maximum": 127},
+        "events": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {"$ref": "#/$defs/noteEvent"},
+              {"$ref": "#/$defs/controlEvent"}
+            ]
+          }
+        }
+      }
+    },
+    "noteEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "tick", "duration", "note", "velocity"],
+      "properties": {
+        "type": {"const": "note"},
+        "tick": {"type": "integer", "minimum": 0},
+        "duration": {"type": "integer", "minimum": 1},
+        "note": {"type": "integer", "minimum": 0, "maximum": 127},
+        "velocity": {"type": "integer", "minimum": 1, "maximum": 127}
+      }
+    },
+    "controlEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "tick", "controller", "value"],
+      "properties": {
+        "type": {"const": "control"},
+        "tick": {"type": "integer", "minimum": 0},
+        "controller": {"type": "integer", "minimum": 0, "maximum": 127},
+        "value": {"type": "integer", "minimum": 0, "maximum": 127}
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/semantic-control-v0.schema.json",
+  "title": "MUSICA Semantic Control v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["control_id", "name", "operation", "value", "scope", "confidence", "source"],
+  "properties": {
+    "control_id": {"type": "string", "minLength": 1},
+    "name": {
+      "enum": [
+        "energy", "tension", "density", "motion", "brightness", "warmth",
+        "roughness", "intimacy", "width", "depth", "clarity", "punch",
+        "complexity", "stability", "organicity", "syntheticity"
+      ]
+    },
+    "operation": {"enum": ["set", "increase", "decrease"]},
+    "value": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    "scope": {"type": "string", "minLength": 1},
+    "confidence": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    "source": {"enum": ["user_language", "user_control", "ai_inference", "import", "deterministic_transform"]},
+    "phrase": {"type": ["string", "null"]},
+    "interpretation_notes": {"type": "array", "items": {"type": "string"}},
+    "protected_targets": {"type": "array", "items": {"type": "string", "pattern": "^/"}, "uniqueItems": true}
+  }
+}

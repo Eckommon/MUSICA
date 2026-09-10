@@ -1,0 +1,19 @@
+{
+  "control_id": "SC-M0-001",
+  "name": "tension",
+  "operation": "increase",
+  "value": 0.20,
+  "scope": "time:14.0-20.0",
+  "confidence": 0.91,
+  "source": "user_language",
+  "phrase": "Make only the last six seconds more urgent while keeping the melody and drums.",
+  "interpretation_notes": [
+    "Prefer harmonic and textural mechanisms before touching protected material.",
+    "Do not change tempo because tempo is HARD locked."
+  ],
+  "protected_targets": [
+    "/materials/melody/main_motif_id",
+    "/materials/rhythm/drum_pattern_id",
+    "/musical_context/tempo/bpm"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/lock-constraint-v0.schema.json",
+  "title": "MUSICA Lock or Constraint v0",
+  "oneOf": [
+    {
+      "title": "Lock",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "lock_id", "strength", "target", "mode", "inheriting"],
+      "properties": {
+        "kind": {"const": "lock"},
+        "lock_id": {"type": "string", "minLength": 1},
+        "strength": {"enum": ["HARD", "SOFT", "ADVISORY"]},
+        "target": {"type": "string", "pattern": "^/"},
+        "mode": {"enum": ["exact", "identity"]},
+        "inheriting": {"type": "boolean"},
+        "value": {},
+        "tolerance": {"type": "number", "minimum": 0},
+        "identity_basis": {"type": "object", "additionalProperties": true},
+        "reason": {"type": "string"}
+      }
+    },
+    {
+      "title": "Constraint",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "constraint_id", "target", "op", "value", "hardness"],
+      "properties": {
+        "kind": {"const": "constraint"},
+        "constraint_id": {"type": "string", "minLength": 1},
+        "target": {"type": "string", "pattern": "^/"},
+        "op": {"enum": ["between", "eq", "gte", "lte"]},
+        "value": {},
+        "hardness": {"enum": ["hard", "soft"]},
+        "reason": {"type": "string"}
+      }
+    }
+  ]
+}

@@ -2,11 +2,11 @@
 
 ## Project phase / 프로젝트 단계
 
-**FOUNDATION DESIGN ACCEPTED / 기반 설계 승인**
+**M0 — CONTROLLABLE MUSIC BLUEPRINT / M0 — 제어 가능한 음악 설계도**
 
-The product thesis and foundation design package are accepted. Software implementation has not started.
+Foundation design is accepted. M0-R1 executable contracts are implemented and tested; compiler/rendering work belongs to M0-R2.
 
-제품 명제와 기반 설계 패키지는 승인되었습니다. 소프트웨어 구현은 아직 시작하지 않았습니다.
+기반 설계는 승인되었습니다. M0-R1 실행 계약은 구현 및 테스트되었으며, 컴파일·렌더링 작업은 M0-R2 범위입니다.
 
 ## Canonical core proposition / 공식 핵심 명제
 
@@ -14,11 +14,7 @@ The product thesis and foundation design package are accepted. Software implemen
 >
 > **MUSICA는 누구나 의도로 음악을 만들 수 있게 하되, 모든 음악적 결정을 검사하고, 잠그고, 편집하고, 재현하고, 프로그래밍할 수 있게 하는 시스템이다.**
 
-## Accepted foundation package / 승인된 기반 패키지
-
-The following are **ACCEPTED-FOUNDATION**, not implemented software:
-
-다음 항목은 **기반 설계 승인** 상태이며 구현 완료를 의미하지 않습니다.
+## Accepted foundation package / 승인 기반 패키지
 
 - `docs/design/MUSICA_DESIGN_PACKAGE_v0.1.md`
 - `docs/design/ARCHITECTURE_v0.1.md`
@@ -26,56 +22,71 @@ The following are **ACCEPTED-FOUNDATION**, not implemented software:
 - `docs/design/SEMANTIC_CONTROL_MODEL_v0.md`
 - `docs/design/LOCK_CONSTRAINT_MODEL_v0.md`
 
+Status / 상태: **ACCEPTED-FOUNDATION**.
+
+## M0-R1 evidence / M0-R1 근거
+
+Implemented / 구현됨:
+
+- `schemas/music-blueprint-v0.schema.json`
+- `schemas/semantic-control-v0.schema.json`
+- `schemas/lock-constraint-v0.schema.json`
+- `schemas/music-ir-v0.schema.json`
+- `src/musica/contracts.py`
+- canonical valid/invalid examples / 공식 정상·비정상 예제
+- `tests/test_contracts.py`
+- `.github/workflows/contracts.yml`
+- `docs/M0_ACCEPTANCE.md`
+
+Validated CI evidence / 검증된 CI 근거:
+
+- GitHub Actions workflow: `MUSICA Contracts`
+- Run: **34504587688**
+- Python 3.11: **SUCCESS**
+- Python 3.12: **SUCCESS**
+
 ## Accepted architectural decisions / 승인 아키텍처 결정
 
-1. Natural language is an input surface, not canonical state. / 자연어는 입력 인터페이스이지 공식 상태가 아님.
-2. `Music Blueprint` is the human/AI-facing canonical creative state. / `Music Blueprint`가 인간/AI 대상 공식 창작 상태.
-3. `Music IR` is a lower-level executable representation produced by compilation. / `Music IR`은 컴파일로 생성되는 저수준 실행 표현.
-4. Hard locks are invariants and fail closed on violation. / Hard lock은 불변조건이며 위반 시 실패 폐쇄.
-5. Semantic edits resolve to explicit candidate deltas before mutation. / 의미 수정은 변경 전에 명시적 후보 delta로 해석.
-6. Renderer backends are adapters to the core. / 렌더러 백엔드는 코어의 어댑터.
-7. Direct, Shape, Inspect, and Code are views over one canonical project state. / Direct·Shape·Inspect·Code는 하나의 공식 상태를 공유.
-8. Accepted revisions preserve diff and provenance. / 승인 리비전은 diff와 provenance를 보존.
+1. Natural language is an input surface, not canonical state. / 자연어는 입력 인터페이스이며 공식 상태 자체가 아님.
+2. `Music Blueprint` is the human/AI-facing canonical creative state. / `Music Blueprint`는 인간·AI 대상 공식 창작 상태.
+3. `Music IR` is a separate lower-level executable representation. / `Music IR`은 별도의 하위 실행 표현.
+4. Semantic v0 vocabulary is bounded and normalized; subjective values are controls, not scientific ground truth. / 의미 v0 어휘는 제한·정규화되며 주관 값은 과학적 절대값이 아니라 제어값.
+5. Lock and constraint targets use JSON Pointer paths in M0. / M0 lock·constraint target은 JSON Pointer 경로를 사용.
+6. HARD locks fail closed and inherited HARD lock semantics cannot be silently removed or weakened. / HARD lock은 실패 폐쇄하며 상속 의미를 몰래 제거·약화할 수 없음.
+7. v0 identity lock proves explicit identity-token preservation only; perceptual melody equivalence is not yet claimed. / v0 identity lock은 명시 identity-token 보존만 증명하며 지각적 멜로디 동일성은 아직 주장하지 않음.
+8. Renderer backends remain adapters to the core. / 렌더러 백엔드는 코어의 어댑터로 유지.
 
 ## Evidence status / 근거 상태
 
 - Core product proposition: **ACCEPTED**
-- Product thesis: **ACCEPTED**
 - Foundation design package v0.1: **ACCEPTED**
 - Repository SoT contract: **IMPLEMENTED**
-- Conceptual Music Blueprint v0: **ACCEPTED**
-- Conceptual Semantic Control Model v0: **ACCEPTED**
-- Conceptual Lock/Constraint Model v0: **ACCEPTED**
-- Concrete Blueprint JSON Schema: **NOT IMPLEMENTED**
-- Music IR schema: **NOT IMPLEMENTED**
-- Compiler: **NOT IMPLEMENTED**
-- Constraint engine: **NOT IMPLEMENTED**
+- Blueprint JSON Schema v0: **IMPLEMENTED + TESTED**
+- Semantic Control contract v0: **IMPLEMENTED + TESTED**
+- Lock/Constraint contract v0: **IMPLEMENTED + TESTED**
+- Music IR schema v0: **IMPLEMENTED + TESTED (schema only)**
+- Cross-field/revision contract validator: **IMPLEMENTED + TESTED**
+- HARD lock/constraint fail-closed behavior: **TESTED at contract level**
+- Compiler Blueprint → Music IR: **NOT IMPLEMENTED**
 - Semantic resolver: **NOT IMPLEMENTED**
-- Diff/provenance engine: **NOT IMPLEMENTED**
-- Renderer adapters: **NOT IMPLEMENTED**
+- Structured diff/provenance engine: **NOT IMPLEMENTED**
+- MIDI renderer: **NOT IMPLEMENTED**
+- WAV renderer: **NOT IMPLEMENTED**
 - Application/UI: **NOT IMPLEMENTED**
-- Audio generation pipeline: **NOT IMPLEMENTED**
-- Automated tests: **NOT IMPLEMENTED**
-
-## Product positioning / 제품 포지셔닝
-
-MUSICA is an **AI-native programmable music workstation** centered on intent, structured creative state, semantic control, locks/constraints, explainable revisions, reproducibility, and renderer independence. It is not defined by matching another service feature-for-feature.
-
-MUSICA는 의도, 구조화 창작 상태, 의미 제어, lock/constraint, 설명 가능한 리비전, 재현성, 렌더러 독립성을 중심으로 하는 **AI-native programmable music workstation**입니다. 타 서비스와의 기능 일대일 비교로 제품을 정의하지 않습니다.
 
 ## Resume authority / 재개 권위
 
-For the next session, inspect in order:
-
-다음 세션에서는 순서대로 확인합니다.
+Before substantive work inspect, in order / 실질 작업 전 순서대로 확인:
 
 1. `governance/SOURCE_OF_TRUTH.md`
 2. `docs/PRODUCT_THESIS.md`
 3. `docs/design/MUSICA_DESIGN_PACKAGE_v0.1.md`
-4. the four normative design specifications / 네 규범 설계 명세
-5. this file / 본 파일
-6. `memory/NEXT_ACTION.md`
+4. normative design specifications / 규범 설계 명세
+5. `docs/M0_ACCEPTANCE.md`
+6. this file / 본 파일
+7. `memory/NEXT_ACTION.md`
+8. relevant Issue/PR/workflow evidence / 관련 Issue·PR·workflow 근거
 
-Do not infer implementation from accepted design documentation.
+Never infer runtime capability from schema/design acceptance alone.
 
-승인된 설계 문서만으로 구현 상태를 추론하지 않습니다.
+스키마·설계 승인만으로 런타임 기능을 추론하지 않습니다.

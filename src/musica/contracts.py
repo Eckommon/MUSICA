@@ -109,11 +109,12 @@ def _validate_blueprint_invariants(blueprint: dict[str, Any]) -> None:
     lock_ids = [lock["lock_id"] for lock in locks]
     _require_unique(lock_ids, "lock_id")
     lock_id_set = set(lock_ids)
+    is_root_revision = blueprint["project"].get("parent_revision_id") is None
     for lock in locks:
         actual = get_pointer(blueprint, lock["target"])
-        if "value" in lock and actual != lock["value"]:
+        if is_root_revision and "value" in lock and actual != lock["value"]:
             raise ContractError(
-                f"lock {lock['lock_id']} declares value {lock['value']!r} but target contains {actual!r}"
+                f"root lock {lock['lock_id']} declares value {lock['value']!r} but target contains {actual!r}"
             )
 
     constraints = blueprint.get("constraints", [])
@@ -135,8 +136,9 @@ def _validate_blueprint_invariants(blueprint: dict[str, Any]) -> None:
                 f"section {section['section_id']} references unknown constraints: {sorted(unknown_constraints)}"
             )
 
+    section_id_set = set(section_ids)
     for override in blueprint["semantics"].get("section_overrides", []):
-        if override["section_id"] not in set(section_ids):
+        if override["section_id"] not in section_id_set:
             raise ContractError(f"semantic override references unknown section: {override['section_id']}")
 
     for point in blueprint["semantics"].get("curves", []):
@@ -252,7 +254,7 @@ def validate_revision(parent: dict[str, Any], candidate: dict[str, Any]) -> list
                     )
                 )
                 continue
-            critical = ("strength", "target", "mode", "inheriting")
+            critical = ("strength", "target", "mode", "inheriting", "value", "tolerance", "identity_basis")
             if any(candidate_lock.get(key) != lock.get(key) for key in critical):
                 conflicts.append(
                     RevisionConflict(

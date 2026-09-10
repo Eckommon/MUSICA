@@ -2,100 +2,143 @@
 
 ## Exact resume point / 정확한 재개점
 
-**M2 — PROJECT & VERSION ENGINE v0 / M2 — 프로젝트·버전 엔진 v0**
+**M3-R1 — AI MUSIC DIRECTOR PROVIDER CONTRACT & AUTHORITY BOUNDARY / M3-R1 — AI Music Director Provider 계약 및 권한 경계**
 
-M1 Creative Core v0 is validated. The next problem is no longer whether MUSICA can deterministically create and semantically revise a bounded piece of music. The next problem is whether those creative states can become a durable user project with inspectable history, branches, immutable accepted revisions, provenance, and integrity checks.
+M2 Project & Version Engine v0 is validated. The next problem is not persistence. It is how MUSICA can accept convenient natural-language direction from a user while keeping probabilistic AI outside the canonical-authority boundary.
 
-M1 Creative Core v0는 검증되었습니다. 다음 문제는 MUSICA가 제한 범위에서 음악을 결정론적으로 생성하고 의미 기반으로 수정할 수 있는지가 아닙니다. 이제 그 창작 상태를 검사 가능한 이력, branch, 불변 승인 리비전, provenance, 무결성 검사를 갖춘 영속적인 사용자 프로젝트로 만들 수 있는지를 증명해야 합니다.
+M2 Project & Version Engine v0는 검증되었습니다. 다음 문제는 영속 저장이 아닙니다. 이제 확률적 AI를 공식 권위 경계 밖에 유지하면서 사용자의 편리한 자연어 디렉션을 MUSICA가 어떻게 받을 것인지 증명해야 합니다.
 
 ## Architectural decision / 아키텍처 결정
 
-GitHub remains the development and evidence SoT for the MUSICA software project, but MUSICA end users MUST NOT need Git to save or version their music.
+The AI Music Director is a **proposal engine, never the canonical state owner**.
 
-GitHub는 MUSICA 소프트웨어 개발·근거의 SoT로 유지하지만, MUSICA 최종 사용자가 자신의 음악을 저장·버전 관리하기 위해 Git을 알아야 해서는 안 됩니다.
-
-M2 therefore builds a renderer-independent **MUSICA Project Bundle** with content-addressed immutable revisions and lightweight refs.
-
-따라서 M2는 renderer 독립적인 **MUSICA Project Bundle**을 구축하며, content-addressed 불변 리비전과 경량 ref를 사용합니다.
-
-Proposed v0 shape / 제안 v0 구조:
+AI Music Director는 **제안 엔진이며 공식 상태 소유자가 아닙니다**.
 
 ```text
-<project>.musica/
-├── project.json
-├── refs/
-│   ├── HEAD.json
-│   └── heads/<branch>.json
-├── revisions/<revision-id>/
-│   ├── blueprint.json
-│   ├── revision.json
-│   └── diff.json
-├── objects/sha256/<digest>
-├── artifacts/<revision-id>/manifest.json
-└── audit/history.jsonl
+User language / 사용자 자연어
+        ↓
+Director Request
+        ↓
+AI Provider
+        ↓
+Typed Director Proposal
+        ↓
+Schema + authority validation
+        ↓
+MUSICA deterministic core
+        ↓
+Lock / constraint validation
+        ↓
+Accepted Music Intent or Blueprint revision
+        ↓
+M2 Project Bundle
 ```
 
-The exact storage details may be refined by implementation evidence, but user-facing project persistence MUST remain separate from Git internals.
+A provider MUST NOT directly overwrite an accepted Blueprint, bypass a HARD lock, mutate a `.musica` Project Bundle, or declare its own output accepted.
 
-구체 저장 세부는 구현 근거에 따라 조정할 수 있으나, 사용자 프로젝트 영속성은 Git 내부 구조와 분리되어야 합니다.
+Provider는 승인 Blueprint를 직접 덮어쓰거나 HARD lock을 우회하거나 `.musica` Project Bundle을 직접 변경하거나 자신의 출력을 스스로 승인 상태로 선언해서는 안 됩니다.
 
-## M2 required scope / M2 필수 범위
+## M3 staged sequence / M3 단계 순서
 
-1. **Project Bundle contract / Project Bundle 계약** — machine-valid project metadata, refs, revision metadata, and artifact bindings.
-2. **Create/open/save / 생성·열기·저장** — initialize a project from a validated M1 Blueprint and reopen the exact canonical state.
-3. **Immutable accepted revisions / 불변 승인 리비전** — committed Blueprint revisions are content-addressed and cannot be silently overwritten.
-4. **Branches and refs / branch·ref** — branch from an accepted revision and advance only the selected ref after a valid commit.
-5. **Structured revision lineage / 구조화 리비전 계보** — parent revision, reason, actor, diff, locks, and provenance remain inspectable.
-6. **Lock inheritance across stored revisions / 저장 리비전 간 lock 상속** — M0/M1 fail-closed rules continue to apply after reload and branching.
-7. **Artifact binding / 산출물 결속** — MIDI/WAV/evidence hashes may be attached to the exact revision that produced them.
-8. **Integrity verification / 무결성 검증** — tampered Blueprint/object/manifest content is detected by hash or contract mismatch.
-9. **Deterministic export/import / 결정론 export·import** — the same validated project state can be exported and re-imported without semantic drift.
-10. **M0/M1 regression + Python 3.11/3.12 CI / M0·M1 회귀 + Python 3.11/3.12 CI**.
+### M3-R1 — Provider-neutral contract + deterministic reference provider
 
-## M2 canonical proof / M2 공식 증명 시나리오
+Prove the provider boundary without depending on external network availability or secrets.
+
+외부 네트워크·secret에 의존하지 않고 provider 경계를 먼저 증명합니다.
+
+Required / 필수:
+
+1. machine-valid `Director Request v0` / 기계 검증 가능한 Director Request v0,
+2. machine-valid `Director Proposal v0` with create/edit proposal kinds / create·edit 종류의 Director Proposal v0,
+3. provider protocol and capability declaration / provider protocol·역량 선언,
+4. deterministic fixture/reference provider for CI / CI용 결정론 fixture/reference provider,
+5. proposal validator that rejects malformed, over-authoritative, or unsupported output / 잘못되거나 과도한 권위를 주장하거나 미지원 출력을 거부하는 validator,
+6. create path: natural-language request → proposed Music Intent → M1 composer / 생성 경로,
+7. edit path: natural-language request + exact current revision context → proposed Semantic Control → M1 semantic resolver / 수정 경로,
+8. uncertainty, assumptions, alternatives, provider/model metadata, and response digest provenance / 불확실성·가정·대안·provider/model 메타데이터·응답 digest provenance,
+9. negative tests proving provider output cannot bypass locks or inject arbitrary Blueprint paths / lock 우회·임의 Blueprint path 주입 차단 테스트,
+10. M0/M1/M2 regression preservation / 기존 회귀 보존.
+
+### M3-R2 — OpenAI provider adapter + bounded live-ready path
+
+After R1 is accepted, add an OpenAI adapter against the then-current official API contract, with credentials supplied only through runtime environment/configuration and never committed to the repository.
+
+R1 승인 후 당시 공식 API 계약을 기준으로 OpenAI adapter를 추가합니다. 자격정보는 런타임 환경·설정으로만 주입하며 레포에 커밋하지 않습니다.
+
+Required / 필수:
+
+1. structured/schema-constrained provider response / 구조화·schema 제약 응답,
+2. explicit model/provider provenance / 명시적 model/provider provenance,
+3. timeout/retry/error classification with fail-closed behavior / timeout·retry·오류 분류 및 실패 폐쇄,
+4. transport-injected offline tests / transport 주입형 오프라인 테스트,
+5. no-secret CI path / secret 없는 CI 경로,
+6. optional live smoke evidence only when authorized credentials are available / 승인된 자격정보가 있을 때만 선택적 live smoke 근거,
+7. live evidence MUST be distinguished from adapter-contract evidence / live 근거와 adapter 계약 근거 구분.
+
+M3 may be validated without pretending that an external provider call is deterministic. Reproducibility means preserving the exact request contract, provider/model identifiers, configuration, response/proposal digest, accepted proposal, and downstream deterministic state—not claiming that the provider will emit identical text forever.
+
+M3는 외부 provider 호출 자체가 결정론적이라고 가장하지 않습니다. 재현성이란 provider가 영원히 같은 텍스트를 출력한다고 주장하는 것이 아니라, 정확한 request 계약·provider/model 식별자·설정·response/proposal digest·승인 제안·이후 결정론 상태를 보존하는 것을 의미합니다.
+
+## Canonical M3 proof / 공식 M3 증명
+
+Two bounded flows MUST be demonstrated.
+
+두 제한형 흐름을 반드시 증명합니다.
+
+### A. Create / 생성
 
 ```text
-M1 Intent
-  ↓
-Blueprint R1
-  ↓
-Create Project Bundle
-  ↓
-commit R1 → main
-  ↓
-branch "variation-a"
-  ↓
-semantic edit under HARD locks
-  ↓
-commit R2 → variation-a
-  ↓
-main still points to R1
-variation-a points to R2
-  ↓
-render R2 → MIDI/WAV
-  ↓
-bind artifact hashes to R2
-  ↓
-close/reopen project
-  ↓
-verify refs + lineage + locks + hashes
-  ↓
-modify stored bytes deliberately
-  ↓
-integrity verification MUST fail closed
+"Create a restrained dark electronic 20-second technology cue"
+        ↓
+Director Request
+        ↓
+Provider proposal
+        ↓
+validated Music Intent v0
+        ↓
+M1 Blueprint Composer
+        ↓
+validated Blueprint R1
+        ↓
+M2 project commit
+        ↓
+MIDI/WAV evidence
 ```
 
-## M2 non-goals / M2 비목표
-
-M2 does not yet need cloud collaboration, account sync, CRDT editing, a production database, arbitrary Git interoperability, polished GUI history views, or AI-provider integration.
-
-M2는 아직 클라우드 협업, 계정 동기화, CRDT 편집, 상용 데이터베이스, 임의 Git 상호운용, 완성형 GUI 히스토리 화면, AI provider 통합을 요구하지 않습니다.
-
-## Product sequence after M2 / M2 이후 제품 순서
+### B. Edit / 수정
 
 ```text
-M2 Project & Version Engine
-→ M3 AI Music Director Provider Layer
+"Make the final section more urgent but keep tempo, melody and drum identity"
+        ↓
+Director Request + exact project revision context
+        ↓
+Provider proposal
+        ↓
+validated Semantic Control v0
+        ↓
+M1 semantic resolver
+        ↓
+HARD lock check
+        ↓
+Blueprint R2
+        ↓
+M2 branch/commit + diff + artifact binding
+```
+
+A deliberately malicious or malformed provider proposal MUST be rejected before it can become canonical state.
+
+의도적으로 악의적이거나 잘못된 provider 제안은 공식 상태가 되기 전에 반드시 거부되어야 합니다.
+
+## M3 non-goals / M3 비목표
+
+M3 does not yet require a polished chat UI, autonomous long-running agent behavior, provider fine-tuning, model training, universal natural-language music understanding, direct DAW control, production mastering, or cloud collaboration.
+
+M3는 아직 완성형 채팅 UI, 장기 자율 에이전트, provider fine-tuning, 모델 학습, 보편 자연어 음악 이해, 직접 DAW 제어, 상용 마스터링, 클라우드 협업을 요구하지 않습니다.
+
+## Product sequence after M3 / M3 이후 제품 순서
+
+```text
+M3 AI Music Director Provider Layer
 → M4 MUSICA Studio usable application MVP
 → M5 Renderer/DAW interoperability & quality expansion
 → M6 Product hardening / packaging / release candidate
@@ -107,6 +150,6 @@ M2 Project & Version Engine
 Issue → Branch → Contract → Implementation → Tests → PR → exact-head CI → Evidence → Merge → State update
 ```
 
-Do not infer M2 capability from this plan. M2 becomes validated only after repository-backed implementation and evidence pass its acceptance gate.
+Repository-backed contracts and evidence remain authoritative over conversation or model memory.
 
-본 계획만으로 M2 기능을 추론하지 않습니다. M2는 레포 기반 구현과 근거가 수용 게이트를 통과한 후에만 검증 상태가 됩니다.
+레포 기반 계약과 근거는 계속해서 대화 또는 모델 기억보다 우선합니다.

@@ -1,0 +1,27 @@
+name: MUSICA Contracts
+
+on:
+  push:
+    branches: [main, m0-r1-executable-blueprint-contract]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install / 설치
+        run: python -m pip install -e '.[dev]'
+      - name: Test contracts / 계약 테스트
+        run: pytest

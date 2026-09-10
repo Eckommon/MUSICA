@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/artifact-manifest-v0.schema.json",
+  "title": "MUSICA Revision Artifact Manifest v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest_version", "project_id", "revision_id", "revision_record_sha256", "artifacts"],
+  "properties": {
+    "manifest_version": {"const": "0"},
+    "project_id": {"type": "string", "minLength": 1},
+    "revision_id": {"type": "string", "minLength": 1},
+    "revision_record_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "media_type", "size_bytes", "sha256", "object_sha256"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1, "pattern": "^[^/\\\\]+$"},
+          "media_type": {"type": "string", "minLength": 1},
+          "size_bytes": {"type": "integer", "minimum": 0},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "object_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/project-bundle-v0.schema.json",
+  "title": "MUSICA Project Bundle v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["bundle_version", "project_id", "title", "default_branch", "root_revision_id", "created_from_intent_id", "format_policy"],
+  "properties": {
+    "bundle_version": {"const": "0"},
+    "project_id": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1, "maxLength": 160},
+    "default_branch": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"},
+    "root_revision_id": {"type": "string", "minLength": 1},
+    "created_from_intent_id": {"type": ["string", "null"]},
+    "format_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hash", "canonical_json", "audit_clock", "git_required"],
+      "properties": {
+        "hash": {"const": "sha256"},
+        "canonical_json": {"const": "utf8-sort-keys-compact-newline-v0"},
+        "audit_clock": {"const": "logical-sequence"},
+        "git_required": {"const": false}
+      }
+    }
+  }
+}

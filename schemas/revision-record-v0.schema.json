@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/revision-record-v0.schema.json",
+  "title": "MUSICA Revision Record v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["record_version", "project_id", "revision_id", "parent_revision_id", "blueprint_sha256", "diff_sha256", "actor", "reason", "logical_sequence"],
+  "properties": {
+    "record_version": {"const": "0"},
+    "project_id": {"type": "string", "minLength": 1},
+    "revision_id": {"type": "string", "minLength": 1},
+    "parent_revision_id": {"type": ["string", "null"]},
+    "blueprint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "diff_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "parent_record_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "actor": {"enum": ["user", "ai", "deterministic_transform", "import"]},
+    "reason": {"type": "string", "minLength": 1},
+    "logical_sequence": {"type": "integer", "minimum": 1}
+  }
+}

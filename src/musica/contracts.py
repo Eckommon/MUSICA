@@ -1,0 +1,255 @@
+"""Executable contract validation for MUSICA M0.
+
+실행 가능한 MUSICA M0 계약 검증 모듈.
+"""
+
+from __future__ import annotations
+
+import copy
+import json
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+from jsonschema import Draft202012Validator
+
+SCHEMA_DIR = Path(__file__).resolve().parents[2] / "schemas"
+
+
+class ContractError(ValueError):
+    """Raised when an object violates a MUSICA schema contract."""
+
+
+@dataclass(frozen=True)
+class RevisionConflict:
+    """Machine-readable revision conflict / 기계 판독 가능한 리비전 충돌."""
+
+    conflict_id: str
+    rule_type: str
+    rule_id: str
+    target: str
+    status: str
+    reason: str
+
+    def as_dict(self) -> dict[str, str]:
+        return {
+            "conflict_id": self.conflict_id,
+            "rule_type": self.rule_type,
+            "rule_id": self.rule_id,
+            "target": self.target,
+            "status": self.status,
+            "reason": self.reason,
+        }
+
+
+def _load_schema(schema_name: str) -> dict[str, Any]:
+    path = SCHEMA_DIR / schema_name
+    if not path.exists():
+        raise ContractError(f"unknown schema: {schema_name}")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def validate_contract(instance: dict[str, Any], schema_name: str) -> None:
+    """Validate one object against a MUSICA JSON Schema."""
+
+    schema = _load_schema(schema_name)
+    validator = Draft202012Validator(schema)
+    errors = sorted(validator.iter_errors(instance), key=lambda err: list(err.absolute_path))
+    if errors:
+        details = []
+        for err in errors:
+            pointer = "/" + "/".join(str(p) for p in err.absolute_path)
+            details.append(f"{pointer or '/'}: {err.message}")
+        raise ContractError("schema validation failed: " + " | ".join(details))
+
+
+def _decode_pointer_token(token: str) -> str:
+    return token.replace("~1", "/").replace("~0", "~")
+
+
+def get_pointer(document: Any, pointer: str) -> Any:
+    """Resolve an RFC 6901-style JSON Pointer used by v0 locks/constraints."""
+
+    if pointer == "":
+        return document
+    if not pointer.startswith("/"):
+        raise ContractError(f"invalid JSON Pointer target: {pointer}")
+    current = document
+    for raw in pointer[1:].split("/"):
+        token = _decode_pointer_token(raw)
+        if isinstance(current, list):
+            try:
+                current = current[int(token)]
+            except (ValueError, IndexError) as exc:
+                raise ContractError(f"unresolvable JSON Pointer: {pointer}") from exc
+        elif isinstance(current, dict):
+            if token not in current:
+                raise ContractError(f"unresolvable JSON Pointer: {pointer}")
+            current = current[token]
+        else:
+            raise ContractError(f"unresolvable JSON Pointer: {pointer}")
+    return current
+
+
+def _hard_locks(blueprint: dict[str, Any]) -> list[dict[str, Any]]:
+    return [lock for lock in blueprint.get("locks", []) if lock.get("strength") == "HARD"]
+
+
+def _constraint_conflict(
+    candidate: dict[str, Any], constraint: dict[str, Any], ordinal: int
+) -> RevisionConflict | None:
+    target = constraint["target"]
+    try:
+        actual = get_pointer(candidate, target)
+    except ContractError as exc:
+        return RevisionConflict(
+            conflict_id=f"C-CONSTRAINT-{ordinal:03d}",
+            rule_type="constraint",
+            rule_id=constraint["constraint_id"],
+            target=target,
+            status="BLOCKED",
+            reason=str(exc),
+        )
+
+    op = constraint["op"]
+    expected = constraint["value"]
+    ok = False
+    if op == "between":
+        ok = (
+            isinstance(expected, list)
+            and len(expected) == 2
+            and isinstance(actual, (int, float))
+            and expected[0] <= actual <= expected[1]
+        )
+    elif op == "eq":
+        ok = actual == expected
+    elif op == "gte":
+        ok = isinstance(actual, (int, float)) and actual >= expected
+    elif op == "lte":
+        ok = isinstance(actual, (int, float)) and actual <= expected
+
+    if ok:
+        return None
+    return RevisionConflict(
+        conflict_id=f"C-CONSTRAINT-{ordinal:03d}",
+        rule_type="constraint",
+        rule_id=constraint["constraint_id"],
+        target=target,
+        status="BLOCKED" if constraint.get("hardness") == "hard" else "REQUIRES_ACCEPTANCE",
+        reason=f"constraint {op} expected {expected!r}, got {actual!r}",
+    )
+
+
+def validate_revision(parent: dict[str, Any], candidate: dict[str, Any]) -> list[RevisionConflict]:
+    """Validate a candidate Blueprint revision against its parent.
+
+    HARD locks fail closed. SOFT rules are represented as acceptance-required conflicts.
+    v0 identity locks preserve an explicit identity token exactly; perceptual similarity
+    is intentionally out of scope until evidence-backed identity metrics exist.
+    """
+
+    validate_contract(parent, "music-blueprint-v0.schema.json")
+    validate_contract(candidate, "music-blueprint-v0.schema.json")
+
+    conflicts: list[RevisionConflict] = []
+    parent_revision = parent["project"]["revision_id"]
+    if candidate["project"].get("parent_revision_id") != parent_revision:
+        conflicts.append(
+            RevisionConflict(
+                conflict_id="C-PARENT-001",
+                rule_type="revision",
+                rule_id="parent_revision_id",
+                target="/project/parent_revision_id",
+                status="BLOCKED",
+                reason=f"candidate must reference parent revision {parent_revision!r}",
+            )
+        )
+
+    candidate_lock_map = {lock["lock_id"]: lock for lock in candidate.get("locks", [])}
+    for ordinal, lock in enumerate(_hard_locks(parent), start=1):
+        lock_id = lock["lock_id"]
+        inherited = lock.get("inheriting", True)
+        if inherited:
+            candidate_lock = candidate_lock_map.get(lock_id)
+            if candidate_lock is None:
+                conflicts.append(
+                    RevisionConflict(
+                        conflict_id=f"C-LOCK-{ordinal:03d}",
+                        rule_type="lock",
+                        rule_id=lock_id,
+                        target=lock["target"],
+                        status="BLOCKED",
+                        reason="inherited HARD lock was removed from candidate",
+                    )
+                )
+                continue
+            critical = ("strength", "target", "mode", "inheriting")
+            if any(candidate_lock.get(key) != lock.get(key) for key in critical):
+                conflicts.append(
+                    RevisionConflict(
+                        conflict_id=f"C-LOCK-{ordinal:03d}",
+                        rule_type="lock",
+                        rule_id=lock_id,
+                        target=lock["target"],
+                        status="BLOCKED",
+                        reason="inherited HARD lock semantics were changed",
+                    )
+                )
+                continue
+
+        target = lock["target"]
+        try:
+            before = get_pointer(parent, target)
+            after = get_pointer(candidate, target)
+        except ContractError as exc:
+            conflicts.append(
+                RevisionConflict(
+                    conflict_id=f"C-LOCK-{ordinal:03d}",
+                    rule_type="lock",
+                    rule_id=lock_id,
+                    target=target,
+                    status="BLOCKED",
+                    reason=str(exc),
+                )
+            )
+            continue
+
+        mode = lock["mode"]
+        if mode == "exact":
+            tolerance = lock.get("tolerance", 0.0)
+            if isinstance(before, (int, float)) and isinstance(after, (int, float)):
+                preserved = abs(float(before) - float(after)) <= float(tolerance)
+            else:
+                preserved = before == after
+        elif mode == "identity":
+            preserved = before == after
+        else:
+            preserved = False
+
+        if not preserved:
+            conflicts.append(
+                RevisionConflict(
+                    conflict_id=f"C-LOCK-{ordinal:03d}",
+                    rule_type="lock",
+                    rule_id=lock_id,
+                    target=target,
+                    status="BLOCKED",
+                    reason=f"HARD {mode} lock changed value from {before!r} to {after!r}",
+                )
+            )
+
+    for ordinal, constraint in enumerate(parent.get("constraints", []), start=1):
+        conflict = _constraint_conflict(candidate, constraint, ordinal)
+        if conflict is not None:
+            conflicts.append(conflict)
+
+    return conflicts
+
+
+def clone_for_revision(parent: dict[str, Any], revision_id: str) -> dict[str, Any]:
+    """Create a structurally safe candidate copy for deterministic transforms."""
+
+    candidate = copy.deepcopy(parent)
+    candidate["project"]["parent_revision_id"] = parent["project"]["revision_id"]
+    candidate["project"]["revision_id"] = revision_id
+    return candidate

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/studio-response-v0.schema.json",
+  "title": "MUSICA Studio Response v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["response_version", "ok", "operation", "data"],
+  "properties": {
+    "response_version": {"const": "0"},
+    "ok": {"const": true},
+    "operation": {"type": "string", "minLength": 1, "maxLength": 120},
+    "data": {"type": ["object", "array", "string", "number", "boolean", "null"]}
+  }
+}

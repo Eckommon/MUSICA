@@ -1,7 +1,7 @@
 """Localhost HTTP bridge and static Browser Studio for MUSICA M4.
 
 The bridge serves only the validated Studio application JSON/media surface plus packaged
-same-origin M4-R2 HTML/CSS/JavaScript assets. It intentionally provides no cloud binding,
+same-origin M4 HTML/CSS/JavaScript assets. It intentionally provides no cloud binding,
 directory browsing, upload endpoint, wildcard CORS, third-party asset dependency, or
 remote telemetry.
 """
@@ -57,9 +57,19 @@ def _static_bytes(name: str) -> bytes:
         raise StudioServiceError("not_found", f"Studio web asset is unavailable: {name}") from exc
 
 
+def _browser_asset_bytes(name: str) -> bytes:
+    """Return one same-origin asset, prepending bounded Browser policy modules where needed."""
+
+    if name == "app.js":
+        return _static_bytes("create_policy.js") + b"\n" + _static_bytes("app.js")
+    if name == "app.css":
+        return _static_bytes("create_policy.css") + b"\n" + _static_bytes("app.css")
+    return _static_bytes(name)
+
+
 def make_handler(application: StudioApplication):
     class StudioRequestHandler(BaseHTTPRequestHandler):
-        server_version = "MUSICAStudio/0.2"
+        server_version = "MUSICAStudio/0.3"
         protocol_version = "HTTP/1.1"
 
         def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
@@ -99,7 +109,7 @@ def make_handler(application: StudioApplication):
             self._send_bytes(
                 HTTPStatus.OK,
                 content_type,
-                _static_bytes(name),
+                _browser_asset_bytes(name),
                 static_document=True,
             )
             return True

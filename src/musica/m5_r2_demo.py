@@ -140,11 +140,14 @@ def run_suite(blueprint_path: str | Path, out_dir: str | Path) -> dict[str, Any]
     )
     high_a_provenance = _load(high_a_provenance_path)
     high_b_provenance = _load(high_b_provenance_path)
+    normalization_a = high_a_provenance["render_settings"]["duration_normalization"]
+    normalization_b = high_b_provenance["render_settings"]["duration_normalization"]
 
     ref_hashes = _artifact_hashes(reference_result)
     high_a_hashes = _artifact_hashes(high_a)
     high_b_hashes = _artifact_hashes(high_b)
     byte_exact_observed = high_a_hashes == high_b_hashes
+    raw_engine_artifacts_absent = not list(root.rglob("render.engine.wav"))
 
     proof = {
         "proof_version": "0",
@@ -188,6 +191,15 @@ def run_suite(blueprint_path: str | Path, out_dir: str | Path) -> dict[str, Any]
             "run_a_non_zero_samples": high_a_qa["signal"]["non_zero_sample_count"],
             "run_a_clipping_samples": high_a_qa["signal"]["clipping_sample_count"],
             "run_a_duration_within_tolerance": high_a_qa["duration"]["within_tolerance"],
+            "final_duration_seconds": high_a_qa["duration"]["actual_seconds"],
+            "raw_duration_seconds": normalization_a["raw_duration_seconds"],
+            "raw_sha256": normalization_a["raw_sha256"],
+            "duration_normalization_policy": normalization_a["policy"],
+            "duration_normalization_applied": normalization_a["normalization_applied"],
+            "trimmed_frame_count": normalization_a["trimmed_frame_count"],
+            "padding_applied": normalization_a["padding_applied"],
+            "normalization_reproducible_between_runs": normalization_a == normalization_b,
+            "raw_engine_artifacts_absent_from_evidence_bundle": raw_engine_artifacts_absent,
             "project_authority": high_a_provenance["project_authority"],
         },
         "capability_uplift": {
@@ -223,6 +235,11 @@ def run_suite(blueprint_path: str | Path, out_dir: str | Path) -> dict[str, Any]
         int(proof["fluidsynth"]["run_a_non_zero_samples"] or 0) > 0,
         proof["fluidsynth"]["run_a_clipping_samples"] == 0,
         proof["fluidsynth"]["run_a_duration_within_tolerance"],
+        proof["fluidsynth"]["final_duration_seconds"] == duration,
+        float(proof["fluidsynth"]["raw_duration_seconds"]) >= duration,
+        proof["fluidsynth"]["padding_applied"] is False,
+        proof["fluidsynth"]["normalization_reproducible_between_runs"],
+        proof["fluidsynth"]["raw_engine_artifacts_absent_from_evidence_bundle"],
         proof["fluidsynth"]["project_authority"] is False,
         proof["reference"]["qa_status"] in {"PASS", "WARN"},
         proof["capability_uplift"]["stereo_output_proven"],
@@ -263,6 +280,8 @@ def run_suite(blueprint_path: str | Path, out_dir: str | Path) -> dict[str, Any]
             "exact external SoundFont hash/provenance binding",
             "same canonical Music IR rendered by reference and FluidSynth adapters",
             "objective 48 kHz stereo PCM signal validity",
+            "deterministic trim of engine release/effect tail to explicit requested duration",
+            "raw engine hash/duration retained in provenance without retaining unmanaged raw audio",
             "renderer artifact-only authority",
             "observed repeatability recorded without self-verification inflation",
             "perceptual quality superiority remains UNKNOWN",

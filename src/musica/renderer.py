@@ -134,6 +134,8 @@ def _validate_request_against_capability(
 ) -> None:
     validate_contract(request, "renderer-request-v0.schema.json")
     validate_contract(capability, "renderer-capability-v0.schema.json")
+    if capability["classification"] == "stochastic" and capability["reproducibility"] == "byte_exact":
+        raise RendererError("stochastic renderer cannot claim byte_exact reproducibility")
     if request["renderer_id"] != capability["renderer_id"]:
         raise RendererError("renderer request id does not match selected adapter")
     unsupported = set(request["outputs"]) - set(capability["supported_outputs"])
@@ -186,10 +188,7 @@ class ReferenceRendererAdapter:
                     duration_seconds=float(audio["duration_seconds"]),
                     sample_rate=int(audio["sample_rate"]),
                 )
-                qa_report = analyze_wav(
-                    path,
-                    target_seconds=float(audio["duration_seconds"]),
-                )
+                qa_report = analyze_wav(path, target_seconds=float(audio["duration_seconds"]))
                 if qa_report["container"]["channels"] != audio["channels"]:
                     raise RendererError("rendered WAV channel count violates RendererRequest")
                 if qa_report["container"]["sample_width_bytes"] != audio["sample_width_bytes"]:
@@ -198,7 +197,7 @@ class ReferenceRendererAdapter:
                     raise RendererError("required AudioQualityReport checks failed")
                 artifacts.append(_artifact("wav", path, workspace_root))
                 write_canonical_json(output_root / "audio-quality.json", qa_report)
-            else:  # schema and capability checks should make this unreachable
+            else:
                 raise RendererError(f"unsupported renderer output: {role}")
 
         qa_path = output_root / "audio-quality.json"
@@ -215,7 +214,7 @@ class ReferenceRendererAdapter:
             "warnings": [] if qa_report is None or qa_report["status"] == "PASS" else ["audio QA returned WARN"],
             "reproducibility": {
                 "claim": capability["reproducibility"],
-                "verified": capability["reproducibility"] == "byte_exact",
+                "verified": False,
             },
             "audio_quality": {
                 "status": qa_report["status"] if qa_report is not None else "NOT_REQUESTED",

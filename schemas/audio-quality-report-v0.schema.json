@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/audio-quality-report-v0.schema.json",
+  "title": "MUSICA AudioQualityReport v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["report_version", "report_id", "artifact_sha256", "artifact_size_bytes", "status", "container", "signal", "duration", "loudness"],
+  "properties": {
+    "report_version": {"const": "0"},
+    "report_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "artifact_size_bytes": {"type": "integer", "minimum": 1},
+    "status": {"enum": ["PASS", "WARN", "FAIL", "UNKNOWN"]},
+    "container": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["valid", "format", "sample_rate", "channels", "sample_width_bytes", "bit_depth", "frame_count"],
+      "properties": {
+        "valid": {"type": "boolean"},
+        "format": {"enum": ["wav"]},
+        "sample_rate": {"type": ["integer", "null"], "minimum": 1},
+        "channels": {"type": ["integer", "null"], "minimum": 1},
+        "sample_width_bytes": {"type": ["integer", "null"], "minimum": 1},
+        "bit_depth": {"type": ["integer", "null"], "minimum": 1},
+        "frame_count": {"type": ["integer", "null"], "minimum": 0}
+      }
+    },
+    "signal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["non_zero_sample_count", "peak_normalized", "clipping_sample_count", "dc_offset_normalized"],
+      "properties": {
+        "non_zero_sample_count": {"type": ["integer", "null"], "minimum": 0},
+        "peak_normalized": {"type": ["number", "null"], "minimum": 0},
+        "clipping_sample_count": {"type": ["integer", "null"], "minimum": 0},
+        "dc_offset_normalized": {"type": ["number", "null"]}
+      }
+    },
+    "duration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actual_seconds", "target_seconds", "tolerance_seconds", "within_tolerance"],
+      "properties": {
+        "actual_seconds": {"type": ["number", "null"], "minimum": 0},
+        "target_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "tolerance_seconds": {"type": "number", "minimum": 0},
+        "within_tolerance": {"type": ["boolean", "null"]}
+      }
+    },
+    "loudness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["integrated_lufs", "measurement_status"],
+      "properties": {
+        "integrated_lufs": {"type": ["number", "null"]},
+        "measurement_status": {"enum": ["MEASURED", "UNKNOWN"]}
+      }
+    }
+  }
+}

@@ -187,7 +187,7 @@ class FluidSynthRendererAdapter:
             "supported_inputs": ["music-ir-v0"],
             "supported_outputs": ["midi", "wav"],
             "audio": {
-                "sample_rates": [44100, 48000],
+                "sample_rates": [48000],
                 "channels": [2],
                 "sample_width_bytes": [2],
             },

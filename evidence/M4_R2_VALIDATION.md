@@ -1,39 +1,48 @@
 # M4-R2 Validation Evidence / Browser Studio UI 검증 근거
 
 **Milestone / 마일스톤:** M4-R2 — Browser Studio UI Vertical Slice v0  
-**Evidence status / 근거 상태:** BRANCH VALIDATION PASSED; PR exact-head validation pending / branch 검증 통과, PR exact-head 검증 대기  
+**Evidence status / 근거 상태:** **VALIDATED / 검증 완료**  
 **Evidence class / 근거 등급:** LOCAL BROWSER STUDIO EVIDENCE / 로컬 Browser Studio 근거
 
 ## 1. Scope / 범위
 
-M4-R2 validates that MUSICA now has a real browser-deliverable, local-first Studio surface connected to the validated M4-R1 service. The Browser UI implements progressive disclosure `Direct → Shape → Inspect → Code` while preserving the canonical Preview → explicit Accept authority boundary.
+M4-R2 validates that MUSICA has a real browser-deliverable, local-first Studio surface connected to the validated M4-R1 service. The Browser UI implements progressive disclosure `Direct → Shape → Inspect → Code` while preserving the canonical Preview → explicit Accept authority boundary.
 
 M4-R2는 검증된 M4-R1 service에 연결된 실제 browser-deliverable local-first Studio 화면이 존재함을 검증합니다. Browser UI는 `Direct → Shape → Inspect → Code` 단계적 복잡성 노출을 구현하면서 Preview → 명시적 Accept 공식 권한 경계를 유지합니다.
 
-## 2. Branch validation identity / Branch 검증 식별자
+## 2. Final validation identity / 최종 검증 식별자
 
-- branch: `m4-r2-browser-studio-ui-v0`
-- validated branch head: `c6600263a4abaebd20e3f905a0dac730bffa0721`
-- GitHub Actions run: `34550942907`
+- implementation Issue: `#27`
+- implementation PR: `#28`
+- implementation branch: `m4-r2-browser-studio-ui-v0`
+- exact final PR head: `6ee200606dbf99419fa67e9aec3ad4e288a8c66d`
+- exact-head PR CI: `34551205586`
 - Python 3.11: **SUCCESS**
 - Python 3.12: **SUCCESS**
-- M0→M4-R1 regression/evidence generation: **SUCCESS**
-- M4-R2 Browser Studio evidence generation/upload: **SUCCESS**
+- M0→M4-R2 regression/evidence generation/upload: **SUCCESS**
+- implementation merge: `16707e25bf78b4141c44da24bf8e82f375d7c465`
 
-## 3. Canonical artifact / 공식 artifact
+Only the exact evidence-bearing PR head above was accepted for merge.
+
+위 evidence-bearing PR exact head만 병합 대상으로 수용되었습니다.
+
+## 3. Final canonical artifact / 최종 공식 artifact
 
 - artifact: `musica-m4-r2-browser-studio`
-- artifact ID: `10180808523`
-- artifact digest: `sha256:05c428a5a5e3d2fa0620148d02a14dfbfed459e721122cf963765fb748cee7e2`
-- inspected file count: **46**
+- final artifact ID: `10180901528`
+- final artifact digest: `sha256:5c55c2f61ed53a1638479d1383cabb042d97be41599b36e04d65dea90cf57d5b`
 - external network used: **NO**
 - live OpenAI call performed: **NO**
 - telemetry enabled: **NO**
 - third-party CDN/remote asset dependency: **NO**
 
+A prior branch-validation artifact also existed, but this exact-head PR artifact is the final promotion evidence.
+
+이전 branch 검증 artifact도 존재하지만 본 exact-head PR artifact가 최종 승격 근거입니다.
+
 ## 4. Browser surface proof / Browser 화면 증명
 
-The canonical artifact contains the exact packaged UI assets served by MUSICA:
+The validated package contains the Studio UI assets served by MUSICA:
 
 ```text
 browser-assets/index.html
@@ -41,7 +50,7 @@ browser-assets/app.css
 browser-assets/app.js
 ```
 
-HTTP proof:
+Validated HTTP surface:
 
 ```text
 GET /                 → 200 text/html
@@ -49,7 +58,7 @@ GET /assets/app.css   → 200 text/css
 GET /assets/app.js    → 200 text/javascript
 ```
 
-The inspected UI records all four progressive-disclosure surfaces:
+The UI exposes all four progressive-disclosure surfaces:
 
 ```text
 Direct
@@ -58,13 +67,13 @@ Inspect
 Code
 ```
 
-The static source contains no `http://` or `https://` runtime asset dependency and no telemetry/CDN integration.
+Canonical source contains no third-party runtime asset dependency or telemetry integration.
 
-정적 UI source는 `http://`/`https://` 외부 런타임 asset 의존성과 telemetry/CDN 통합을 포함하지 않습니다.
+공식 source에는 third-party runtime asset 의존성이나 telemetry 통합이 없습니다.
 
 ## 5. Same-origin security proof / 동일-origin 보안 증명
 
-Canonical UI responses include:
+Validated UI responses include a strict local policy:
 
 ```text
 Content-Security-Policy:
@@ -85,30 +94,30 @@ X-Frame-Options: DENY
 X-Content-Type-Options: nosniff
 ```
 
-The validated M4-R1 loopback-only bind policy remains in force.
+The validated M4-R1 loopback-only bind policy remains authoritative.
 
-검증된 M4-R1 loopback-only bind 정책은 그대로 유지됩니다.
+검증된 M4-R1 loopback-only bind 정책은 계속 공식 규칙입니다.
 
 ## 6. Browser-visible workflow proof / Browser-visible workflow 증명
 
-The canonical HTTP workflow performed:
+The canonical HTTP workflow exercised:
 
 ```text
 Browser-visible create request
   ↓
 accepted root revision rev-001
   ↓
-accepted WAV retrieved
+accepted WAV retrieval
   ↓
 semantic tension preview
   ↓
-assert head still rev-001
+assert canonical head unchanged
   ↓
-pending preview WAV retrieved
+pending preview WAV retrieval
   ↓
 explicit Accept
   ↓
-accepted revision rev-studio-d609cb248b8ab5b3cd1133e3
+accepted revision advances
   ↓
 create + checkout browser-variation branch
   ↓
@@ -116,7 +125,7 @@ history
   ↓
 canonical export
   ↓
-final session integrity PASS
+final project integrity PASS
 ```
 
 Observed proof values:
@@ -134,16 +143,11 @@ hard_lock_count                     = 3
 six_semantic_axes_visible           = true
 ```
 
-Canonical export:
+This validates the R2 authority invariant: listening to a preview does not promote it; only explicit Accept may advance canonical state.
 
-```text
-exports/browser-studio-proof.musica.zip
-sha256:a4ce81b7b83ad734f39a69622ff16ae7466fb093d6c4720a2ead1459fd690dfc
-```
+이는 R2 권한 불변식을 검증합니다. preview 청취는 승격을 의미하지 않으며 명시적 Accept만 공식 상태를 전진시킬 수 있습니다.
 
 ## 7. Product surface / 제품 화면
-
-The Browser Studio exposes:
 
 ### Direct / 간편 디렉팅
 - natural-language project creation,
@@ -153,7 +157,7 @@ The Browser Studio exposes:
 - natural-language refinement preview.
 
 ### Shape / 의미·구조 편집
-- six semantic controls: energy, tension, density, motion, brightness, warmth,
+- six semantic controls: `energy`, `tension`, `density`, `motion`, `brightness`, `warmth`,
 - whole/final/selected-section scope,
 - section timeline,
 - HARD-lock summary,
@@ -161,7 +165,7 @@ The Browser Studio exposes:
 
 ### Inspect / 전문 검사
 - Accepted vs `PREVIEW · NOT ACCEPTED` state,
-- exact change diff returned by preview,
+- exact preview diff returned by preview,
 - HARD locks,
 - current branch/head/integrity,
 - explicit Accept / Discard,
@@ -176,7 +180,7 @@ The Browser Studio exposes:
 
 ## 8. Launcher/package proof / 실행기·패키지 증명
 
-M4-R2 packages `musica.studio_web` assets and adds the local launcher:
+M4-R2 packages `musica.studio_web` assets and provides:
 
 ```text
 musica-studio
@@ -191,11 +195,11 @@ port      = 8765
 browser   = auto-open unless --no-browser
 ```
 
-The server host still passes through M4-R1 loopback validation.
+The server host remains constrained by M4-R1 loopback validation.
 
 ## 9. Authority verdict / 권한 판정
 
-**PASS:** The browser did not become canonical authority.
+**PASS — browser state did not become canonical authority.**
 
 ```text
 Browser UI
@@ -211,16 +215,12 @@ M2 Project Engine
 Accepted Revision
 ```
 
-Audio playback of a pending preview did not advance the branch head. Only the explicit Accept operation did.
-
-pending preview 오디오를 청취해도 branch head는 전진하지 않았고 명시적 Accept 작업만 head를 전진시켰습니다.
-
 ## 10. Claim boundary / 주장 경계
 
-This evidence validates a **packaged Browser Studio surface and same-origin HTTP integration**. It does **not** validate:
+M4-R2 validates a **packaged Browser Studio surface and same-origin HTTP integration**. It does **not** validate:
 
-- Playwright/Selenium browser automation,
-- complete browser restart/session recovery,
+- Playwright/Selenium real-browser automation,
+- complete browser restart/session recovery through UI,
 - human usability-study evidence,
 - production/mastering audio quality,
 - waveform/piano-roll/note-level professional UI,
@@ -231,10 +231,18 @@ This evidence validates a **packaged Browser Studio surface and same-origin HTTP
 - live OpenAI execution,
 - DAW/VST/sampler interoperability.
 
-이 근거는 **패키징된 Browser Studio 화면과 same-origin HTTP 통합**을 검증합니다. 전체 browser automation, human usability study, 전문 음질/UI, desktop packaging, cloud collaboration, live OpenAI, DAW/VST 상호운용은 검증하지 않습니다.
+이 근거는 **패키징된 Browser Studio 화면과 same-origin HTTP 통합**을 검증합니다. 실제 browser automation, 사람 대상 usability evidence, 전문 음질/UI, desktop packaging, cloud collaboration, live OpenAI, DAW/VST 상호운용은 검증하지 않습니다.
 
-## 11. Promotion rule / 승격 규칙
+## 11. Promotion verdict / 승격 판정
 
-M4-R2 SHALL NOT be marked `VALIDATED` from this branch run alone. This evidence-bearing PR head must pass Python 3.11/3.12 plus the complete M0→M4-R2 evidence chain. Only that exact head may be merged and promoted through a state-only closure.
+The promotion rule is satisfied:
 
-이 branch run만으로 M4-R2를 `VALIDATED`로 표시하지 않습니다. 본 durable evidence가 포함된 PR exact head가 Python 3.11/3.12와 M0→M4-R2 전체 evidence chain을 통과해야 하며, 그 exact head만 병합·state-only closure로 승격할 수 있습니다.
+1. durable evidence existed before final PR validation,
+2. exact PR head `6ee200606dbf99419fa67e9aec3ad4e288a8c66d` passed Python 3.11/3.12,
+3. the complete M0→M4-R2 evidence chain regenerated/uploaded successfully,
+4. final artifact identity is recorded above,
+5. only that exact head was merged as `16707e25bf78b4141c44da24bf8e82f375d7c465`.
+
+Therefore M4-R2 is **VALIDATED** within the bounded claim above.
+
+따라서 M4-R2는 위 제한된 주장 범위에서 **VALIDATED / 검증 완료**입니다.

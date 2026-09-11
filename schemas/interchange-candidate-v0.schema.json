@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/interchange-candidate-v0.schema.json",
+  "title": "MUSICA Interchange Candidate v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "candidate_version",
+    "candidate_id",
+    "status",
+    "validation_status",
+    "source_branch",
+    "source_revision_id",
+    "source_artifact_sha256",
+    "source_application",
+    "transport",
+    "tracks",
+    "proposed_changes",
+    "proposed_blueprint",
+    "conflicts",
+    "loss_report_sha256",
+    "loss_report",
+    "normalized_candidate_sha256",
+    "project_xml_sha256",
+    "metadata_xml_sha256",
+    "importer",
+    "diff",
+    "diff_sha256"
+  ],
+  "properties": {
+    "candidate_version": {"const": "0"},
+    "candidate_id": {"type": "string", "pattern": "^CAND-[0-9a-f]{16}$"},
+    "status": {"enum": ["PENDING", "ACCEPTED"]},
+    "validation_status": {"enum": ["PASS", "BLOCKED"]},
+    "source_branch": {"type": "string", "minLength": 1},
+    "source_revision_id": {"type": "string", "minLength": 1},
+    "source_artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_application": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"type": ["string", "null"]},
+        "version": {"type": ["string", "null"]}
+      }
+    },
+    "transport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bpm", "meter"],
+      "properties": {
+        "bpm": {"type": "number", "minimum": 20, "maximum": 300},
+        "meter": {"type": "string", "pattern": "^[1-9][0-9]*/(1|2|4|8|16|32)$"}
+      }
+    },
+    "tracks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["xml_track_id", "track_id", "part_id", "notes"],
+        "properties": {
+          "xml_track_id": {"type": "string", "minLength": 1},
+          "track_id": {"type": ["string", "null"]},
+          "part_id": {"type": ["string", "null"]},
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["tick", "duration", "note", "velocity", "channel"],
+              "properties": {
+                "tick": {"type": "integer", "minimum": 0},
+                "duration": {"type": "integer", "minimum": 1},
+                "note": {"type": "integer", "minimum": 0, "maximum": 127},
+                "velocity": {"type": "integer", "minimum": 1, "maximum": 127},
+                "channel": {"type": "integer", "minimum": 0, "maximum": 15}
+              }
+            }
+          }
+        }
+      }
+    },
+    "proposed_changes": {"type": "array", "items": {"type": "object"}},
+    "proposed_blueprint": {"type": "object"},
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["conflict_id", "rule_type", "rule_id", "target", "status", "reason"],
+        "properties": {
+          "conflict_id": {"type": "string"},
+          "rule_type": {"type": "string"},
+          "rule_id": {"type": "string"},
+          "target": {"type": "string"},
+          "status": {"enum": ["BLOCKED", "REQUIRES_ACCEPTANCE"]},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "loss_report_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "loss_report": {"type": "object"},
+    "normalized_candidate_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "project_xml_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "metadata_xml_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "importer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "normalization_policy", "upstream_commit"],
+      "properties": {
+        "id": {"type": "string"},
+        "version": {"type": "string"},
+        "normalization_policy": {"type": "string"},
+        "upstream_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      }
+    },
+    "diff": {"type": "array"},
+    "diff_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

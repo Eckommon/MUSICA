@@ -1,0 +1,78 @@
+.identity-lock-picker {
+  margin: 4px 0 18px;
+  padding: 14px;
+  border: 1px solid rgba(145, 242, 197, .22);
+  border-radius: 10px;
+  background: rgba(145, 242, 197, .035);
+}
+
+.identity-lock-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.identity-lock-heading strong {
+  font-size: 11px;
+}
+
+.identity-lock-heading span {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.identity-lock-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.identity-lock-option {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+  padding: 9px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .12);
+  cursor: pointer;
+}
+
+.identity-lock-option input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--accent-strong);
+}
+
+.identity-lock-option strong,
+.identity-lock-option small {
+  display: block;
+}
+
+.identity-lock-option strong {
+  color: var(--text);
+  font-size: 10px;
+}
+
+.identity-lock-option small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 500;
+}
+
+/* Author display rules must never override semantic hidden state after Accept/Discard. */
+.decision-card[hidden] {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .identity-lock-options { grid-template-columns: 1fr; }
+  .identity-lock-heading { align-items: flex-start; flex-direction: column; }
+}

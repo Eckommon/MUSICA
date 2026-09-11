@@ -1,50 +1,53 @@
 # M4-R3 Validation Evidence / Usable MVP Real-Browser E2E 검증 근거
 
 **Milestone / 마일스톤:** M4-R3 — Usable MVP / Real-Browser E2E Acceptance v0  
-**Evidence status / 근거 상태:** BRANCH VALIDATION PASSED; PR exact-head validation pending / branch 검증 통과, PR exact-head 검증 대기  
+**Evidence status / 근거 상태:** **VALIDATED — EXACT-HEAD REAL_BROWSER_E2E_EVIDENCE / 검증 완료**  
 **Evidence class / 근거 등급:** `REAL_BROWSER_E2E_EVIDENCE`
 
-## 1. Scope / 범위
+## 1. Verdict / 판정
 
-M4-R3 validates automated operation of the packaged MUSICA Studio through an actual Chromium browser. It extends M4-R2 static/HTTP evidence with visible browser interaction, screenshots, browser/server authority cross-checks, and restart/reopen proof.
+**PASS — M4-R3 is validated within its bounded claim. / PASS — M4-R3는 제한된 주장 범위에서 검증 완료되었습니다.**
 
-M4-R3는 실제 Chromium browser를 통해 packaged MUSICA Studio가 자동화된 실제 사용자 흐름으로 조작 가능함을 검증합니다. M4-R2의 static/HTTP evidence에 visible browser interaction, screenshot, browser/server 권한 교차검증, restart/reopen 증명을 추가합니다.
+MUSICA Studio was exercised through an actual Playwright Chromium browser against the packaged local application. The evidence proves browser-driven create, audition, progressive disclosure, semantic Preview, HARD-lock inspection, explicit Accept, branch/history/export, read-only Code inspection, and service restart/reopen while preserving the canonical `.musica` authority model.
 
-This is **not** a human-subject usability study and does not claim that automated media validity proves human auditory perception.
+MUSICA Studio는 실제 Playwright Chromium browser에서 packaged local application을 대상으로 검증되었습니다. Browser 기반 생성·청취·단계별 UI·semantic Preview·HARD lock 검사·명시적 Accept·branch/history/export·read-only Code·service restart/reopen이 공식 `.musica` 권한 모델을 보존한 상태에서 동작함을 증명했습니다.
 
-이는 사람 대상 usability study가 아니며 자동화된 media 유효성 검증이 인간의 실제 청취 경험을 증명한다고 주장하지 않습니다.
+This evidence validates **automated real-browser operability**, not human-subject usability or production audio quality.
 
-## 2. Successful branch validation identity / 성공 branch 검증 식별자
+## 2. Implementation identity / 구현 식별자
 
-- branch: `m4-r3-real-browser-e2e-v0`
-- validated branch head: `b97db1074596ff5e7a0f2fc413ab8aed4fa3c182`
-- GitHub Actions run: `34553014255`
-- Python 3.11 core job: **SUCCESS**
-- Python 3.12 core/evidence job: **SUCCESS**
-- dedicated `browser-e2e` job: **SUCCESS**
-- Playwright Chromium install: **SUCCESS**
-- real-browser E2E execution: **SUCCESS**
-- M4-R3 evidence upload: **SUCCESS**
-- M0→M4-R2 regression/evidence generation/upload: **SUCCESS**
+- implementation Issue: `#31` — **CLOSED / completed**
+- implementation PR: `#32` — **MERGED**
+- validated evidence-bearing PR head: `0bfc3e7475c20e4891c629ee736237bbc72a958c`
+- exact-head PR CI: `34553248432`
+- implementation merge commit: `2c64fe69a5472d5aa7eef5d077e5c30fdfe704d2`
 
-## 3. Canonical branch artifact / 공식 branch artifact
+### Exact-head gates / exact-head 게이트
+
+| Gate | Result |
+|---|---|
+| Python 3.11 core regression | **SUCCESS** |
+| Python 3.12 core + M0→M4-R2 evidence chain | **SUCCESS** |
+| Playwright Chromium `browser-e2e` | **SUCCESS** |
+| M4-R3 artifact upload | **SUCCESS** |
+
+## 3. Final exact-head artifact / 최종 exact-head artifact
 
 - artifact: `musica-m4-r3-real-browser-e2e`
-- artifact ID: `10181507410`
-- artifact digest: `sha256:0df4f74ac8ae6af74168f2592d027fbc1811b3355267017f65c1e295124ee2e3`
-- evidence class: `REAL_BROWSER_E2E_EVIDENCE`
+- artifact ID: `10181576753`
+- digest: `sha256:b38c510939c7d6869ad446cd79ed8fd0777ed09e636e9f7aa95d053be65a206b`
+- workflow run: `34553248432`
+- exact head: `0bfc3e7475c20e4891c629ee736237bbc72a958c`
 - browser: Chromium via Playwright
 - provider mode: `fixture`
-- external provider network required: **NO**
-- live OpenAI call performed: **NO**
+- live OpenAI call: **NO**
+- external provider network required for the product workflow: **NO**
 
-This artifact was downloaded and inspected after the successful branch run.
-
-성공 branch run 이후 artifact를 직접 다운로드하여 manifest, proof, screenshot을 검사했습니다.
+The earlier successful branch artifact (`10181507410`, digest `sha256:0df4f74ac8ae6af74168f2592d027fbc1811b3355267017f65c1e295124ee2e3`) remains developmental evidence only. Promotion is based on the exact-head PR artifact above.
 
 ## 4. Real-browser canonical proof / 실제 Browser 공식 증명
 
-Structured proof records:
+The final E2E path proves:
 
 ```text
 real_chromium_used                         = true
@@ -70,24 +73,18 @@ browser_console_error_count               = 0
 browser_page_error_count                  = 0
 ```
 
-The artifact records three browser `requestfailed` events for superseded/aborted audio element loads. Each corresponding canonical audio URL was independently fetched through the browser context as HTTP 200 `audio/wav` with valid RIFF bytes. These teardown/source-replacement cancellations are retained as evidence and are not treated as content retrieval failures.
-
-artifact에는 audio element source 교체·종료 과정의 `requestfailed` 3건이 기록됩니다. 각 canonical audio URL은 browser context에서 별도 HTTP 200 `audio/wav` + RIFF로 검증되었으며, 이 취소 이벤트는 숨기지 않고 근거로 보존합니다.
-
-## 5. Visible workflow proof / 화면 상호작용 증명
-
-Actual Chromium interaction path:
+## 5. Visible workflow / 화면 상호작용 경로
 
 ```text
-open Studio /
+open Studio
   ↓
-fill visible project name + natural-language prompt
+enter project name + natural-language intent
   ↓
-Generate project
+Generate
   ↓
 ACCEPTED + integrity PASS + accepted WAV
   ↓
-Direct → Shape → Inspect → Code → Direct → Shape
+Direct → Shape → Inspect → Code
   ↓
 change Tension + final-section scope
   ↓
@@ -95,40 +92,36 @@ Preview selected change
   ↓
 PREVIEW · NOT ACCEPTED
   ↓
-assert displayed/server canonical head remains rev-001
+canonical head remains parent revision
   ↓
-valid preview WAV + 9 diff entries + 3 HARD locks
+preview WAV + structured diff + three HARD locks
   ↓
-assert branch/checkout/export controls disabled
+branch/checkout/export blocked during pending preview
   ↓
 explicit Accept
   ↓
-head advances to preview candidate
+head advances to candidate revision
   ↓
-preview decision disappears
+Preview decision disappears
   ↓
-create+checkout browser-variation
+create/checkout browser-variation
   ↓
-history count = 2
+history + canonical export
   ↓
-canonical export path/hash visible
-  ↓
-Code view read-only session JSON
+read-only Code/session JSON
   ↓
 stop first Studio service
   ↓
-start fresh StudioService on same workspace
+start fresh service on same workspace
   ↓
-Open existing project through visible Browser form
+Open existing project in Browser
   ↓
-browser-variation + accepted head + integrity PASS restored
-  ↓
-accepted WAV valid after restart
+branch/head/integrity/audio restored
 ```
 
 ## 6. Screenshot evidence / Screenshot 근거
 
-The inspected artifact contains six non-empty Chromium screenshots:
+The real-browser artifact contains six Chromium screenshots:
 
 ```text
 01-created-accepted.png
@@ -139,79 +132,36 @@ The inspected artifact contains six non-empty Chromium screenshots:
 06-reopened-after-restart.png
 ```
 
-Visual inspection confirmed:
+Visual inspection confirmed the Direct identity-lock controls, accepted audio state, visible `PREVIEW · NOT ACCEPTED`, structured diff, three HARD locks, disappearance of the preview decision after Accept, branch/history/export state, read-only Code/session JSON, and durable reopen after service restart.
 
-- Identity Locks visible on Direct create,
-- accepted project/audio state,
-- pending `PREVIEW · NOT ACCEPTED`, exact diff and three HARD locks,
-- preview decision removed after Accept,
-- branch/history/export state,
-- read-only Code/session JSON,
-- reopened durable project after service restart.
+## 7. Product defects discovered by R3 / R3가 발견한 제품 결함
 
-## 7. Durable state values / 영속 상태 값
+Real-browser validation found defects not exposed by static/direct HTTP evidence and fixed them before promotion.
 
-Branch evidence observed:
+### R3-F01 — Invalid `networkidle` readiness assumption
 
-```text
-accepted root head       = rev-001
-preview/accepted revision = rev-studio-14650350d4db8b05a4b2eeb6
-accepted project branch  = browser-variation
-history revision count   = 2
-project integrity         = PASS
-export size               = 543579 bytes
-export sha256             = b8e975883b2764559ecdea14a4a71ac965b42ce964bb157c27bb715c6f6a545f
-WAV size                  = 352844 bytes
-```
+HTML5 media activity made `networkidle` unsuitable as a Studio-ready condition. R3 changed the browser gate to `DOMContentLoaded` plus explicit visible Studio-ready assertion.
 
-After a fresh service restart, the browser reopened the project and restored `browser-variation`, the exact accepted revision above, integrity `PASS`, and valid accepted WAV media.
+### R3-F02 — Browser create could not express core HARD identity locks
 
-새 service restart 이후 Browser가 project를 다시 열어 동일 branch, 동일 accepted revision, integrity `PASS`, accepted WAV를 복원했습니다.
+The core already supported `preserve_on_edit`, but Browser create sent an empty policy. R3 added visible **Tempo / Melody identity / Rhythm identity** controls and wired them to the existing trusted contract.
 
-## 8. Defects found by real-browser validation / 실제 Browser 검증으로 발견된 결함
+### R3-F03 — Preview decision remained visually visible after Accept
 
-R3 did not merely confirm R2. It found and fixed browser-specific defects that static/direct HTTP validation had not exposed.
+Canonical promotion succeeded, but CSS `display:flex` overrode semantic `hidden`. R3 added explicit hidden-state rendering so the decision card disappears after Accept.
 
-### R3-F01 — Network-idle readiness assumption / readiness 오판
+### R3-F04 — Modern Chromium project-name pattern incompatibility
 
-Initial real-browser run `34552145025` timed out on `networkidle` because HTML5 media connections are not a reliable Studio-ready signal.
+Modern HTML `v` regular-expression semantics rejected an unescaped hyphen in the input pattern. Browser delivery now normalizes the pattern without changing the accepted character set. The final exact-head run reports zero browser console/page errors.
 
-Resolution: use `DOMContentLoaded` plus explicit visible `#connectionBadge = READY` assertion.
-
-### R3-F02 — Browser could not create HARD identity locks / Browser lock 생성 기능 누락
-
-Run `34552387283` reached Preview/Inspect but found zero HARD locks. Core support existed, but Browser create requests always sent `preserve_on_edit: []`.
-
-Resolution: add visible **Identity Locks / 정체성 잠금** controls for:
-
-- Tempo,
-- Melody identity,
-- Rhythm identity.
-
-Selected values flow through the existing M4-R1 `preserve_on_edit` contract. The successful run proves three HARD locks are visible in Inspect.
-
-### R3-F03 — Hidden Preview decision remained visually rendered / Accept 후 Preview 카드 잔존
-
-Run `34552685197` proved Accept advanced canonical state, but the decision card remained visible because author CSS `display:flex` overrode semantic `hidden` behavior.
-
-Resolution: `.decision-card[hidden] { display: none; }`.
-
-### R3-F04 — Modern Chromium HTML pattern incompatibility / 최신 Chromium pattern 호환성
-
-Run `34552844695` completed the full product workflow but browser console validation detected that the project-name pattern used an unescaped `-` under modern HTML `v` regular-expression semantics.
-
-Resolution: Browser delivery normalizes the pattern to the same allowed character set with escaped hyphen. Final successful run reports zero browser console/page errors.
-
-## 9. Authority verdict / 권한 판정
-
-**PASS — real browser interaction did not bypass canonical MUSICA authority.**
+## 8. Authority proof / 권한 증명
 
 ```text
 Chromium Browser
   ↓ visible UI actions
 Browser Studio
   ↓ same-origin loopback HTTP
-M4-R1 service
+M4-R1 application service
   ↓
 M3/M1/M0 trusted core + HARD locks
   ↓
@@ -219,37 +169,29 @@ PREVIEW — non-canonical
   ↓ explicit Accept only
 M2 Project Engine
   ↓
-Accepted .musica revision
+Accepted .musica revision + bound artifacts
 ```
 
-The browser and server independently agreed that the canonical head remained the parent during Preview and advanced only after explicit Accept.
+Browser and server evidence agree that Preview did not advance the canonical head and that only explicit Accept promoted the candidate revision.
 
-Browser와 server가 독립적으로 Preview 동안 canonical head가 parent에 유지되고 명시적 Accept 이후에만 전진했음을 확인했습니다.
+## 9. Claim boundary / 주장 경계
 
-## 10. Claim boundary / 주장 경계
-
-This branch evidence validates **automated real-browser operability** only. It does not validate:
+M4-R3 does **not** validate or imply:
 
 - human-subject usability-study results,
 - production/mastering audio quality,
 - waveform/piano-roll/note-level professional editing,
 - desktop installer/signing,
-- cloud accounts/collaboration,
+- cloud collaboration or multi-user security,
 - remote HTTP serving,
-- live OpenAI execution,
-- DAW/VST/sampler interoperability.
+- live OpenAI provider execution,
+- professional DAW/VST/sampler interoperability,
+- crash-atomic recovery across every possible process/filesystem failure.
 
-본 branch 근거는 **자동화된 실제 browser 조작성**을 검증합니다. 사람 대상 usability study, 상용 음질, 전문 편집 UI, desktop packaging, cloud collaboration, live OpenAI, DAW/VST 상호운용을 검증하지 않습니다.
+M4-R3는 사람 대상 usability, 상용 mastering 음질, 전문 note-level editing, desktop packaging, cloud collaboration, live OpenAI, DAW/VST/sampler 상호운용을 아직 주장하지 않습니다.
 
-## 11. Promotion rule / 승격 규칙
+## 10. Promotion record / 승격 기록
 
-M4-R3 SHALL NOT be promoted from the branch run alone. This durable evidence must be included in a pull request whose exact head passes:
+The evidence-bearing PR head passed all required gates and was merged exactly. Therefore M4-R3 may be promoted to **VALIDATED** through the accompanying state-only closure.
 
-1. Python 3.11 core regression,
-2. Python 3.12 complete M0→M4-R2 evidence chain,
-3. dedicated Playwright Chromium `browser-e2e`,
-4. M4-R3 artifact upload.
-
-Only that exact evidence-bearing PR head may be merged and then promoted through a state-only closure.
-
-M4-R3는 branch run만으로 승격하지 않습니다. 본 durable evidence를 포함한 PR exact head가 core + browser gate 전체를 통과한 뒤 그 exact head만 병합하고 state-only closure로 승격해야 합니다.
+근거 포함 PR exact head가 모든 필수 gate를 통과하고 정확히 병합되었으므로, 본 state-only closure에서 M4-R3를 **VALIDATED**로 승격합니다.

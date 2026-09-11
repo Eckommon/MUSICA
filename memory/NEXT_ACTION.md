@@ -2,209 +2,172 @@
 
 ## Exact resume point / 정확한 재개점
 
-**M5-R1 — RENDERER ADAPTER CONTRACT & AUDIO QUALITY BASELINE v0 / M5-R1 — 렌더러 어댑터 계약 및 오디오 품질 기준선 v0**
+**M5-R2 — FIRST HIGHER-FIDELITY LOCAL RENDERER ADAPTER v0 / M5-R2 — 첫 고음질 로컬 렌더러 어댑터 v0**
 
-M4-R3 is validated. The next problem is no longer whether MUSICA can be operated as a Browser Studio. The next bounded problem is to separate musical authority from rendering implementation and establish a measurable audio-quality baseline before integrating higher-fidelity or DAW-oriented backends.
+M5-R1 is validated. MUSICA now has a renderer-neutral contract, exact Music IR binding, artifact integrity checks, objective PCM WAV QA, and a deterministic reference adapter. The next bounded problem is to select and integrate the first meaningfully higher-fidelity local renderer **without weakening the M5-R1 authority boundary**.
 
-M4-R3는 검증 완료되었습니다. 이제 핵심 문제는 Browser Studio 조작 가능 여부가 아닙니다. 다음 제한 문제는 음악적 권한과 renderer 구현을 분리하고, 고품질 renderer 또는 DAW backend를 통합하기 전에 측정 가능한 오디오 품질 기준선을 확립하는 것입니다.
+M5-R1은 검증 완료되었습니다. MUSICA는 renderer-neutral 계약, 정확한 Music IR 바인딩, artifact 무결성 검증, 객관적 PCM WAV QA, 결정론 reference adapter를 갖췄습니다. 다음 제한 문제는 **M5-R1 권한 경계를 약화하지 않으면서** 실제로 의미 있는 음질 향상을 제공하는 첫 local renderer를 선정·통합하는 것입니다.
 
-## Why M5-R1 comes first / 왜 M5-R1이 먼저인가
+## First action is selection, not installation / 첫 작업은 설치가 아니라 선정
 
-MUSICA must not become coupled to one synth, DAW, VST host, generative-audio provider, or operating system. Renderer backends may transform validated Music IR into MIDI/audio artifacts, but they must never gain authority to mutate accepted Blueprint/IR/project state.
+M5-R2 SHALL NOT pre-commit to FluidSynth, a SoundFont, a standalone synth, a sampler, a DAW, or a generative-audio service merely because it is familiar or easy to install.
 
-MUSICA는 특정 synth, DAW, VST host, generative-audio provider, 운영체제에 종속되어서는 안 됩니다. Renderer backend는 검증된 Music IR을 MIDI/audio artifact로 변환할 수 있지만, 승인된 Blueprint/IR/project state를 변경할 권한을 가져서는 안 됩니다.
+M5-R2는 익숙하거나 설치가 쉽다는 이유만으로 FluidSynth, 특정 SoundFont, standalone synth, sampler, DAW, generative-audio service를 사전 채택하지 않습니다.
 
-M5-R1 therefore establishes the renderer trust boundary and objective audio QA before M5-R2 adds a higher-fidelity backend.
+The first R2 deliverable is an evidence-backed backend selection decision.
 
-## M5 phase decomposition / M5 단계 분해
+첫 R2 산출물은 근거 기반 backend 선정 결정입니다.
 
-```text
-M5-R1 Renderer Adapter Contract + Audio QA Baseline
-  ↓
-M5-R2 First Higher-Fidelity Local Renderer Adapter
-  ↓
-M5-R3 DAW / interchange interoperability
-  ↓
-M5-R4 Comparative music/audio quality evaluation
-```
+## Selection criteria / 선정 기준
 
-This sequence is intentionally incremental. M5-R1 does **not** attempt a full DAW, VST host, or proprietary audio foundation model.
+Candidate backends SHALL be compared on at least:
 
-## R1 architecture target / R1 아키텍처 목표
+1. **Audio uplift / 음질 향상** — clearly better than the current bounded reference synth for MUSICA use cases.
+2. **Music IR controllability / Music IR 제어 가능성** — deterministic or explicitly classified mapping from notes, timing, velocity, program/timbre, automation or equivalent controls.
+3. **Renderer contract fit / Renderer 계약 적합성** — can be isolated behind M5-R1 Request/Capability/Result/QA contracts.
+4. **Reproducibility semantics / 재현성** — byte-exact, stable-parameter, best-effort, or none must be stated truthfully and tested where possible.
+5. **Windows practicality / Windows 실용성** — suitable for the user's primary Windows environment without fragile manual orchestration.
+6. **Offline/local operation / 로컬 동작** — preferred for the first adapter; network dependence must be explicit if unavoidable.
+7. **Licensing / 라이선스** — engine, preset, SoundFont/sample content, redistribution and commercial-use rights must be separable and documented.
+8. **Install burden / 설치 부담** — avoid large or opaque toolchains where the audio uplift does not justify them.
+9. **Automation surface / 자동화 인터페이스** — CLI, API, process protocol, MIDI/audio I/O or another stable adapter surface.
+10. **Artifact observability / artifact 관측 가능성** — output can be hashed, QA-measured, logged and reproduced or classified accurately.
+11. **Repository hygiene / 레포 위생** — no large model weights, SoundFonts or sample libraries committed to normal Git.
+12. **Future DAW path / 향후 DAW 확장성** — useful stepping stone toward M5-R3 without coupling core authority to a DAW.
+
+## Candidate classes / 후보 범주
+
+At minimum evaluate representative options from:
+
+- SoundFont/FluidSynth-class renderers;
+- locally automatable software synths with a stable non-GUI control surface;
+- sampler/instrument engines suitable for headless or scripted rendering;
+- other local render paths that can consume MIDI/Music IR-derived control without taking project authority.
+
+Candidate names are **PROPOSED candidates, not accepted dependencies**, until source/licensing/current-support evidence is collected.
+
+후보 이름은 source·license·현재 지원 상태 근거를 확보하기 전까지 **PROPOSED 후보일 뿐 승인 dependency가 아닙니다.**
+
+## R2 architecture target / R2 아키텍처 목표
 
 ```text
 Accepted Blueprint Revision
-        ↓ trusted lowering
+        ↓
 Canonical Music IR
+        ↓ exact SHA-256
+RendererRequest v0
         ↓
-Renderer Request
+Renderer Registry
+  ├─ musica-reference-local       [validated baseline]
+  └─ <selected-hifi-local-v0>     [new R2 adapter]
         ↓
-Renderer Adapter Boundary
-  ├─ builtin deterministic reference renderer
-  └─ future external/high-fidelity adapters
+RendererResult v0
+  + AudioQualityReport v0
+  + backend provenance/version
+  + exact artifact hashes
         ↓
-Renderer Result Manifest
-  ├─ MIDI/audio artifacts
-  ├─ backend identity/version
-  ├─ settings + seed
-  ├─ hashes
-  ├─ warnings/errors
-  └─ objective audio QA metrics
-        ↓
-Artifact binding
-        ↓
-.musica Project Bundle
+Comparative evidence
 ```
 
-**Renderer output is evidence/artifact, never canonical musical authority. / Renderer 출력은 근거·artifact이며 공식 음악적 권한이 아닙니다.**
+The new backend is replaceable infrastructure. It cannot mutate Blueprint, Music IR, branches, revisions, locks, or accepted project authority.
 
-## Required contracts / 필수 계약
+새 backend는 교체 가능한 infrastructure이며 Blueprint, Music IR, branch, revision, lock, accepted project 권한을 변경할 수 없습니다.
 
-M5-R1 SHALL define machine-valid contracts for at least:
+## Required R2 proof / R2 필수 증명
 
-1. `RendererRequest v0`
-   - exact Music IR identity/hash,
-   - requested output formats,
-   - renderer ID/configuration,
-   - seed where applicable,
-   - target audio format,
-   - bounded render intent/hints that cannot mutate core music state.
+M5-R2 SHALL prove at least:
 
-2. `RendererCapability v0`
-   - renderer identity/version,
-   - deterministic/stochastic classification,
-   - supported input/output types,
-   - supported sample rates/channels/bit depth where relevant,
-   - external binary/plugin/network requirements,
-   - reproducibility guarantees.
+- selected backend identity/version and source provenance;
+- license/redistribution/commercial-use boundary for the engine and required sound content;
+- installation/runtime requirements without committing large binary assets to Git;
+- a machine-valid RendererCapability declaration;
+- exact Music IR request binding;
+- successful MIDI/audio rendering through the existing registry boundary;
+- objective QA at an appropriate production-oriented format, preferably 44.1 kHz or 48 kHz and stereo if the backend genuinely supports it;
+- renderer output remains artifact-only authority;
+- tamper/path/capability negative behavior remains fail-closed;
+- reproducibility classification is evidenced rather than inferred;
+- comparison against `musica-reference-local` using identical canonical Music IR;
+- M0→M5-R1 regression and M4-R3 real-browser regression remain green.
 
-3. `RendererResult v0`
-   - exact input binding,
-   - artifact paths/roles,
-   - SHA-256 hashes and sizes,
-   - renderer identity/version/settings,
-   - warnings,
-   - deterministic/reproducibility status,
-   - objective QA result.
+## Quality comparison rule / 품질 비교 규칙
 
-4. `AudioQualityReport v0`
-   - format validity,
-   - sample rate,
-   - channels,
-   - sample/bit depth where observable,
-   - duration and target tolerance,
-   - peak level / clipping count or equivalent bounded metric,
-   - silence/non-empty signal check,
-   - DC offset or comparable sanity metric,
-   - loudness metric only if implemented with a reproducible dependency,
-   - PASS/WARN/FAIL policy with explicit thresholds.
+R2 must distinguish three different claims:
 
-## Reference renderer / 기준 renderer
+1. **Signal validity** — objective container/signal QA already covered by M5-R1.
+2. **Renderer capability uplift** — richer/stereo/higher-rate/timbre-capable output that can be objectively demonstrated.
+3. **Perceptual musical quality** — requires separate comparative evaluation; R2 must not silently equate better format specifications with better perceived music.
 
-The existing bounded deterministic local WAV/MIDI path SHALL be adapted behind the new renderer interface rather than rewritten as a new music engine.
+R2는 더 높은 sample rate나 stereo라는 이유만으로 지각적 음악 품질 향상을 자동 주장해서는 안 됩니다.
 
-기존 제한적 deterministic local WAV/MIDI 경로를 새 renderer interface 뒤에 배치하며, 별도의 음악 엔진처럼 재작성하지 않습니다.
+If perceptual comparison is not robustly measured in R2, mark it `UNKNOWN` and leave it for M5-R4.
 
-R1 must prove that the same canonical Music IR passed through the reference adapter still produces valid artifacts and preserves current M0→M4 behavior.
-
-## Trust and authority invariants / 신뢰·권한 불변식
-
-M5-R1 SHALL fail closed if any adapter:
-
-- returns artifacts bound to a different Music IR hash,
-- attempts to replace accepted Blueprint/Music IR state,
-- returns undeclared output formats or unsupported capability claims,
-- omits required artifact hashes/metadata,
-- violates workspace/path confinement,
-- reports success when required audio QA fails,
-- claims deterministic reproducibility without evidence.
-
-Adapters may fail or produce warnings; they may not silently upgrade their authority.
-
-## Audio quality baseline / 오디오 품질 기준선
-
-R1 is a **measurement and contract milestone**, not a claim of professional mastering quality.
-
-At minimum the reference renderer SHALL produce a durable QA report proving:
+## Recommended development sequence / 권장 개발 순서
 
 ```text
-valid audio container
-sample rate / channels recorded
-non-empty signal
-expected duration within explicit tolerance
-no hard digital clipping under the defined baseline policy
-artifact SHA-256 and byte size recorded
-same deterministic request → reproducible result where promised
+repo/state preflight
+→ candidate source + license research
+→ scored backend selection matrix
+→ selection decision record
+→ adapter capability contract
+→ isolated installation/runtime adapter
+→ identical-IR baseline vs high-fidelity render
+→ objective QA + provenance
+→ negative/tamper/reproducibility tests
+→ durable evidence
+→ PR exact-head CI
+→ merge
+→ state-only closure
 ```
 
-If a metric cannot be measured reliably with the selected dependencies, it must be `UNKNOWN` rather than inferred.
+## M5-R2 acceptance gate / M5-R2 수용 게이트
 
-## Required tests / 필수 테스트
+M5-R2 may be promoted only if:
 
-At minimum:
-
-- schema validation for request/capability/result/QA,
-- deterministic reference render reproducibility,
-- exact Music IR hash binding,
-- renderer capability mismatch rejection,
-- unknown renderer rejection,
-- undeclared output rejection,
-- tampered artifact/hash detection,
-- workspace traversal rejection,
-- invalid/corrupt audio detection,
-- clipping/empty-audio negative fixtures,
-- current M0→M4 regression remains green.
-
-## M5-R1 acceptance gate / M5-R1 수용 게이트
-
-M5-R1 may be promoted only when:
-
-1. renderer-neutral contracts are machine-valid,
-2. current deterministic render path is reachable only through the bounded reference adapter in the tested R1 path,
-3. Renderer Result binds exact Music IR + exact artifact hashes,
-4. objective AudioQualityReport is generated and tested,
-5. negative/tamper tests fail closed,
-6. no renderer can mutate canonical Blueprint/IR/project authority,
-7. existing M0→M4-R3 regression remains green,
-8. dedicated durable evidence is generated,
-9. evidence-bearing PR exact head passes required CI and is merged,
-10. state-only closure promotes R1.
+1. backend selection is evidence-backed rather than assumed;
+2. licensing and sound-content provenance are documented sufficiently for the tested use;
+3. the backend is reachable through the M5-R1 renderer boundary;
+4. exact Music IR binding and artifact integrity remain enforced;
+5. the new renderer produces valid audio and its capability uplift over the reference renderer is demonstrated;
+6. reproducibility is classified and tested honestly;
+7. no renderer gains canonical project authority;
+8. large third-party binaries/content are kept outside normal Git;
+9. M0→M5-R1 + M4-R3 regression remains green;
+10. dedicated durable evidence is generated;
+11. evidence-bearing exact PR head passes required CI and is merged;
+12. state-only closure promotes R2.
 
 ## Non-goals / 비목표
 
-M5-R1 does not require or claim:
+M5-R2 does not require or claim:
 
-- professional/mastering audio quality,
-- actual VST/AU plugin hosting,
-- Ableton/Logic/Cubase/FL Studio automation,
-- proprietary foundation audio model training,
-- cloud rendering,
-- live OpenAI provider evidence,
-- human listener preference studies,
-- stem separation,
-- waveform/piano-roll editor implementation.
+- a complete DAW integration;
+- VST/AU hosting inside MUSICA;
+- professional mastering;
+- human listener superiority evidence unless separately executed;
+- proprietary foundation audio-model training;
+- cloud rendering;
+- replacement of the validated reference renderer;
+- committing third-party SoundFonts/sample packs/model weights to the repository.
 
 ## Planned follow-on / 후속 예정
 
-After M5-R1 closure, M5-R2 should select the first higher-fidelity local backend based on reproducibility, licensing, Windows compatibility, automation surface, audio quality, install burden and renderer isolation. Candidate technologies may include a SoundFont/FluidSynth-class backend or another locally automatable synth path, but no candidate is accepted until evaluated against the R1 contract.
+After M5-R2, the intended next bounded phase is **M5-R3 — DAW / interchange interoperability**, followed by **M5-R4 — Comparative music/audio quality evaluation**. This ordering may change only through repository evidence and an explicit decision record.
 
-M5-R1 종료 후 M5-R2에서 재현성, 라이선스, Windows 호환성, 자동화 인터페이스, 음질, 설치 부담, renderer 격리 기준으로 첫 고품질 local backend를 선정합니다. 후보 기술은 R1 계약에 대한 평가 전까지 승인된 것으로 간주하지 않습니다.
+M5-R2 이후 예정된 제한 단계는 **M5-R3 — DAW / interchange interoperability**, 그 다음은 **M5-R4 — Comparative music/audio quality evaluation**입니다. 순서 변경은 레포 근거와 명시적 decision record를 통해서만 수행합니다.
 
 ## Development discipline / 개발 규율
 
 ```text
 Issue
-→ branch from M4-R3 closure main
-→ R1 acceptance contract
-→ renderer schemas + adapter boundary
-→ reference adapter migration
-→ audio QA analyzer
-→ negative/tamper tests
-→ durable evidence
+→ branch from M5-R1 closure main
+→ evidence-backed backend selection
+→ bounded implementation
+→ tests + evidence
 → PR
 → exact-head CI
 → merge
-→ M5-R1 state-only closure
+→ state-only closure
 ```
 
-Repository evidence remains authoritative over conversation or model memory. / 레포 근거는 대화·모델 기억보다 우선합니다.
+**Repository evidence remains authoritative over conversation or model memory. / 레포 근거는 대화·모델 기억보다 우선합니다.**

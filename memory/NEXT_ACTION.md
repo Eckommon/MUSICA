@@ -2,176 +2,281 @@
 
 ## Exact resume point / 정확한 재개점
 
-**M5-R3 — DAW / INTERCHANGE INTEROPERABILITY v0 / M5-R3 — DAW·교환 상호운용성 v0**
+**M5-R3 IMPLEMENTATION — BOUNDED DAWPROJECT 1.0 ROUND-TRIP v0 / M5-R3 구현 — 제한 DAWproject 1.0 왕복 v0**
 
-M5-R2 is validated within its bounded claim after real Windows FluidSynth 2.6.0 + externally provisioned FluidR3_GM 3.1 evidence. MUSICA now has a renderer-neutral execution boundary and two renderer paths, but it still lacks a validated project/interchange bridge to external professional music-production tools.
+M5-R2 remains `VALIDATED — BOUNDED`. M5-R3 selection design has now selected **DAWproject 1.0** as the first bounded project-interchange implementation target, subject to merge of the selection package and subsequent executable proof.
 
-M5-R2는 실제 Windows FluidSynth 2.6.0 + 외부 provision FluidR3_GM 3.1 근거를 통해 제한 범위에서 검증되었습니다. MUSICA는 renderer-neutral 실행 경계와 두 renderer 경로를 갖췄지만 외부 전문 음악 제작 도구와 연결하는 검증된 project/interchange bridge는 아직 없습니다.
+M5-R2는 계속 `VALIDATED — BOUNDED`입니다. M5-R3 선정 설계는 **DAWproject 1.0**을 첫 제한 project-interchange 구현 대상으로 선정했습니다. 단, 이 선정 패키지의 병합과 이후 실행 검증이 필요합니다.
 
-## First action is interchange selection, not DAW coupling / 첫 작업은 교환 형식 선정이며 DAW 직접 결합이 아님
+Selection authority / 선정 권위:
 
-M5-R3 SHALL NOT pre-commit MUSICA Core to Ableton Live, REAPER, Cubase, Studio One, Bitwig, Logic, Pro Tools, or another specific DAW merely because an application-specific file/API is convenient.
+- `docs/M5_R3_INTERCHANGE_SELECTION.md`
+- `docs/M5_R3_ROUNDTRIP_AUTHORITY.md`
+- `docs/M5_R3_ACCEPTANCE.md`
+- Issue `#42`
 
-M5-R3는 특정 DAW의 파일/API가 편리하다는 이유만으로 MUSICA Core를 Ableton Live, REAPER, Cubase, Studio One, Bitwig, Logic, Pro Tools 등에 사전 결합하지 않습니다.
+## Do not reopen selection without contradictory evidence / 반대 근거 없이는 선정 재개 금지
 
-The first R3 deliverable is an evidence-backed interchange-target selection and a round-trip authority contract.
+The next task is implementation, not another broad survey of DAWs or interchange formats.
 
-첫 R3 산출물은 **근거 기반 interchange target 선정 + round-trip 권한 계약**입니다.
+다음 작업은 구현이며 DAW/교환 형식에 대한 광범위한 재조사가 아닙니다.
 
-## Current candidate landscape / 현재 후보 지형
+Reopen selection only if implementation evidence triggers one of the explicit `NO_SELECTION`/reopen conditions in `docs/M5_R3_INTERCHANGE_SELECTION.md`.
 
-The following are **PROPOSED candidates, not accepted dependencies**:
-
-1. **DAWproject 1.0** — leading project-interchange candidate because its published purpose is open DAW-to-DAW user-data exchange and its schema can represent musical time, tracks/channels, notes, audio, automation and plug-in state. Current upstream documentation lists support across multiple DAWs. It must still be validated against MUSICA's exact bounded round-trip needs.
-2. **Standard MIDI File (SMF)** — established sequencing interchange and already close to MUSICA's note/event lowering, but insufficient by itself for rich project/audio/automation interchange.
-3. **MusicXML 4.0** — open digital sheet-music interchange with broad notation semantics, useful as a possible notation-focused complementary target rather than an assumed DAW-project format.
-4. **AAF** — rich cross-platform multimedia/post-production interchange, but its center of gravity is audio/video authoring rather than musical-time composition; evaluate as a contrast or later audio-post bridge rather than assume it is the first music-production target.
-5. **Application-specific adapters** such as REAPER project/ReaScript or another DAW API/file format — may be useful later, but only behind a generic interchange boundary and only if a concrete gap cannot be solved cleanly by the selected open format.
-
-위 후보는 현재 조사 대상일 뿐 승인 dependency가 아닙니다. 특히 **DAWproject가 선두 후보라는 사실과 M5-R3의 공식 선정은 동일하지 않습니다.**
-
-## Selection criteria / 선정 기준
-
-Candidate interchange targets SHALL be compared on at least:
-
-1. **Musical semantic coverage / 음악 의미 보존** — tempo, meter, musical time, tracks, notes/events, velocity/expression and section/timeline semantics as applicable.
-2. **Production semantic coverage / 제작 의미 보존** — audio clips, automation, mixer/channel information, devices/plugins or clearly declared unsupported areas.
-3. **Round-trip inspectability / 왕복 검사 가능성** — export → external/editable representation → import can be parsed into a structured candidate and diff rather than opaque overwrite.
-4. **Authority fit / 권한 적합성** — imported external data cannot directly mutate accepted `.musica`; it must enter as candidate state subject to lock/constraint validation and explicit Accept.
-5. **Open specification / 공개 명세** — stable, inspectable specification/schema preferred over proprietary reverse engineering.
-6. **Cross-DAW reach / DAW 범용성** — multiple actively supported applications preferred to one-vendor lock-in.
-7. **Deterministic serialization / 결정론 직렬화** — canonical or normalizable representation suitable for hashing, diffing and evidence.
-8. **Automation/tooling surface / 자동화·도구 표면** — feasible Python/native parsing and generation without GUI automation as the only interface.
-9. **Licensing / 라이선스** — specification/library use compatible with MUSICA and clearly documented.
-10. **Windows practicality / Windows 실용성** — testable in the user's primary environment and CI where feasible.
-11. **Repository hygiene / 레포 위생** — no large DAW projects/media/plugin binaries in normal Git; small fixtures and manifests only.
-12. **Future extensibility / 향후 확장성** — supports M5-R3 without making the interchange format itself canonical MUSICA authority.
-
-## Round-trip authority target / 왕복 권한 목표
+## Implementation architecture / 구현 아키텍처
 
 ```text
 Accepted .musica Revision
         ↓
-Canonical Music IR / Blueprint-derived state
+Accepted Blueprint
+        ↓ trusted lowering
+Canonical Music IR
+        ↓ exact source hash
+M5-R3 DAWproject Export Adapter
         ↓
-Interchange Export Adapter
+.dawproject ZIP
+  project.xml
+  metadata.xml when used
+  bounded files only
+        ↓ optional external DAW/tool edit
+Imported .dawproject
         ↓
-External Interchange Artifact
-        ↓ optional external DAW/tool editing
-Imported External Artifact
+Safe ZIP/XML Parser + XSD Validation
         ↓
-Interchange Parser / Import Adapter
+Normalized Bounded DAWproject Model
         ↓
-NON-CANONICAL Candidate
+NON-CANONICAL Import Candidate
   + provenance
   + structured diff
-  + unsupported/loss report
+  + loss report
         ↓
-HARD lock / constraint validation
+HARD Lock / Constraint Validation
         ↓ explicit user Accept only
-New accepted .musica Revision
+M2 Project Engine
+        ↓
+New Accepted Revision
 ```
 
-**No imported DAW/interchange file may directly replace the current accepted revision, branch ref, Blueprint, locks or canonical Music IR.**
+**Imported DAWproject state never directly advances an M2 ref or accepted revision.**
 
-**외부 DAW/interchange 파일은 현재 accepted revision, branch ref, Blueprint, lock 또는 canonical Music IR을 직접 대체할 수 없습니다.**
+**Import된 DAWproject 상태는 M2 ref 또는 accepted revision을 직접 전진시키지 않습니다.**
 
-## Required R3 design proof / R3 필수 설계 증명
+## R3-v0 bounded semantic target / R3-v0 제한 의미 목표
 
-Before implementation, M5-R3 SHALL create and accept:
+Implementation SHALL prove at least:
 
-- a bilingual selection matrix with explicit source evidence and UNKNOWNs;
-- one selected bounded first interchange target or `NO_SELECTION`;
-- an interchange authority/round-trip contract;
-- a loss model distinguishing `PRESERVED`, `TRANSFORMED`, `DROPPED`, `UNSUPPORTED`, and `UNKNOWN` semantics;
-- provenance requirements for source artifact, exporter/importer versions, hashes and normalization;
-- an explicit map between selected interchange entities and MUSICA Blueprint/Music IR entities;
-- fixture policy that keeps large audio/plugin/project content out of normal Git.
+1. tempo;
+2. supported meter;
+3. ordered tracks;
+4. note pitch;
+5. note start;
+6. note duration;
+7. note velocity;
+8. traceable source `track_id` / `part_id` mapping;
+9. exact source revision/Music IR and output artifact provenance.
 
-## Required implementation proof / 구현 필수 증명
+Other semantics begin as `UNSUPPORTED` or `UNKNOWN` unless implementation evidence explicitly promotes them.
 
-If one target clears the selection gate, M5-R3 SHALL prove at least:
+다른 의미는 구현 근거로 명시적으로 승격되기 전까지 `UNSUPPORTED` 또는 `UNKNOWN`입니다.
 
-1. machine-readable export from one accepted MUSICA revision;
-2. deterministic or explicitly normalized serialization with artifact SHA-256;
-3. selected format/schema validation where an authoritative schema exists;
-4. preservation of the selected bounded set of tempo/meter/timeline/track/note/event semantics;
-5. import produces a **non-canonical candidate**, never an accepted revision directly;
-6. structured diff between current accepted MUSICA state and imported candidate;
-7. explicit loss/unsupported report for fields outside the bounded mapping;
-8. HARD locks/constraints remain authoritative over imported changes;
-9. explicit Accept is required before M2 creates a new accepted revision;
-10. tampered, malformed, traversal-containing or structurally invalid interchange artifacts fail closed;
-11. provenance records exact input/output hashes and adapter/spec version;
-12. round-trip test for the selected bounded fixture set;
-13. at least one real external-tool/DAW interoperability smoke test if practical and legally/test-environment feasible; otherwise mark external-application execution `NOT VALIDATED` rather than infer it;
-14. M0→M5-R2 regressions and M4-R3 real-browser regression remain green;
-15. durable evidence, evidence-bearing exact-head CI, merge and state-only closure.
+## Required implementation components / 필수 구현 구성요소
 
-## Fidelity rule / fidelity 규칙
-
-R3 must distinguish:
-
-1. **Syntactic validity** — the artifact conforms to the selected format/container/schema.
-2. **Semantic preservation** — mapped musical/production concepts survive export/import according to explicit comparison.
-3. **External application compatibility** — a real DAW/tool successfully imports/exports the bounded artifact.
-4. **Perfect project fidelity** — every DAW-specific device/plugin/state survives unchanged.
-
-Passing #1 does not prove #2; passing #2 does not automatically prove #3; M5-R3 does **not** require or claim #4.
-
-#1 통과는 #2를 자동 증명하지 않으며 #2 통과도 #3을 자동 증명하지 않습니다. M5-R3는 모든 DAW 고유 상태의 완전 왕복 보존(#4)을 요구하거나 주장하지 않습니다.
-
-## Recommended development sequence / 권장 개발 순서
+Create a fresh implementation branch from the merged M5-R3 selection main and add a bounded package, preferably along these responsibility lines:
 
 ```text
-repo/state preflight
-→ current official spec/support research
-→ candidate selection matrix
-→ selection decision / NO_SELECTION
-→ round-trip authority + loss model
-→ bounded export schema/mapping
-→ import-as-candidate path
-→ structured diff + lock validation
-→ deterministic normalization/hashes
-→ round-trip fixtures/tests
-→ optional real external-DAW smoke evidence
-→ durable evidence
-→ exact-head CI
+musica/interchange/
+  __init__.py
+  dawproject.py          # public bounded export/import surface
+  dawproject_model.py    # normalized internal interchange model
+  dawproject_xml.py      # deterministic XML lowering/parsing
+  dawproject_zip.py      # deterministic/safe ZIP container handling
+  loss.py                # five-state loss taxonomy/report
+  candidate.py           # non-canonical import candidate
+```
+
+Exact filenames may change if repository structure gives a better fit, but responsibility boundaries SHALL remain inspectable.
+
+### Machine contracts / 기계 계약
+
+Add machine-readable contracts for at least:
+
+- interchange provenance/result;
+- import candidate;
+- loss report;
+- conflict/acceptance status if existing M0/M2 contracts cannot carry the evidence cleanly.
+
+Prefer JSON Schema 2020-12 when a new repository contract is needed, consistent with existing MUSICA contracts.
+
+### DAWproject source/XSD policy / source·XSD 정책
+
+Implementation SHALL pin the exact upstream DAWproject source revision used for evidence.
+
+If upstream XSD files are vendored:
+
+- preserve their license/source notice;
+- record source commit/hash;
+- keep them under a clearly third-party/spec location;
+- do not silently modify the authoritative XSD.
+
+If not vendored, tests SHALL still have a reproducible authoritative validation path without network dependency during normal test execution.
+
+## Deterministic export policy / 결정론 export 정책
+
+MUSICA SHALL own deterministic output for its own exporter. At minimum define and test:
+
+- stable generated XML IDs;
+- stable element ordering;
+- stable numeric formatting;
+- UTF-8 encoding;
+- stable ZIP member ordering;
+- stable ZIP timestamps/metadata or another normalized ZIP policy;
+- exact SHA-256 for `.dawproject` and normalized critical XML;
+- repeated identical export equality under the pinned implementation.
+
+Do **not** claim arbitrary external DAWs will serialize byte-identically.
+
+## Tick ↔ beat policy / tick↔beat 정책
+
+Music IR uses integer ticks + PPQ. DAWproject supports musical beat time.
+
+Implementation SHALL define one explicit reversible bounded conversion policy, for example rational/decimal beat values derived from `tick / ppq`, with deterministic formatting and tested inverse comparison.
+
+Do not use uncontrolled binary floating-point string output as authority.
+
+## Velocity policy / velocity 정책
+
+Music IR velocity is integer `1..127`; DAWproject note velocity uses a normalized value.
+
+Implementation SHALL define:
+
+- exact forward conversion;
+- canonical numeric serialization;
+- inverse/comparison tolerance;
+- edge-case tests for minimum, middle and maximum values.
+
+## Loss-report policy / 손실 보고 정책
+
+Use exactly:
+
+```text
+PRESERVED
+TRANSFORMED
+DROPPED
+UNSUPPORTED
+UNKNOWN
+```
+
+Known unsupported Blueprint semantics, locks/constraints-as-interchange-data, proprietary plug-in/device state and any unimplemented automation must be visible in the report, not silently discarded.
+
+## Import-as-candidate policy / candidate import 정책
+
+A valid import SHALL return a non-canonical candidate containing:
+
+- candidate ID;
+- source artifact SHA-256;
+- DAWproject version;
+- source application name/version when present;
+- importer version;
+- normalized parsed state;
+- structured diff against current accepted state;
+- loss report;
+- lock/constraint validation result;
+- acceptance status initially `PENDING`.
+
+Only an explicit Accept action may delegate a commit to M2.
+
+## Security / 보안
+
+Fail closed for at least:
+
+- malformed ZIP;
+- malformed XML;
+- missing `project.xml`;
+- schema-invalid bounded project;
+- absolute archive paths;
+- `../` traversal or normalized escape;
+- duplicate critical entries;
+- unsupported DAWproject version;
+- artifact/hash tamper where binding applies;
+- configured decompression/size-limit violations;
+- imported changes conflicting with HARD locks.
+
+No negative case may mutate accepted project state.
+
+## Test fixture / 테스트 fixture
+
+Use one small canonical MUSICA fixture first, preferably the existing deterministic dark-electronic fixture because its Music IR and hashes are already exercised by prior milestones.
+
+The DAWproject fixture SHALL remain small and text-inspectable after unzip. Do not add large audio or proprietary assets.
+
+## External DAW smoke / 실제 DAW smoke
+
+After internal format + semantic round-trip passes, attempt at least one real external-tool/DAW smoke test **only if practical in the available environment**.
+
+If unavailable:
+
+```text
+EXTERNAL_APP_SMOKE = NOT VALIDATED
+```
+
+Do not infer a MUSICA-tested compatibility result from DAWproject's upstream support list.
+
+## M5-R3 acceptance gate / M5-R3 수용 게이트
+
+`docs/M5_R3_ACCEPTANCE.md` is normative. In summary, M5-R3 cannot close until:
+
+- exact source/spec provenance is pinned;
+- deterministic bounded export is proven;
+- DAWproject container/XSD validity is proven;
+- import remains non-canonical;
+- bounded semantic round-trip is proven;
+- machine-readable loss report is complete;
+- HARD-lock conflict fails closed;
+- a valid candidate requires explicit Accept before M2 commit;
+- malformed/tampered/traversal cases fail closed;
+- exact hashes/provenance are durable;
+- repository hygiene is preserved;
+- Python 3.11/3.12, prior evidence chain, Chromium and Windows M5-R2 renderer regressions remain green;
+- durable evidence exists on the evidence-bearing exact PR head.
+
+## Recommended execution sequence / 권장 실행 순서
+
+```text
+selection PR exact-head CI
+→ merge selection package
+→ create M5-R3 implementation branch from new main
+→ pin DAWproject upstream source/XSD
+→ implement normalized bounded model
+→ deterministic exporter
+→ safe parser + XSD validation
+→ non-canonical import candidate
+→ structured diff + loss report
+→ lock/constraint gate + explicit Accept path
+→ negative/security tests
+→ deterministic round-trip evidence
+→ optional external DAW smoke
+→ durable M5-R3 evidence
+→ evidence-bearing exact-head CI
 → merge
+→ close Issue #42
 → state-only closure
 ```
 
 ## Non-goals / 비목표
 
-M5-R3 does not require or claim:
+M5-R3-v0 does not require or claim:
 
-- direct in-process hosting of a DAW;
-- VST/AU/CLAP plugin hosting inside MUSICA;
-- support for every DAW or every interchange format;
-- perfect preservation of proprietary plug-in/device state;
-- bypassing user Accept after external edits;
+- every DAW;
+- every DAWproject entity;
+- full mixer/device/plug-in fidelity;
+- VST/AU/CLAP hosting;
+- perfect arbitrary external-DAW byte reproducibility;
 - cloud collaboration;
 - perceptual audio-quality superiority;
-- replacement of MUSICA's Blueprint/Music IR with a third-party interchange schema.
+- replacement of Music Blueprint/Music IR with DAWproject.
 
-## Planned follow-on / 후속 예정
+## Follow-on / 후속
 
-After M5-R3, the intended next bounded phase remains **M5-R4 — Comparative Music/Audio Quality Evaluation**. M5-R4 should measure the perceptual and use-case quality gap between renderers without conflating format capability with listener preference.
-
-M5-R3 이후 예정된 제한 단계는 **M5-R4 — Comparative Music/Audio Quality Evaluation / 음악·오디오 품질 비교 평가**입니다. M5-R4는 format capability와 청감 선호를 혼동하지 않고 renderer 간 지각적/use-case 품질 차이를 평가해야 합니다.
-
-## Development discipline / 개발 규율
-
-```text
-Issue
-→ selection branch from M5-R2 closure main
-→ evidence-backed interchange selection
-→ bounded implementation branch
-→ tests + evidence
-→ PR
-→ exact-head CI
-→ merge
-→ state-only closure
-```
+After M5-R3 closure, the intended next bounded milestone remains **M5-R4 — Comparative Music/Audio Quality Evaluation** unless repository evidence explicitly changes the program order.
 
 **Repository evidence remains authoritative over conversation or model memory. / 레포 근거는 대화·모델 기억보다 우선합니다.**

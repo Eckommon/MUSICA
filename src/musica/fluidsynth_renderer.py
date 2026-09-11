@@ -114,7 +114,7 @@ def _normalize_wav_duration(
 ) -> dict[str, Any]:
     """Deterministically trim renderer tail to the explicit MUSICA duration contract.
 
-    The raw engine output is kept outside RendererResult artifacts but its hash and
+    The raw engine output is not a canonical RendererResult artifact. Its hash and
     duration are recorded in provenance. Underruns fail closed; MUSICA never pads or
     invents audio that FluidSynth did not render.
     """
@@ -353,6 +353,10 @@ class FluidSynthRendererAdapter:
                     f"signal={qa_report['signal']}; "
                     f"duration={qa_report['duration']}"
                 )
+            try:
+                raw_wav_path.unlink()
+            except OSError as exc:
+                raise RendererError("FluidSynth raw WAV cleanup failed") from exc
             artifacts.append(_artifact("wav", wav_path, workspace_root))
 
         provenance = {

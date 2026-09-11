@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/renderer-result-v0.schema.json",
+  "title": "MUSICA RendererResult v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["result_version", "request_id", "music_ir_sha256", "renderer", "status", "artifacts", "warnings", "reproducibility", "audio_quality"],
+  "properties": {
+    "result_version": {"const": "0"},
+    "request_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "music_ir_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "renderer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["renderer_id", "renderer_version"],
+      "properties": {
+        "renderer_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "renderer_version": {"type": "string", "minLength": 1, "maxLength": 64}
+      }
+    },
+    "status": {"enum": ["SUCCESS", "FAILURE"]},
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "path", "sha256", "size_bytes"],
+        "properties": {
+          "role": {"enum": ["midi", "wav"]},
+          "path": {"type": "string", "minLength": 1, "maxLength": 512},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "size_bytes": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "warnings": {"type": "array", "maxItems": 64, "items": {"type": "string", "maxLength": 512}},
+    "reproducibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim", "verified"],
+      "properties": {
+        "claim": {"enum": ["byte_exact", "stable_parameters", "best_effort", "none"]},
+        "verified": {"type": "boolean"}
+      }
+    },
+    "audio_quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "report_sha256"],
+      "properties": {
+        "status": {"enum": ["PASS", "WARN", "FAIL", "UNKNOWN", "NOT_REQUESTED"]},
+        "report_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  }
+}

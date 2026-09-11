@@ -2,215 +2,209 @@
 
 ## Exact resume point / 정확한 재개점
 
-**M4-R3 — USABLE MVP / REAL-BROWSER E2E ACCEPTANCE v0 / M4-R3 — 사용 가능한 MVP / 실제 브라우저 E2E 수용 v0**
+**M5-R1 — RENDERER ADAPTER CONTRACT & AUDIO QUALITY BASELINE v0 / M5-R1 — 렌더러 어댑터 계약 및 오디오 품질 기준선 v0**
 
-M4-R2 is validated. The next task is no longer to prove that HTML, HTTP endpoints, or packaged assets exist. M4-R3 must prove that the merged Studio can be operated through an actual browser interaction path as a usable local product while preserving all canonical authority rules.
+M4-R3 is validated. The next problem is no longer whether MUSICA can be operated as a Browser Studio. The next bounded problem is to separate musical authority from rendering implementation and establish a measurable audio-quality baseline before integrating higher-fidelity or DAW-oriented backends.
 
-M4-R2는 검증 완료되었습니다. 다음 작업은 HTML, HTTP endpoint, packaged asset의 존재를 다시 증명하는 것이 아닙니다. M4-R3는 병합된 Studio가 실제 browser interaction 경로에서 로컬 제품으로 조작 가능하며 모든 공식 권한 규칙을 보존함을 증명해야 합니다.
+M4-R3는 검증 완료되었습니다. 이제 핵심 문제는 Browser Studio 조작 가능 여부가 아닙니다. 다음 제한 문제는 음악적 권한과 renderer 구현을 분리하고, 고품질 renderer 또는 DAW backend를 통합하기 전에 측정 가능한 오디오 품질 기준선을 확립하는 것입니다.
 
-## Product acceptance objective / 제품 수용 목표
+## Why M5-R1 comes first / 왜 M5-R1이 먼저인가
 
-A clean browser-driven workflow SHALL prove that a user can:
+MUSICA must not become coupled to one synth, DAW, VST host, generative-audio provider, or operating system. Renderer backends may transform validated Music IR into MIDI/audio artifacts, but they must never gain authority to mutate accepted Blueprint/IR/project state.
 
-1. launch/open the local Studio,
-2. create a project from natural-language intent,
-3. hear accepted audio,
-4. move through `Direct → Shape → Inspect → Code`,
-5. create a semantic preview from visible controls,
-6. observe `PREVIEW · NOT ACCEPTED`,
-7. hear pending preview audio while canonical head remains unchanged,
-8. inspect exact diff and HARD locks,
-9. explicitly Accept the preview and observe revision advancement,
-10. create and checkout a branch,
-11. inspect accepted revision history,
-12. export canonical project state,
-13. inspect read-only Code/session JSON,
-14. restart/reopen the Studio and recover the durable accepted project state.
+MUSICA는 특정 synth, DAW, VST host, generative-audio provider, 운영체제에 종속되어서는 안 됩니다. Renderer backend는 검증된 Music IR을 MIDI/audio artifact로 변환할 수 있지만, 승인된 Blueprint/IR/project state를 변경할 권한을 가져서는 안 됩니다.
 
-실제 browser-driven workflow에서 위 전체 경로가 개발자 명령을 사용하지 않는 UI interaction으로 증명되어야 합니다.
+M5-R1 therefore establishes the renderer trust boundary and objective audio QA before M5-R2 adds a higher-fidelity backend.
 
-## R3 evidence classes / R3 근거 등급
-
-M4-R3 SHALL distinguish evidence classes instead of collapsing them:
+## M5 phase decomposition / M5 단계 분해
 
 ```text
-STATIC_UI_EVIDENCE          — packaged HTML/CSS/JS contract
-HTTP_INTEGRATION_EVIDENCE   — same-origin API/media path
-REAL_BROWSER_E2E_EVIDENCE   — actual browser automation interactions
-HUMAN_USABILITY_EVIDENCE    — future optional human study; not required for R3 v0
+M5-R1 Renderer Adapter Contract + Audio QA Baseline
+  ↓
+M5-R2 First Higher-Fidelity Local Renderer Adapter
+  ↓
+M5-R3 DAW / interchange interoperability
+  ↓
+M5-R4 Comparative music/audio quality evaluation
 ```
 
-R2 already validates the first two. R3 must add `REAL_BROWSER_E2E_EVIDENCE`.
+This sequence is intentionally incremental. M5-R1 does **not** attempt a full DAW, VST host, or proprietary audio foundation model.
 
-R2는 앞의 두 등급을 이미 검증했습니다. R3는 `REAL_BROWSER_E2E_EVIDENCE`를 추가해야 합니다.
-
-## Automation direction / 자동화 방향
-
-Prefer **Playwright + Chromium** for R3 because it can exercise the real packaged browser surface, media element state, visible controls, DOM states, accessibility-oriented selectors and restart/reopen flows in CI.
-
-R3에서는 **Playwright + Chromium**을 우선합니다. 실제 packaged browser surface, media element, visible control, DOM state, accessibility selector, restart/reopen flow를 CI에서 검증하기 적합하기 때문입니다.
-
-The browser automation layer MUST remain test/evidence infrastructure. It must not become a runtime dependency of MUSICA Studio.
-
-Browser automation은 test/evidence infrastructure로만 유지하며 MUSICA Studio runtime dependency가 되어서는 안 됩니다.
-
-## Required browser E2E scenarios / 필수 Browser E2E 시나리오
-
-### E2E-01 Create and audition / 생성·청취
+## R1 architecture target / R1 아키텍처 목표
 
 ```text
-open /
-→ enter project name + natural-language prompt
-→ Generate
-→ Accepted state appears
-→ audio element receives accepted WAV source
-→ project/head/integrity visible
-```
-
-### E2E-02 Shape → Preview authority / Shape → Preview 권한
-
-```text
-open Shape
-→ change tension control
-→ choose supported scope
-→ Preview Changes
-→ PREVIEW · NOT ACCEPTED visible
-→ preview diff visible
-→ HARD locks visible
-→ preview audio available
-→ displayed accepted head remains parent revision
-```
-
-### E2E-03 Explicit Accept / 명시적 승인
-
-```text
-open Inspect
-→ click Accept
-→ pending preview disappears
-→ state badge becomes ACCEPTED
-→ head revision changes to candidate revision
-→ accepted audio remains available
-```
-
-### E2E-04 Branch/history/export / branch·history·export
-
-```text
-create branch
-→ checkout branch
-→ history visible
-→ export
-→ export result includes canonical path/hash/size
-```
-
-### E2E-05 Code view / Code 화면
-
-```text
-open Code
-→ validated read-only session JSON visible
-→ current branch/head match server-backed UI state
-→ no raw mutation control exists
-```
-
-### E2E-06 Restart/reopen / 재시작·재열기
-
-```text
-stop first Studio server/session
-→ start a fresh Studio service on same workspace
-→ browser opens Studio
-→ Open existing project
-→ durable branch/head/integrity restored
-→ accepted audio available
-```
-
-### E2E-07 Negative UI authority / UI 권한 부정 증명
-
-- preview must never silently become accepted,
-- branch/export actions must not bypass pending-preview conflicts,
-- invalid project/session inputs must produce visible errors rather than hidden mutation,
-- external network must remain unnecessary in fixture mode.
-
-## R3 architecture / R3 아키텍처
-
-```text
-Playwright Chromium  [test/evidence only]
-        ↓ visible browser actions
-Browser Studio       [runtime UI]
-        ↓ same-origin loopback
-validated M4-R1 service
+Accepted Blueprint Revision
+        ↓ trusted lowering
+Canonical Music IR
         ↓
-M3/M1/M0 trusted core
+Renderer Request
         ↓
-PREVIEW — non-canonical
-        ↓ explicit Accept only
-M2 Project Engine
+Renderer Adapter Boundary
+  ├─ builtin deterministic reference renderer
+  └─ future external/high-fidelity adapters
+        ↓
+Renderer Result Manifest
+  ├─ MIDI/audio artifacts
+  ├─ backend identity/version
+  ├─ settings + seed
+  ├─ hashes
+  ├─ warnings/errors
+  └─ objective audio QA metrics
+        ↓
+Artifact binding
+        ↓
+.musica Project Bundle
 ```
 
-## CI strategy / CI 전략
+**Renderer output is evidence/artifact, never canonical musical authority. / Renderer 출력은 근거·artifact이며 공식 음악적 권한이 아닙니다.**
 
-R3 SHOULD add a dedicated browser-E2E job rather than forcing Chromium installation into both existing Python matrix jobs.
+## Required contracts / 필수 계약
 
-Recommended split / 권장 분리:
+M5-R1 SHALL define machine-valid contracts for at least:
+
+1. `RendererRequest v0`
+   - exact Music IR identity/hash,
+   - requested output formats,
+   - renderer ID/configuration,
+   - seed where applicable,
+   - target audio format,
+   - bounded render intent/hints that cannot mutate core music state.
+
+2. `RendererCapability v0`
+   - renderer identity/version,
+   - deterministic/stochastic classification,
+   - supported input/output types,
+   - supported sample rates/channels/bit depth where relevant,
+   - external binary/plugin/network requirements,
+   - reproducibility guarantees.
+
+3. `RendererResult v0`
+   - exact input binding,
+   - artifact paths/roles,
+   - SHA-256 hashes and sizes,
+   - renderer identity/version/settings,
+   - warnings,
+   - deterministic/reproducibility status,
+   - objective QA result.
+
+4. `AudioQualityReport v0`
+   - format validity,
+   - sample rate,
+   - channels,
+   - sample/bit depth where observable,
+   - duration and target tolerance,
+   - peak level / clipping count or equivalent bounded metric,
+   - silence/non-empty signal check,
+   - DC offset or comparable sanity metric,
+   - loudness metric only if implemented with a reproducible dependency,
+   - PASS/WARN/FAIL policy with explicit thresholds.
+
+## Reference renderer / 기준 renderer
+
+The existing bounded deterministic local WAV/MIDI path SHALL be adapted behind the new renderer interface rather than rewritten as a new music engine.
+
+기존 제한적 deterministic local WAV/MIDI 경로를 새 renderer interface 뒤에 배치하며, 별도의 음악 엔진처럼 재작성하지 않습니다.
+
+R1 must prove that the same canonical Music IR passed through the reference adapter still produces valid artifacts and preserves current M0→M4 behavior.
+
+## Trust and authority invariants / 신뢰·권한 불변식
+
+M5-R1 SHALL fail closed if any adapter:
+
+- returns artifacts bound to a different Music IR hash,
+- attempts to replace accepted Blueprint/Music IR state,
+- returns undeclared output formats or unsupported capability claims,
+- omits required artifact hashes/metadata,
+- violates workspace/path confinement,
+- reports success when required audio QA fails,
+- claims deterministic reproducibility without evidence.
+
+Adapters may fail or produce warnings; they may not silently upgrade their authority.
+
+## Audio quality baseline / 오디오 품질 기준선
+
+R1 is a **measurement and contract milestone**, not a claim of professional mastering quality.
+
+At minimum the reference renderer SHALL produce a durable QA report proving:
 
 ```text
-contracts-and-runtime (Python 3.11)
-contracts-and-runtime (Python 3.12)
-        +
-browser-e2e (Python 3.12 + Chromium)
+valid audio container
+sample rate / channels recorded
+non-empty signal
+expected duration within explicit tolerance
+no hard digital clipping under the defined baseline policy
+artifact SHA-256 and byte size recorded
+same deterministic request → reproducible result where promised
 ```
 
-The existing Python matrix remains the core regression gate. Browser-specific dependencies live only in the dedicated E2E job.
+If a metric cannot be measured reliably with the selected dependencies, it must be `UNKNOWN` rather than inferred.
 
-기존 Python matrix는 core regression gate로 유지하고 browser 전용 dependency는 별도 E2E job에만 둡니다.
+## Required tests / 필수 테스트
 
-## R3 acceptance gate / R3 수용 게이트
+At minimum:
 
-M4-R3 may be promoted only when:
+- schema validation for request/capability/result/QA,
+- deterministic reference render reproducibility,
+- exact Music IR hash binding,
+- renderer capability mismatch rejection,
+- unknown renderer rejection,
+- undeclared output rejection,
+- tampered artifact/hash detection,
+- workspace traversal rejection,
+- invalid/corrupt audio detection,
+- clipping/empty-audio negative fixtures,
+- current M0→M4 regression remains green.
 
-1. real Chromium E2E scenarios pass in CI,
-2. M0→M4-R2 core regression remains green,
-3. R3 canonical evidence records screenshots/DOM assertions/session evidence without leaking secrets,
-4. browser automation proves Preview ≠ Accepted and explicit Accept is required,
-5. restart/reopen durability is proven,
-6. exact evidence-bearing PR head passes all required jobs,
-7. that exact head alone is merged and promoted through state-only closure.
+## M5-R1 acceptance gate / M5-R1 수용 게이트
+
+M5-R1 may be promoted only when:
+
+1. renderer-neutral contracts are machine-valid,
+2. current deterministic render path is reachable only through the bounded reference adapter in the tested R1 path,
+3. Renderer Result binds exact Music IR + exact artifact hashes,
+4. objective AudioQualityReport is generated and tested,
+5. negative/tamper tests fail closed,
+6. no renderer can mutate canonical Blueprint/IR/project authority,
+7. existing M0→M4-R3 regression remains green,
+8. dedicated durable evidence is generated,
+9. evidence-bearing PR exact head passes required CI and is merged,
+10. state-only closure promotes R1.
 
 ## Non-goals / 비목표
 
-M4-R3 v0 does not require:
+M5-R1 does not require or claim:
 
-- human usability-study recruitment,
-- pixel-perfect visual-design validation,
-- production/mastering audio quality,
-- waveform/piano-roll editing,
-- desktop installer/signing,
-- cloud accounts/collaboration,
-- live OpenAI evidence,
-- professional DAW/VST/sampler interoperability.
+- professional/mastering audio quality,
+- actual VST/AU plugin hosting,
+- Ableton/Logic/Cubase/FL Studio automation,
+- proprietary foundation audio model training,
+- cloud rendering,
+- live OpenAI provider evidence,
+- human listener preference studies,
+- stem separation,
+- waveform/piano-roll editor implementation.
 
-## Product sequence / 제품 순서
+## Planned follow-on / 후속 예정
 
-```text
-M4-R1 Application Service                ✅ VALIDATED
-→ M4-R2 Browser Studio UI                ✅ VALIDATED
-→ M4-R3 Usable MVP / real-browser E2E    ← NOW
-→ M5 Renderer/DAW interoperability & quality
-→ M6 Product hardening / desktop packaging / release candidate
-```
+After M5-R1 closure, M5-R2 should select the first higher-fidelity local backend based on reproducibility, licensing, Windows compatibility, automation surface, audio quality, install burden and renderer isolation. Candidate technologies may include a SoundFont/FluidSynth-class backend or another locally automatable synth path, but no candidate is accepted until evaluated against the R1 contract.
+
+M5-R1 종료 후 M5-R2에서 재현성, 라이선스, Windows 호환성, 자동화 인터페이스, 음질, 설치 부담, renderer 격리 기준으로 첫 고품질 local backend를 선정합니다. 후보 기술은 R1 계약에 대한 평가 전까지 승인된 것으로 간주하지 않습니다.
 
 ## Development discipline / 개발 규율
 
 ```text
 Issue
-→ branch from closure main
-→ R3 acceptance contract
-→ dedicated browser-E2E infrastructure
-→ real Chromium scenarios
-→ canonical R3 evidence
+→ branch from M4-R3 closure main
+→ R1 acceptance contract
+→ renderer schemas + adapter boundary
+→ reference adapter migration
+→ audio QA analyzer
+→ negative/tamper tests
+→ durable evidence
 → PR
-→ exact-head core CI + browser-E2E CI
-→ artifact inspection
+→ exact-head CI
 → merge
-→ R3 closure
+→ M5-R1 state-only closure
 ```
 
 Repository evidence remains authoritative over conversation or model memory. / 레포 근거는 대화·모델 기억보다 우선합니다.

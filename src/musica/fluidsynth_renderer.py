@@ -274,6 +274,7 @@ class FluidSynthRendererAdapter:
             wav_path = output_root / "render.wav"
             self._render_wav(midi_path, wav_path, int(audio["sample_rate"]))
             qa_report = analyze_wav(wav_path, target_seconds=float(audio["duration_seconds"]))
+            write_canonical_json(output_root / "audio-quality.json", qa_report)
             if qa_report["container"]["sample_rate"] != audio["sample_rate"]:
                 raise RendererError("FluidSynth WAV sample rate violates RendererRequest")
             if qa_report["container"]["channels"] != audio["channels"]:
@@ -281,9 +282,13 @@ class FluidSynthRendererAdapter:
             if qa_report["container"]["sample_width_bytes"] != audio["sample_width_bytes"]:
                 raise RendererError("FluidSynth WAV sample width violates RendererRequest")
             if qa_report["status"] == "FAIL":
-                raise RendererError("required AudioQualityReport checks failed")
+                raise RendererError(
+                    "required AudioQualityReport checks failed: "
+                    f"container={qa_report['container']}; "
+                    f"signal={qa_report['signal']}; "
+                    f"duration={qa_report['duration']}"
+                )
             artifacts.append(_artifact("wav", wav_path, workspace_root))
-            write_canonical_json(output_root / "audio-quality.json", qa_report)
 
         provenance = {
             "provenance_version": "0",

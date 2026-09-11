@@ -1,8 +1,9 @@
-"""Thin localhost HTTP bridge for the M4-R1 Studio application service.
+"""Localhost HTTP bridge and static Browser Studio for MUSICA M4.
 
-The bridge intentionally serves only application JSON and current session audio/MIDI.
-No cloud binding, directory browsing, upload endpoint, CORS wildcard, or remote telemetry
-is enabled by this module.
+The bridge serves only the validated Studio application JSON/media surface plus packaged
+same-origin M4-R2 HTML/CSS/JavaScript assets. It intentionally provides no cloud binding,
+directory browsing, upload endpoint, wildcard CORS, third-party asset dependency, or
+remote telemetry.
 """
 
 from __future__ import annotations
@@ -10,6 +11,7 @@ from __future__ import annotations
 import json
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from importlib import resources
 from typing import Any
 from urllib.parse import urlsplit
 
@@ -17,6 +19,25 @@ from .studio import StudioApplication, StudioService, StudioServiceError
 
 MAX_JSON_BODY_BYTES = 1_048_576
 DEFAULT_HOST = "127.0.0.1"
+_CONTENT_SECURITY_POLICY = (
+    "default-src 'self'; "
+    "script-src 'self'; "
+    "style-src 'self'; "
+    "connect-src 'self'; "
+    "media-src 'self'; "
+    "img-src 'self' data:; "
+    "font-src 'self'; "
+    "object-src 'none'; "
+    "base-uri 'none'; "
+    "frame-ancestors 'none'; "
+    "form-action 'self'"
+)
+_STATIC_ASSETS = {
+    "/": ("index.html", "text/html; charset=utf-8"),
+    "/index.html": ("index.html", "text/html; charset=utf-8"),
+    "/assets/app.css": ("app.css", "text/css; charset=utf-8"),
+    "/assets/app.js": ("app.js", "text/javascript; charset=utf-8"),
+}
 
 
 def _status_for_error(error: StudioServiceError) -> int:
@@ -29,27 +50,59 @@ def _status_for_error(error: StudioServiceError) -> int:
     return HTTPStatus.BAD_REQUEST
 
 
+def _static_bytes(name: str) -> bytes:
+    try:
+        return resources.files("musica.studio_web").joinpath(name).read_bytes()
+    except (FileNotFoundError, ModuleNotFoundError) as exc:
+        raise StudioServiceError("not_found", f"Studio web asset is unavailable: {name}") from exc
+
+
 def make_handler(application: StudioApplication):
     class StudioRequestHandler(BaseHTTPRequestHandler):
-        server_version = "MUSICAStudio/0.1"
+        server_version = "MUSICAStudio/0.2"
         protocol_version = "HTTP/1.1"
 
         def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
-            # M4-R1 keeps the reusable bridge quiet; a product logger belongs later.
+            # Reusable local bridge remains quiet; product logging is a later decision.
             return
 
-        def _send_bytes(self, status: int, content_type: str, data: bytes) -> None:
+        def _send_bytes(
+            self,
+            status: int,
+            content_type: str,
+            data: bytes,
+            *,
+            static_document: bool = False,
+        ) -> None:
             self.send_response(int(status))
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(data)))
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Referrer-Policy", "no-referrer")
+            self.send_header("X-Frame-Options", "DENY")
+            self.send_header("Cross-Origin-Resource-Policy", "same-origin")
+            if static_document:
+                self.send_header("Content-Security-Policy", _CONTENT_SECURITY_POLICY)
             self.end_headers()
             self.wfile.write(data)
 
         def _send_json(self, status: int, value: Any) -> None:
             data = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
             self._send_bytes(status, "application/json; charset=utf-8", data)
+
+        def _send_static(self, clean_path: str) -> bool:
+            asset = _STATIC_ASSETS.get(clean_path)
+            if asset is None:
+                return False
+            name, content_type = asset
+            self._send_bytes(
+                HTTPStatus.OK,
+                content_type,
+                _static_bytes(name),
+                static_document=True,
+            )
+            return True
 
         def _read_json(self) -> dict[str, Any]:
             content_type = self.headers.get("Content-Type", "")
@@ -78,6 +131,9 @@ def make_handler(application: StudioApplication):
         def _route(self, method: str) -> None:
             clean_path = urlsplit(self.path).path
             try:
+                if method == "GET" and self._send_static(clean_path):
+                    return
+
                 if method == "GET" and clean_path == "/v0/health":
                     self._send_json(
                         HTTPStatus.OK,
@@ -85,6 +141,7 @@ def make_handler(application: StudioApplication):
                             "service": "musica-studio",
                             "status": "ok",
                             "local_first": True,
+                            "browser_ui": True,
                         },
                     )
                     return
@@ -127,14 +184,14 @@ def create_local_server(
     host: str = DEFAULT_HOST,
     port: int = 0,
 ) -> ThreadingHTTPServer:
-    """Create, but do not start, a local Studio HTTP server.
+    """Create, but do not start, the local Studio server.
 
-    M4-R1 intentionally accepts only loopback hosts. A future deployment mode must be a
+    M4 deliberately accepts only loopback hosts. A future deployment mode must be a
     separate security decision rather than an accidental consequence of this helper.
     """
 
     if host not in {"127.0.0.1", "localhost", "::1"}:
-        raise StudioServiceError("invalid_request", "M4-R1 Studio HTTP server may bind only to loopback")
+        raise StudioServiceError("invalid_request", "MUSICA Studio HTTP server may bind only to loopback")
     if not 0 <= int(port) <= 65535:
         raise StudioServiceError("invalid_request", "invalid Studio HTTP port")
     application = StudioApplication(service)

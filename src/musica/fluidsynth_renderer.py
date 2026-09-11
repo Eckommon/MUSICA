@@ -13,6 +13,7 @@ import os
 import re
 import shutil
 import subprocess
+import wave
 from pathlib import Path
 from typing import Any
 
@@ -102,6 +103,63 @@ def _resolve_soundfont(path: str | Path) -> dict[str, Any]:
         "path": resolved,
         "sha256": sha256_file(resolved),
         "size_bytes": resolved.stat().st_size,
+    }
+
+
+def _normalize_wav_duration(
+    raw_path: Path,
+    final_path: Path,
+    *,
+    target_seconds: float,
+) -> dict[str, Any]:
+    """Deterministically trim renderer tail to the explicit MUSICA duration contract.
+
+    The raw engine output is kept outside RendererResult artifacts but its hash and
+    duration are recorded in provenance. Underruns fail closed; MUSICA never pads or
+    invents audio that FluidSynth did not render.
+    """
+
+    try:
+        with wave.open(str(raw_path), "rb") as source:
+            channels = int(source.getnchannels())
+            sample_width = int(source.getsampwidth())
+            sample_rate = int(source.getframerate())
+            frame_count = int(source.getnframes())
+            compression = source.getcomptype()
+            compression_name = source.getcompname()
+            if compression != "NONE":
+                raise RendererError("FluidSynth raw WAV must be uncompressed PCM")
+            target_frames = int(round(float(target_seconds) * sample_rate))
+            if target_frames <= 0:
+                raise RendererError("FluidSynth target duration produced no frames")
+            if frame_count < target_frames:
+                raise RendererError(
+                    "FluidSynth raw WAV is shorter than requested duration: "
+                    f"raw_frames={frame_count}, target_frames={target_frames}"
+                )
+            frames = source.readframes(target_frames)
+    except (wave.Error, EOFError) as exc:
+        raise RendererError(f"FluidSynth raw WAV could not be normalized: {exc}") from exc
+
+    final_path.parent.mkdir(parents=True, exist_ok=True)
+    with wave.open(str(final_path), "wb") as target:
+        target.setnchannels(channels)
+        target.setsampwidth(sample_width)
+        target.setframerate(sample_rate)
+        target.setcomptype(compression, compression_name)
+        target.writeframes(frames)
+
+    return {
+        "policy": "trim_tail_to_requested_duration_v0",
+        "raw_sha256": sha256_file(raw_path),
+        "raw_size_bytes": raw_path.stat().st_size,
+        "raw_frame_count": frame_count,
+        "raw_duration_seconds": frame_count / sample_rate,
+        "target_frame_count": target_frames,
+        "target_duration_seconds": float(target_seconds),
+        "trimmed_frame_count": frame_count - target_frames,
+        "normalization_applied": frame_count != target_frames,
+        "padding_applied": False,
     }
 
 
@@ -269,10 +327,17 @@ class FluidSynthRendererAdapter:
             artifacts.append(_artifact("midi", midi_path, workspace_root))
 
         qa_report: dict[str, Any] | None = None
+        duration_normalization: dict[str, Any] | None = None
         if "wav" in request["outputs"]:
             audio = request["audio"]
+            raw_wav_path = output_root / "render.engine.wav"
             wav_path = output_root / "render.wav"
-            self._render_wav(midi_path, wav_path, int(audio["sample_rate"]))
+            self._render_wav(midi_path, raw_wav_path, int(audio["sample_rate"]))
+            duration_normalization = _normalize_wav_duration(
+                raw_wav_path,
+                wav_path,
+                target_seconds=float(audio["duration_seconds"]),
+            )
             qa_report = analyze_wav(wav_path, target_seconds=float(audio["duration_seconds"]))
             write_canonical_json(output_root / "audio-quality.json", qa_report)
             if qa_report["container"]["sample_rate"] != audio["sample_rate"]:
@@ -283,7 +348,7 @@ class FluidSynthRendererAdapter:
                 raise RendererError("FluidSynth WAV sample width violates RendererRequest")
             if qa_report["status"] == "FAIL":
                 raise RendererError(
-                    "required AudioQualityReport checks failed: "
+                    "required AudioQualityReport checks failed after duration normalization: "
                     f"container={qa_report['container']}; "
                     f"signal={qa_report['signal']}; "
                     f"duration={qa_report['duration']}"
@@ -314,6 +379,7 @@ class FluidSynthRendererAdapter:
                 "audio_file_type": "wav",
                 "audio_file_format": "s16",
                 "network_required": False,
+                "duration_normalization": duration_normalization,
             },
             "project_authority": False,
         }

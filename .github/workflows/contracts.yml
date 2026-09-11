@@ -2,7 +2,7 @@ name: MUSICA CI
 
 on:
   push:
-    branches: [main, m4-r2-browser-studio-ui-v0]
+    branches: [main, m4-r2-browser-studio-ui-v0, m4-r3-real-browser-e2e-v0]
   pull_request:
     branches: [main]
 
@@ -115,4 +115,27 @@ jobs:
         with:
           name: musica-m4-r2-browser-studio
           path: artifacts/m4-r2-browser-studio
+          if-no-files-found: error
+
+  browser-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install core + browser evidence dependencies / 코어 + browser evidence 의존성 설치
+        run: python -m pip install -e '.[dev,e2e]'
+      - name: Install Chromium for Playwright / Playwright Chromium 설치
+        run: python -m playwright install --with-deps chromium
+      - name: Run M4-R3 real-browser E2E / M4-R3 실제 browser E2E 실행
+        env:
+          MUSICA_E2E_OUT: artifacts/m4-r3-browser-e2e
+        run: pytest -q e2e/test_m4_r3_browser.py
+      - name: Upload M4-R3 real-browser evidence / M4-R3 실제 browser 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-m4-r3-real-browser-e2e
+          path: artifacts/m4-r3-browser-e2e
           if-no-files-found: error

@@ -12,9 +12,28 @@ MUSICA는 하나의 제품 약속을 중심으로 구축하는 **AI-native 프�
 >
 > **자연어로 지시할 만큼 쉽고, 전문 음악 시스템처럼 세밀하게 편집할 만큼 정밀해야 한다.**
 
-MUSICA is not a text-to-song clone and is not designed around one renderer. Natural-language intent is lowered into inspectable contracts, protected by locks/constraints, compiled into executable music, and accepted into durable project revisions only through explicit authority boundaries.
+MUSICA is not a text-to-song clone and is not designed around one renderer or one DAW. Natural-language intent is lowered into inspectable contracts, protected by locks/constraints, compiled into executable music, rendered through replaceable adapters, and accepted into durable project revisions only through explicit authority boundaries.
 
-MUSICA는 text-to-song 복제 제품도, 특정 렌더러 중심 시스템도 아닙니다. 자연어 의도는 검사 가능한 계약으로 구조화되고 lock/constraint로 보호되며 실행 가능한 음악으로 컴파일됩니다. 공식 프로젝트 리비전은 명시적인 권한 경계를 통과할 때만 승인됩니다.
+MUSICA는 text-to-song 복제 제품도, 하나의 renderer나 DAW에 종속된 시스템도 아닙니다. 자연어 의도는 검사 가능한 계약으로 구조화되고 lock/constraint로 보호되며 실행 가능한 음악으로 컴파일됩니다. Renderer와 interchange는 교체 가능한 adapter이며 공식 프로젝트 revision은 명시적인 권한 경계를 통과할 때만 승인됩니다.
+
+## Current canonical status / 현재 공식 상태
+
+**M0 → M5-R2 are validated within their explicitly bounded claims.**
+
+**M0 → M5-R2는 각 명시적 제한 주장 범위에서 검증 완료되었습니다.**
+
+Current validated renderer paths:
+
+- `musica-reference-local` — deterministic bounded reference renderer;
+- `musica-fluidsynth-local` — real Windows FluidSynth 2.6.0 + externally provisioned, exact-hash-bound FluidR3_GM 3.1 evidence path.
+
+M5-R2 proves a real replaceable 48 kHz stereo local renderer boundary; it does **not** prove perceptual superiority or professional/mastering quality.
+
+M5-R2는 실제 교체 가능한 48 kHz stereo local renderer 경계를 증명하지만 청감상 우월성 또는 professional/mastering 품질을 증명하지 않습니다.
+
+The next bounded milestone is **M5-R3 — DAW / Interchange Interoperability v0**. The current selection package chooses **DAWproject 1.0** as the first implementation target, subject to exact-head CI/merge and later executable evidence.
+
+다음 제한 마일스톤은 **M5-R3 — DAW / Interchange Interoperability v0**입니다. 현재 selection package는 **DAWproject 1.0**을 첫 구현 대상으로 선정하며, exact-head CI/병합과 이후 실행 근거가 필요합니다.
 
 ## Try the local Studio / 로컬 Studio 실행
 
@@ -53,7 +72,7 @@ The Browser Studio exposes progressively deeper control over the same canonical 
 Browser Studio는 동일한 공식 `.musica` project state를 단계적으로 더 깊게 제어합니다.
 
 - **Direct / 간편 디렉팅** — natural-language creation/refinement and audition / 자연어 생성·수정·청취
-- **Shape / 의미·구조 편집** — six semantic axes, sections and scoped preview / 6축 의미 제어·구간·범위 preview
+- **Shape / 의미·구조 편집** — semantic axes, sections and scoped preview / 의미 제어·구간·범위 preview
 - **Inspect / 전문 검사** — locks, exact diff, accepted/preview status, branches/history / lock·정확한 diff·상태·버전 이력
 - **Code / 코드·근거** — read-only validated JSON and authority evidence / 읽기 전용 검증 JSON·권한 근거
 
@@ -66,7 +85,7 @@ These are views over one project state, not incompatible modes or separate datab
 ```text
 User / 사용자
   ↓
-Browser Studio
+Browser Studio / API
   ↓
 M4 Application Service
   ↓
@@ -78,12 +97,16 @@ PREVIEW — non-canonical / 비공식 상태
   ↓ explicit Accept only / 명시적 승인만
 M2 Project & Version Engine
   ↓
-Accepted Blueprint Revision + MIDI/WAV artifacts
+Accepted Blueprint Revision
+  ↓ trusted lowering
+Canonical Music IR
+  ↓
+M5 replaceable Renderer / Interchange adapters
 ```
 
-**AI output is not accepted state. Preview audio is not accepted state. Browser memory is not accepted state.**
+**AI output is not accepted state. Preview audio is not accepted state. Browser memory is not accepted state. Renderer output is not accepted state. Imported DAW/interchange state is not accepted state.**
 
-**AI 출력은 승인 상태가 아닙니다. Preview 오디오는 승인 상태가 아닙니다. Browser memory도 승인 상태가 아닙니다.**
+**AI 출력, Preview 오디오, Browser memory, Renderer output, 외부 DAW/interchange import 상태는 승인 상태가 아닙니다.**
 
 The accepted `.musica` Project Bundle remains canonical.
 
@@ -99,18 +122,16 @@ AI Music Director / AI 음악 디렉터
 Music Blueprint / 음악 설계도
   ↓
 Semantic Controls + Locks + Constraints
-의미 제어 + 잠금 + 제약
   ↓
 Validated Blueprint Revision + Diff
-검증 Blueprint 리비전 + Diff
   ↓
 Music Compiler
   ↓
 Music IR
   ↓
-Renderer Adapters
+Renderer Adapters / Interchange Adapters
   ↓
-MIDI / local Synth / future Sampler·DAW·DSP·Generative Audio
+MIDI / local synth / DAWproject / future sampler·DAW·DSP·generative audio
 ```
 
 Important distinction / 중요 구분:
@@ -118,6 +139,8 @@ Important distinction / 중요 구분:
 > **Music Blueprint = canonical human/AI creative state. / 인간·AI가 공유하는 공식 창작 상태.**
 >
 > **Music IR = lower-level executable representation produced by compilation. / 컴파일로 생성되는 저수준 실행 표현.**
+>
+> **External interchange artifact = non-canonical projection/candidate carrier. / 외부 교환 artifact는 비공식 투영·candidate 운반체.**
 
 ## Validated milestone stack / 검증 마일스톤 스택
 
@@ -128,12 +151,39 @@ Important distinction / 중요 구분:
 | M2 Project & Version Engine | **VALIDATED** | `evidence/M2_VALIDATION.md` |
 | M3 AI Music Director Provider Layer | **VALIDATED — BOUNDED** | `evidence/M3_R1_VALIDATION.md`, `evidence/M3_R2_VALIDATION.md` |
 | M4-R1 Studio Application Service | **VALIDATED** | `evidence/M4_R1_VALIDATION.md` |
-| M4-R2 Browser Studio UI | **BRANCH VALIDATION PASSED; exact-head PR gate pending** | `evidence/M4_R2_VALIDATION.md` |
-| M4-R3 Usable MVP / Browser E2E | **NOT VALIDATED** | next product acceptance |
+| M4-R2 Browser Studio UI | **VALIDATED** | `evidence/M4_R2_VALIDATION.md` |
+| M4-R3 Usable MVP / real-browser E2E | **VALIDATED** | `evidence/M4_R3_VALIDATION.md` |
+| M5-R1 Renderer Adapter Contract + Audio QA Baseline | **VALIDATED** | `evidence/M5_R1_VALIDATION.md` |
+| M5-R2 First Higher-Fidelity Local Renderer | **VALIDATED — BOUNDED** | `evidence/M5_R2_VALIDATION.md` |
+| M5-R3 DAW / Interchange Interoperability | **SELECTION: DAWproject 1.0 — IMPLEMENTATION NOT YET VALIDATED** | `docs/M5_R3_INTERCHANGE_SELECTION.md` |
+| M5-R4 Comparative Music/Audio Quality Evaluation | **NOT IMPLEMENTED** | planned follow-on |
+| Live OpenAI provider execution | **NOT VALIDATED** | separate `LIVE_PROVIDER_EVIDENCE` required |
 
-M3-R2 validates an OpenAI adapter contract with offline injected transport. A real authorized OpenAI network run is **not** currently validated evidence and must be recorded separately as `LIVE_PROVIDER_EVIDENCE` if performed.
+## M5-R3 selected boundary / M5-R3 선정 경계
 
-M3-R2는 offline injected transport로 OpenAI adapter 계약을 검증합니다. 실제 승인된 OpenAI network 실행은 현재 검증 근거가 아니며 수행 시 반드시 별도 `LIVE_PROVIDER_EVIDENCE`로 기록해야 합니다.
+Current design documents:
+
+- `docs/M5_R3_INTERCHANGE_SELECTION.md`
+- `docs/M5_R3_ROUNDTRIP_AUTHORITY.md`
+- `docs/M5_R3_ACCEPTANCE.md`
+
+Selected authority model:
+
+```text
+Accepted .musica revision
+→ DAWproject export
+→ optional external edit
+→ DAWproject import
+→ NON-CANONICAL candidate
+→ diff + loss report
+→ HARD lock / constraint validation
+→ explicit user Accept
+→ M2 commit
+```
+
+An external DAW file can propose changes but cannot silently overwrite MUSICA authority.
+
+외부 DAW 파일은 변경을 제안할 수 있지만 MUSICA 권한을 조용히 덮어쓸 수 없습니다.
 
 ## Repository as Source of Truth / GitHub를 공식 근거로 사용
 
@@ -163,9 +213,11 @@ Before substantive work read / 실질 작업 전 확인:
 3. `docs/design/MUSICA_DESIGN_PACKAGE_v0.1.md`
 4. `memory/CURRENT_STATE.md`
 5. `memory/NEXT_ACTION.md`
+6. relevant milestone acceptance/evidence documents
+7. relevant Issue / PR / exact-head CI evidence
 
 ## Current exact next point / 현재 정확한 다음 재개점
 
-M4-R2 implementation has passed its first branch CI/evidence gate. It must still pass the **evidence-bearing exact-head PR CI** before merge and state promotion. After M4-R2 closure, the next milestone is **M4-R3 Usable MVP / browser E2E acceptance**.
+After the M5-R3 selection package passes exact-head CI and is merged, create a fresh implementation branch from the new main and implement the **bounded DAWproject 1.0 export → safe import-as-candidate → loss/diff → HARD-lock validation → explicit Accept → M2 commit** path defined by `memory/NEXT_ACTION.md` and `docs/M5_R3_ACCEPTANCE.md`.
 
-M4-R2 구현은 첫 branch CI/evidence gate를 통과했습니다. 병합·상태 승격 전 **durable evidence 포함 exact-head PR CI**를 반드시 다시 통과해야 합니다. M4-R2 종결 후 다음 마일스톤은 **M4-R3 Usable MVP / browser E2E 수용**입니다.
+M5-R3 selection package가 exact-head CI를 통과해 병합된 후 새 main에서 구현 branch를 생성하여 `memory/NEXT_ACTION.md` 및 `docs/M5_R3_ACCEPTANCE.md`에 정의된 **제한 DAWproject 1.0 export → 안전한 candidate import → loss/diff → HARD-lock 검증 → 명시적 Accept → M2 commit** 경로를 구현합니다.

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/studio-preview-v0.schema.json",
+  "title": "MUSICA Studio Preview v0",
+  "description": "One non-canonical candidate preview. Presence of this object MUST NOT imply branch advancement.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["preview_version", "preview_id", "kind", "parent_revision_id", "candidate_revision_id", "branch", "diff_count", "audio_available", "midi_available"],
+  "properties": {
+    "preview_version": {"const": "0"},
+    "preview_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "kind": {"enum": ["semantic_control", "director_edit"]},
+    "parent_revision_id": {"type": "string", "minLength": 1},
+    "candidate_revision_id": {"type": "string", "minLength": 1},
+    "branch": {"type": "string", "minLength": 1},
+    "diff_count": {"type": "integer", "minimum": 0},
+    "audio_available": {"type": "boolean"},
+    "midi_available": {"type": "boolean"}
+  }
+}

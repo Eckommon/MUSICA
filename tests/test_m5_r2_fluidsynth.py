@@ -26,7 +26,13 @@ def _ir() -> tuple[dict, float]:
     return compile_blueprint(blueprint), float(blueprint["project"]["duration_seconds"])
 
 
-def _fake_fluidsynth(path: Path, *, version: str = "2.6.0", exit_code: int = 0) -> Path:
+def _fake_fluidsynth(
+    path: Path,
+    *,
+    version: str = "2.6.0",
+    exit_code: int = 0,
+    raw_duration_seconds: float = 20.0,
+) -> Path:
     script = f'''#!/usr/bin/env python3
 import pathlib
 import struct
@@ -35,6 +41,7 @@ import wave
 
 VERSION = {version!r}
 EXIT_CODE = {exit_code}
+RAW_DURATION_SECONDS = {raw_duration_seconds!r}
 if "--version" in sys.argv:
     print(f"FluidSynth runtime version {{VERSION}}")
     raise SystemExit(EXIT_CODE)
@@ -49,7 +56,7 @@ if args[args.index("-T") + 1] != "wav":
 if args[args.index("-O") + 1] != "s16":
     raise SystemExit(22)
 out.parent.mkdir(parents=True, exist_ok=True)
-remaining = sample_rate * 20
+remaining = int(round(sample_rate * RAW_DURATION_SECONDS))
 frame = struct.pack("<hh", 1200, -1200)
 with wave.open(str(out), "wb") as handle:
     handle.setnchannels(2)
@@ -66,8 +73,17 @@ with wave.open(str(out), "wb") as handle:
     return path
 
 
-def _adapter(tmp_path: Path, *, version: str = "2.6.0") -> tuple[FluidSynthRendererAdapter, Path]:
-    executable = _fake_fluidsynth(tmp_path / "fake-fluidsynth", version=version)
+def _adapter(
+    tmp_path: Path,
+    *,
+    version: str = "2.6.0",
+    raw_duration_seconds: float = 20.0,
+) -> tuple[FluidSynthRendererAdapter, Path]:
+    executable = _fake_fluidsynth(
+        tmp_path / "fake-fluidsynth",
+        version=version,
+        raw_duration_seconds=raw_duration_seconds,
+    )
     soundfont = tmp_path / "FluidR3_GM.sf2"
     soundfont.write_bytes(b"synthetic-soundfont-fixture-not-real-sf2")
     return (
@@ -96,6 +112,7 @@ def test_fluidsynth_adapter_exact_bind_provenance_and_stereo_qa(tmp_path: Path) 
     capability = adapter.capability()
     validate_contract(capability, "renderer-capability-v0.schema.json")
     assert capability["renderer_id"] == FLUIDSYNTH_RENDERER_ID
+    assert capability["audio"]["sample_rates"] == [48000]
     assert capability["requirements"] == {
         "external_binary": True,
         "plugin_host": False,
@@ -126,8 +143,45 @@ def test_fluidsynth_adapter_exact_bind_provenance_and_stereo_qa(tmp_path: Path) 
     assert provenance["resources"][0]["sha256"] == sha256_file(soundfont)
     assert provenance["render_settings"]["sample_rate"] == 48000
     assert provenance["render_settings"]["channels"] == 2
+    assert provenance["render_settings"]["duration_normalization"]["normalization_applied"] is False
     assert provenance["project_authority"] is False
     verify_result_artifacts(result, tmp_path / "workspace")
+
+
+def test_fluidsynth_trims_engine_tail_but_never_pads_underrun(tmp_path: Path) -> None:
+    ir, duration = _ir()
+    adapter, soundfont = _adapter(tmp_path / "tail", raw_duration_seconds=22.5)
+    request = build_fluidsynth_request(
+        ir,
+        request_id="tail-normalization",
+        soundfont_id="FluidR3_GM-3.1-test-fixture",
+        soundfont_sha256=sha256_file(soundfont),
+        duration_seconds=duration,
+    )
+    result = adapter.render(request, ir, tmp_path / "tail-workspace")
+    qa_path = next((tmp_path / "tail-workspace").rglob("audio-quality.json"))
+    qa = json.loads(qa_path.read_text(encoding="utf-8"))
+    assert qa["duration"]["actual_seconds"] == 20.0
+    provenance_path = tmp_path / "tail-workspace" / result["provenance"]["manifest_path"]
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    normalization = provenance["render_settings"]["duration_normalization"]
+    assert normalization["normalization_applied"] is True
+    assert normalization["padding_applied"] is False
+    assert normalization["raw_duration_seconds"] == 22.5
+    assert normalization["target_duration_seconds"] == 20.0
+    assert normalization["trimmed_frame_count"] == 120000
+    assert normalization["raw_sha256"]
+
+    short_adapter, short_soundfont = _adapter(tmp_path / "short", raw_duration_seconds=19.0)
+    short_request = build_fluidsynth_request(
+        ir,
+        request_id="underrun-rejected",
+        soundfont_id="FluidR3_GM-3.1-test-fixture",
+        soundfont_sha256=sha256_file(short_soundfont),
+        duration_seconds=duration,
+    )
+    with pytest.raises(RendererError, match="shorter than requested duration"):
+        short_adapter.render(short_request, ir, tmp_path / "short-workspace")
 
 
 def test_fluidsynth_independent_runs_are_compared_outside_renderer_result(tmp_path: Path) -> None:

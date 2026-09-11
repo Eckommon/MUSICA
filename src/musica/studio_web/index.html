@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>MUSICA Studio</title>
+  <link rel="stylesheet" href="/assets/app.css">
+  <script src="/assets/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Skip to Studio / Studio로 이동</a>
+  <header class="topbar">
+    <div class="brand-block">
+      <div class="mark" aria-hidden="true">M</div>
+      <div>
+        <div class="brand">MUSICA <span>STUDIO</span></div>
+        <div class="tagline">Intent to music, without giving up control · 의도를 음악으로, 통제력을 잃지 않고</div>
+      </div>
+    </div>
+    <div class="top-status">
+      <span id="connectionBadge" class="status-pill neutral">LOCAL</span>
+      <span id="authorityBadge" class="status-pill accepted">ACCEPTED</span>
+    </div>
+  </header>
+
+  <main id="workspace" class="shell">
+    <aside class="sidebar" aria-label="Studio navigation / Studio 탐색">
+      <nav class="depth-nav" aria-label="Editing depth / 편집 깊이">
+        <button class="depth-tab active" data-tab="direct" aria-controls="panel-direct" aria-selected="true">
+          <span class="depth-index">01</span><span><strong>Direct</strong><small>간편 디렉팅</small></span>
+        </button>
+        <button class="depth-tab" data-tab="shape" aria-controls="panel-shape" aria-selected="false" disabled>
+          <span class="depth-index">02</span><span><strong>Shape</strong><small>의미·구조 편집</small></span>
+        </button>
+        <button class="depth-tab" data-tab="inspect" aria-controls="panel-inspect" aria-selected="false" disabled>
+          <span class="depth-index">03</span><span><strong>Inspect</strong><small>전문 검사</small></span>
+        </button>
+        <button class="depth-tab" data-tab="code" aria-controls="panel-code" aria-selected="false" disabled>
+          <span class="depth-index">04</span><span><strong>Code</strong><small>JSON · 근거</small></span>
+        </button>
+      </nav>
+
+      <section class="project-mini" aria-labelledby="projectMiniTitle">
+        <h2 id="projectMiniTitle">Project / 프로젝트</h2>
+        <dl>
+          <div><dt>Branch</dt><dd id="sideBranch">—</dd></div>
+          <div><dt>Revision</dt><dd id="sideRevision">—</dd></div>
+          <div><dt>Integrity</dt><dd id="sideIntegrity">EMPTY</dd></div>
+        </dl>
+      </section>
+    </aside>
+
+    <section class="mainstage">
+      <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+      <section id="panel-direct" class="panel active" data-panel="direct" aria-labelledby="directTitle">
+        <div class="panel-heading">
+          <div><span class="eyebrow">DIRECT</span><h1 id="directTitle">Describe the music you want.<br><span>원하는 음악을 설명하세요.</span></h1></div>
+          <p>Start with intent. MUSICA turns it into an inspectable project you can refine, lock and version.</p>
+        </div>
+
+        <div class="grid two">
+          <form id="createForm" class="card hero-card">
+            <div class="card-heading"><h2>New project / 새 프로젝트</h2><span class="status-pill neutral">OFFLINE FIRST</span></div>
+            <label>Project name / 프로젝트 이름
+              <input id="projectSlug" name="project_slug" value="my-music" pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,63}" required>
+            </label>
+            <label>Musical intent / 음악 의도
+              <textarea id="createPrompt" name="user_text" rows="5" required>Create a restrained dark electronic 20-second technology cue that becomes more urgent near the end.</textarea>
+            </label>
+            <div class="form-row">
+              <label>Duration / 길이
+                <input id="durationSeconds" type="number" min="8" max="300" step="1" value="20">
+              </label>
+              <label>Use case / 용도
+                <select id="useCase">
+                  <option value="advertisement">Advertisement / 광고</option>
+                  <option value="song">Song / 곡</option>
+                  <option value="score">Score / 스코어</option>
+                  <option value="game">Game / 게임</option>
+                  <option value="ambient">Ambient / 앰비언트</option>
+                  <option value="other">Other / 기타</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-row">
+              <label>Provider / 생성 디렉터
+                <select id="providerMode">
+                  <option value="fixture">Offline Fixture / 오프라인</option>
+                  <option value="openai">OpenAI / 명시 선택</option>
+                </select>
+              </label>
+              <label>Style hint / 스타일 힌트
+                <select id="styleProfile">
+                  <option value="">Auto / 자동</option>
+                  <option value="dark_electronic">Dark electronic</option>
+                  <option value="warm_ambient">Warm ambient</option>
+                  <option value="kinetic_minimal">Kinetic minimal</option>
+                </select>
+              </label>
+            </div>
+            <button id="generateButton" class="primary wide" type="submit">Generate project / 프로젝트 생성</button>
+          </form>
+
+          <div class="card open-card">
+            <h2>Open project / 프로젝트 열기</h2>
+            <p>Open a project already stored inside this Studio workspace.</p>
+            <form id="openForm">
+              <label>Project name / 프로젝트 이름
+                <input id="openProjectSlug" value="my-music" pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,63}" required>
+              </label>
+              <button class="secondary wide" type="submit">Open / 열기</button>
+            </form>
+            <div class="rule"></div>
+            <h3>Authority / 권한</h3>
+            <p class="muted">AI proposes. Preview is temporary. Only your explicit <strong>Accept</strong> advances the canonical project.</p>
+          </div>
+        </div>
+
+        <section id="activeProject" class="project-console" hidden>
+          <div class="console-head">
+            <div>
+              <span id="projectStateBadge" class="status-pill accepted">ACCEPTED</span>
+              <h2 id="projectTitle">Active project</h2>
+              <p id="projectMeta" class="mono muted">—</p>
+            </div>
+            <button id="refreshButton" class="ghost" type="button">Refresh / 새로고침</button>
+          </div>
+
+          <div class="audio-card">
+            <div>
+              <span class="eyebrow">AUDITION / 청취</span>
+              <h3 id="audioLabel">Accepted audio / 승인 오디오</h3>
+            </div>
+            <audio id="audioPlayer" controls preload="metadata"></audio>
+            <div class="media-links">
+              <a id="wavLink" class="text-link" href="#" download>WAV</a>
+              <a id="midiLink" class="text-link" href="#" download>MIDI</a>
+            </div>
+          </div>
+
+          <form id="refineForm" class="refine-row">
+            <label class="grow">Refine with language / 자연어로 수정
+              <input id="refinePrompt" placeholder="Make the final section more urgent but keep the melody and drums.">
+            </label>
+            <button class="secondary" type="submit">Preview refinement / 수정 미리듣기</button>
+          </form>
+        </section>
+      </section>
+
+      <section id="panel-shape" class="panel" data-panel="shape" aria-labelledby="shapeTitle" hidden>
+        <div class="panel-heading compact">
+          <div><span class="eyebrow">SHAPE</span><h1 id="shapeTitle">Shape meaning, not knobs.<br><span>노브가 아니라 의미를 조절하세요.</span></h1></div>
+          <p>Six semantic controls alter musical behavior while the trusted core preserves HARD locks.</p>
+        </div>
+
+        <div class="grid shape-grid">
+          <div class="card semantic-card">
+            <div class="card-heading"><h2>Semantic controls / 의미 제어</h2><span id="activeAxisBadge" class="status-pill neutral">TENSION</span></div>
+            <p class="muted small">Move a control, then preview that axis. Nothing is committed until Accept.</p>
+            <div id="semanticControls" class="sliders">
+              <label class="slider-row" data-axis="energy"><span>Energy <small>에너지</small></span><input type="range" min="0" max="1" step="0.01" data-axis="energy"><output>0.00</output></label>
+              <label class="slider-row" data-axis="tension"><span>Tension <small>긴장감</small></span><input type="range" min="0" max="1" step="0.01" data-axis="tension"><output>0.00</output></label>
+              <label class="slider-row" data-axis="density"><span>Density <small>밀도</small></span><input type="range" min="0" max="1" step="0.01" data-axis="density"><output>0.00</output></label>
+              <label class="slider-row" data-axis="motion"><span>Motion <small>움직임</small></span><input type="range" min="0" max="1" step="0.01" data-axis="motion"><output>0.00</output></label>
+              <label class="slider-row" data-axis="brightness"><span>Brightness <small>밝기</small></span><input type="range" min="0" max="1" step="0.01" data-axis="brightness"><output>0.00</output></label>
+              <label class="slider-row" data-axis="warmth"><span>Warmth <small>온기</small></span><input type="range" min="0" max="1" step="0.01" data-axis="warmth"><output>0.00</output></label>
+            </div>
+            <div class="form-row scope-row">
+              <label>Scope / 범위
+                <select id="scopeKind">
+                  <option value="whole_project">Whole project / 전체</option>
+                  <option value="final_section">Final section / 마지막 구간</option>
+                  <option value="section_id">Selected section / 선택 구간</option>
+                </select>
+              </label>
+              <label>Section / 구간
+                <select id="sectionSelect" disabled><option value="">—</option></select>
+              </label>
+            </div>
+            <button id="previewSemanticButton" class="primary wide" type="button">Preview selected change / 선택 변경 미리듣기</button>
+          </div>
+
+          <div class="card timeline-card">
+            <div class="card-heading"><h2>Sections / 구간</h2><span class="mono" id="durationLabel">—</span></div>
+            <div id="sectionTimeline" class="timeline empty">Create or open a project to see its structure.</div>
+            <div class="rule"></div>
+            <h3>Protected identity / 보호된 정체성</h3>
+            <div id="shapeLocks" class="lock-list"><span class="muted">—</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-inspect" class="panel" data-panel="inspect" aria-labelledby="inspectTitle" hidden>
+        <div class="panel-heading compact">
+          <div><span class="eyebrow">INSPECT</span><h1 id="inspectTitle">Know what changed.<br><span>무엇이 바뀌었는지 확인하세요.</span></h1></div>
+          <p>Accepted state, pending preview, HARD locks and durable revisions remain visibly separate.</p>
+        </div>
+
+        <div id="previewDecision" class="decision-card" hidden>
+          <div>
+            <span class="status-pill preview">PREVIEW · NOT ACCEPTED</span>
+            <h2>Pending change / 대기 중 변경</h2>
+            <p id="previewSummary" class="mono">—</p>
+          </div>
+          <div class="decision-actions">
+            <button id="discardButton" class="danger" type="button">Discard / 폐기</button>
+            <button id="acceptButton" class="primary" type="button">Accept version / 버전 승인</button>
+          </div>
+        </div>
+
+        <div class="grid inspect-grid">
+          <div class="card">
+            <div class="card-heading"><h2>Change diff / 변경 내역</h2><span id="diffCount" class="status-pill neutral">0</span></div>
+            <div id="diffList" class="diff-list"><p class="muted">No pending preview / 대기 중 preview 없음</p></div>
+          </div>
+          <div class="card">
+            <div class="card-heading"><h2>HARD locks / 하드 잠금</h2><span aria-hidden="true">🔒</span></div>
+            <div id="inspectLocks" class="lock-list"><span class="muted">—</span></div>
+          </div>
+        </div>
+
+        <div class="grid two lower-grid">
+          <div class="card">
+            <div class="card-heading"><h2>Branches / 브랜치</h2><span id="branchCount" class="status-pill neutral">0</span></div>
+            <div class="form-row">
+              <label>Current / 현재
+                <select id="branchSelect"></select>
+              </label>
+              <button id="checkoutButton" class="secondary align-end" type="button">Checkout / 전환</button>
+            </div>
+            <div class="form-row">
+              <label>New branch / 새 브랜치
+                <input id="newBranchName" placeholder="variation-a">
+              </label>
+              <button id="createBranchButton" class="secondary align-end" type="button">Create / 생성</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-heading"><h2>History / 승인 이력</h2><button id="historyRefreshButton" class="ghost compact-button" type="button">Refresh</button></div>
+            <div id="historyList" class="history-list"><p class="muted">—</p></div>
+          </div>
+        </div>
+
+        <div class="export-bar">
+          <div><strong>Canonical export / 공식 프로젝트 내보내기</strong><p id="exportResult" class="muted mono">No export yet / 아직 내보내지 않음</p></div>
+          <button id="exportButton" class="secondary" type="button">Export .musica / 내보내기</button>
+        </div>
+      </section>
+
+      <section id="panel-code" class="panel" data-panel="code" aria-labelledby="codeTitle" hidden>
+        <div class="panel-heading compact">
+          <div><span class="eyebrow">CODE</span><h1 id="codeTitle">Read the state. Don’t bypass it.<br><span>상태를 읽되, 우회하지 마세요.</span></h1></div>
+          <p>R2 exposes validated JSON as read-only evidence. Direct raw mutation is intentionally disabled.</p>
+        </div>
+        <div class="card code-card">
+          <div class="card-heading"><h2>Studio session JSON / 세션 JSON</h2><button id="copyJsonButton" class="ghost compact-button" type="button">Copy / 복사</button></div>
+          <pre id="jsonView" tabindex="0">{}</pre>
+        </div>
+        <div class="authority-note">
+          <strong>Authority chain / 권한 체계</strong>
+          <code>Browser → M4 Service → M3/M1/M0 → Preview → explicit Accept → M2 Accepted Revision</code>
+          <p>Browser memory, AI output and preview state never outrank the accepted `.musica` bundle.</p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    <span>MUSICA Studio · local-first</span>
+    <span>No telemetry · No cloud dependency · 명시적 승인 중심</span>
+  </footer>
+</body>
+</html>

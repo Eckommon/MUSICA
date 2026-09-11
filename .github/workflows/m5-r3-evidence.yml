@@ -1,0 +1,35 @@
+name: M5-R3 DAWproject Evidence
+
+on:
+  push:
+    branches: [m5-r3-dawproject-roundtrip-v0]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  m5-r3-dawproject-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA / MUSICA 설치
+        run: python -m pip install -e '.[dev]'
+      - name: Run bounded M5-R3 interchange tests / M5-R3 제한 교환 테스트
+        run: pytest -q tests/test_m5_r3_dawproject.py
+      - name: Generate M5-R3 DAWproject evidence / M5-R3 DAWproject 근거 생성
+        run: >-
+          python -m musica.m5_r3_demo
+          --blueprint examples/blueprints/valid/dark-electronic-20s-r1.json
+          --out artifacts/m5-r3-dawproject
+      - name: Upload M5-R3 evidence / M5-R3 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-m5-r3-dawproject
+          path: artifacts/m5-r3-dawproject
+          if-no-files-found: error

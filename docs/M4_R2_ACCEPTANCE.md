@@ -1,6 +1,6 @@
 # M4-R2 Acceptance / Browser Studio UI 수용 기준
 
-**Status / 상태:** ACTIVE GATE / 활성 게이트
+**Status / 상태:** **VALIDATED / 검증 완료**
 
 ## Objective / 목표
 
@@ -31,6 +31,24 @@ M4-R2는 검증된 M4-R1 application service를 실제 browser-deliverable local
 19. **HTTP integration proof / HTTP 통합 증명** — automated tests exercise static delivery plus create → preview → audio → Accept → history → export through HTTP.
 20. **Regression / 회귀** — M0→M4-R1 regressions remain green on Python 3.11/3.12.
 21. **Canonical evidence / 공식 근거** — Python 3.12 CI generates/uploads `musica-m4-r2-browser-studio` evidence.
+
+## Final acceptance evidence / 최종 수용 근거
+
+- implementation Issue: `#27`
+- implementation PR: `#28`
+- exact final PR head: `6ee200606dbf99419fa67e9aec3ad4e288a8c66d`
+- exact-head CI: `34551205586`
+- Python 3.11/3.12: **SUCCESS**
+- M0→M4-R2 evidence chain: **SUCCESS**
+- final artifact: `musica-m4-r2-browser-studio`
+- artifact ID: `10180901528`
+- artifact digest: `sha256:5c55c2f61ed53a1638479d1383cabb042d97be41599b36e04d65dea90cf57d5b`
+- implementation merge: `16707e25bf78b4141c44da24bf8e82f375d7c465`
+- durable evidence: `evidence/M4_R2_VALIDATION.md`
+
+All R2 criteria are accepted within the evidence boundary below.
+
+아래 근거 경계 범위에서 R2 수용 기준은 모두 충족되었습니다.
 
 ## Canonical product loop / 공식 제품 루프
 
@@ -69,8 +87,8 @@ Only M4-R1 explicit Accept → M2 commit → accepted revision
 
 ## Evidence boundary / 근거 경계
 
-M4-R2 validates a **browser-deliverable UI and same-origin HTTP integration**, not yet full browser automation or a human usability study. Those are M4-R3 Usable MVP acceptance concerns.
+M4-R2 validates a **browser-deliverable UI and same-origin HTTP integration**. It does not claim full real-browser automation or a human usability study. Those are M4-R3 Usable MVP acceptance concerns.
 
-M4-R2는 **browser-deliverable UI와 same-origin HTTP 통합**을 검증합니다. 전체 브라우저 자동화 또는 사람 대상 usability 검증은 M4-R3 Usable MVP 수용 범위입니다.
+M4-R2는 **browser-deliverable UI와 same-origin HTTP 통합**을 검증합니다. 실제 browser automation 또는 사람 대상 usability 검증은 주장하지 않으며 M4-R3 Usable MVP 수용 범위입니다.
 
 M4-R2 also does not validate production mastering, desktop installer/signing, cloud collaboration, live OpenAI execution, remote HTTP serving, or professional DAW/VST/sampler interoperability.

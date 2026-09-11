@@ -39,6 +39,20 @@
           "items": {"type": "string", "minLength": 1, "maxLength": 128}
         }
       }
+    },
+    "resources": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "resource_id", "sha256"],
+        "properties": {
+          "role": {"type": "string", "minLength": 1, "maxLength": 64},
+          "resource_id": {"type": "string", "minLength": 1, "maxLength": 128},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
     }
   }
 }

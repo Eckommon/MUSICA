@@ -74,7 +74,8 @@ def test_reference_renderer_contract_is_exact_bound_and_reproducible(tmp_path: P
     assert result_a["music_ir_sha256"] == request["music_ir_sha256"]
     assert result_a["status"] == "SUCCESS"
     assert result_a["audio_quality"]["status"] in {"PASS", "WARN"}
-    assert result_a["reproducibility"] == {"claim": "byte_exact", "verified": True}
+    # One render may carry the adapter claim but cannot self-verify reproducibility.
+    assert result_a["reproducibility"] == {"claim": "byte_exact", "verified": False}
 
     hashes_a = {item["role"]: item["sha256"] for item in result_a["artifacts"]}
     hashes_b = {item["role"]: item["sha256"] for item in result_b["artifacts"]}

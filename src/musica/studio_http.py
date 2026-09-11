@@ -38,6 +38,8 @@ _STATIC_ASSETS = {
     "/assets/app.css": ("app.css", "text/css; charset=utf-8"),
     "/assets/app.js": ("app.js", "text/javascript; charset=utf-8"),
 }
+_PROJECT_NAME_PATTERN_OLD = b'pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,63}"'
+_PROJECT_NAME_PATTERN_V = b'pattern="[A-Za-z0-9][A-Za-z0-9._\\-]{0,63}"'
 
 
 def _status_for_error(error: StudioServiceError) -> int:
@@ -58,8 +60,12 @@ def _static_bytes(name: str) -> bytes:
 
 
 def _browser_asset_bytes(name: str) -> bytes:
-    """Return one same-origin asset, prepending bounded Browser policy modules where needed."""
+    """Return one same-origin Browser asset with bounded compatibility/policy overlays."""
 
+    if name == "index.html":
+        # Modern HTML pattern validation uses UnicodeSets (`v`) semantics where '-'
+        # must be escaped inside a class. Preserve the exact accepted character set.
+        return _static_bytes("index.html").replace(_PROJECT_NAME_PATTERN_OLD, _PROJECT_NAME_PATTERN_V)
     if name == "app.js":
         return _static_bytes("create_policy.js") + b"\n" + _static_bytes("app.js")
     if name == "app.css":

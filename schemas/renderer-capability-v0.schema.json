@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/renderer-capability-v0.schema.json",
+  "title": "MUSICA RendererCapability v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["capability_version", "renderer_id", "renderer_version", "classification", "supported_inputs", "supported_outputs", "audio", "requirements", "reproducibility"],
+  "properties": {
+    "capability_version": {"const": "0"},
+    "renderer_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "renderer_version": {"type": "string", "minLength": 1, "maxLength": 64},
+    "classification": {"enum": ["deterministic", "stochastic"]},
+    "supported_inputs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"enum": ["music-ir-v0"]}
+    },
+    "supported_outputs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"enum": ["midi", "wav"]}
+    },
+    "audio": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sample_rates", "channels", "sample_width_bytes"],
+      "properties": {
+        "sample_rates": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 8000, "maximum": 192000}},
+        "channels": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "enum": [1, 2]}},
+        "sample_width_bytes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "enum": [1, 2, 3, 4]}}
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["external_binary", "plugin_host", "network"],
+      "properties": {
+        "external_binary": {"type": "boolean"},
+        "plugin_host": {"type": "boolean"},
+        "network": {"type": "boolean"}
+      }
+    },
+    "reproducibility": {"enum": ["byte_exact", "stable_parameters", "best_effort", "none"]}
+  }
+}

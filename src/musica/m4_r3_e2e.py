@@ -12,7 +12,7 @@ import threading
 from pathlib import Path
 from typing import Any
 
-from .evidence import artifact_record, sha256_file, write_canonical_json
+from .evidence import artifact_record, write_canonical_json
 from .studio import StudioService
 from .studio_http import create_local_server
 
@@ -76,6 +76,13 @@ def _screenshot(page, target: Path) -> Path:
     return target
 
 
+def _open_studio(page, base: str, expect) -> None:
+    """Navigate without treating long-lived media connections as page readiness."""
+
+    page.goto(base + "/", wait_until="domcontentloaded")
+    expect(page.locator("#connectionBadge")).to_contain_text("READY")
+
+
 def run_suite(out_dir: str | Path) -> dict[str, Any]:
     try:
         from playwright.sync_api import expect, sync_playwright
@@ -121,8 +128,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
 
         try:
             # E2E-01: real browser create + accepted media.
-            page.goto(base1 + "/", wait_until="networkidle")
-            expect(page.locator("#connectionBadge")).to_contain_text("READY")
+            _open_studio(page, base1, expect)
             page.locator("#projectSlug").fill("browser-e2e")
             page.locator("#createPrompt").fill(
                 "Create a restrained dark electronic 8-second technology cue that becomes more urgent near the end."
@@ -220,9 +226,8 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
             page.locator("#createBranchButton").click()
             expect(page.locator("#sideBranch")).to_have_text("browser-variation")
             expect(page.locator("#branchSelect")).to_have_value("browser-variation")
+            expect(page.locator("#historyList .history-item")).to_have_count(2)
             history_count = page.locator("#historyList .history-item").count()
-            if history_count < 2:
-                raise RuntimeError("Browser history did not expose accepted revisions")
             page.locator("#exportButton").click()
             expect(page.locator("#exportResult")).to_contain_text("exports/")
             export_text = page.locator("#exportResult").text_content() or ""
@@ -288,8 +293,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
                 ),
             )
             try:
-                page2.goto(base2 + "/", wait_until="networkidle")
-                expect(page2.locator("#connectionBadge")).to_contain_text("READY")
+                _open_studio(page2, base2, expect)
                 page2.locator("#openProjectSlug").fill("browser-e2e")
                 page2.locator("#openForm button[type=submit]").click()
                 expect(page2.locator("#activeProject")).to_be_visible()

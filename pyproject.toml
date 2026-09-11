@@ -17,8 +17,14 @@ dev = [
   "pytest>=8.3,<9",
 ]
 
+[project.scripts]
+musica-studio = "musica.studio_server:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"musica.studio_web" = ["*.html", "*.css", "*.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

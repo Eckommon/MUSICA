@@ -60,6 +60,7 @@ with wave.open(str(out), "wb") as handle:
         handle.writeframes(frame * count)
         remaining -= count
 '''
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(script, encoding="utf-8")
     path.chmod(0o755)
     return path

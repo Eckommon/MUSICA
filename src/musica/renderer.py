@@ -1,6 +1,6 @@
-"""Renderer-neutral adapter boundary for MUSICA M5-R1.
+"""Renderer-neutral adapter boundary for MUSICA M5-R1+.
 
-MUSICA M5-R1용 renderer-neutral adapter 경계.
+MUSICA M5-R1+용 renderer-neutral adapter 경계.
 
 The renderer receives validated Music IR plus an exact-hash-bound request and may only
 emit artifacts/evidence below a caller-provided workspace. It never receives project
@@ -20,10 +20,11 @@ from .render import DEFAULT_SAMPLE_RATE, RENDERER_VERSION, render_midi, render_w
 
 REFERENCE_RENDERER_ID = "musica-reference-local"
 REFERENCE_ADAPTER_VERSION = "0.1.0"
+FLUIDSYNTH_RENDERER_ID = "musica-fluidsynth-local"
 
 
 class RendererError(ContractError):
-    """Raised when the renderer boundary or result violates M5-R1 policy."""
+    """Raised when the renderer boundary or result violates M5 policy."""
 
 
 class RendererAdapter(Protocol):
@@ -56,8 +57,9 @@ def build_renderer_request(
     channels: int = 1,
     sample_width_bytes: int = 2,
     quality_preferences: list[str] | None = None,
+    resources: list[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
-    request = {
+    request: dict[str, Any] = {
         "request_version": "0",
         "request_id": request_id,
         "music_ir_sha256": music_ir_sha256(music_ir),
@@ -72,6 +74,8 @@ def build_renderer_request(
         },
         "hints": {"quality_preferences": list(quality_preferences or [])},
     }
+    if resources is not None:
+        request["resources"] = [dict(item) for item in resources]
     validate_contract(request, "renderer-request-v0.schema.json")
     return request
 
@@ -232,6 +236,10 @@ _RENDERERS: dict[str, RendererAdapter] = {
 
 
 def get_renderer(renderer_id: str) -> RendererAdapter:
+    if renderer_id == FLUIDSYNTH_RENDERER_ID:
+        from .fluidsynth_renderer import FluidSynthRendererAdapter
+
+        return FluidSynthRendererAdapter.from_environment()
     try:
         return _RENDERERS[renderer_id]
     except KeyError as exc:
@@ -248,7 +256,7 @@ def render_with_registry(
 
 
 def verify_result_artifacts(result: dict[str, Any], workspace: str | Path) -> None:
-    """Fail closed if a validated result no longer matches its artifact bytes."""
+    """Fail closed if a validated result no longer matches its artifact/provenance bytes."""
 
     validate_contract(result, "renderer-result-v0.schema.json")
     root = Path(workspace).resolve()
@@ -262,3 +270,13 @@ def verify_result_artifacts(result: dict[str, Any], workspace: str | Path) -> No
             raise RendererError(f"renderer artifact size mismatch: {artifact['path']}")
         if sha256_file(path) != artifact["sha256"]:
             raise RendererError(f"renderer artifact hash mismatch: {artifact['path']}")
+
+    provenance = result.get("provenance")
+    if provenance is not None:
+        path = (root / provenance["manifest_path"]).resolve()
+        if path != root and root not in path.parents:
+            raise RendererError("renderer provenance contains workspace traversal")
+        if not path.is_file():
+            raise RendererError("renderer provenance manifest is missing")
+        if sha256_file(path) != provenance["manifest_sha256"]:
+            raise RendererError("renderer provenance hash mismatch")

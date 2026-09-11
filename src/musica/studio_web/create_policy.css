@@ -67,6 +67,11 @@
   font-weight: 500;
 }
 
+/* Author display rules must never override semantic hidden state after Accept/Discard. */
+.decision-card[hidden] {
+  display: none;
+}
+
 @media (max-width: 720px) {
   .identity-lock-options { grid-template-columns: 1fr; }
   .identity-lock-heading { align-items: flex-start; flex-direction: column; }

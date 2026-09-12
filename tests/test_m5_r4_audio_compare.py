@@ -177,10 +177,11 @@ def test_native_format_differences_are_visible_confounds(tmp_path: Path):
 
 def test_objective_metrics_are_not_preference_verdicts(tmp_path: Path):
     result, *_ = _compare(tmp_path)
-    serialized = canonical_json_bytes(result).decode("utf-8").upper()
-    assert "RENDERER_B_BETTER" not in serialized
-    assert "SUPERIOR" not in serialized
+    assert result["verdict"] in {"COMPARABLE_OBJECTIVE_ONLY", "NOT_COMPARABLE"}
+    assert result["claim_boundary"]["perceptual_superiority"] == "UNKNOWN"
+    assert result["claim_boundary"]["human_preference_claim_allowed"] is False
     assert all(item["status"] in {"MEASURED", "NOT_APPLICABLE", "UNKNOWN"} for item in result["paired_deltas"])
+    assert all("better" not in item["metric"].lower() and "worse" not in item["metric"].lower() for item in result["paired_deltas"])
 
 
 def test_source_music_ir_mismatch_fails_closed_to_not_comparable(tmp_path: Path):

@@ -2,227 +2,209 @@
 
 ## Exact resume point / 정확한 재개점
 
-**M5-R4 — COMPARATIVE MUSIC / AUDIO QUALITY EVALUATION v0 / M5-R4 — 비교 음악·오디오 품질 평가 v0**
+**M5-R4B — CONTROLLED PAIRED RENDER EVALUATION v0 / M5-R4B — 통제된 쌍대 렌더 평가 v0**
 
-M5-R3 is closed as `VALIDATED — BOUNDED` once this state-only closure reaches main. The next mission is not another renderer implementation and not an immediate claim that FluidSynth/FluidR3 sounds better. The next mission is to design and execute a controlled evaluation that separates **technical audio validity, renderer capability and perceived/music quality**.
+M5-R3 is `VALIDATED — BOUNDED`. M5-R4A defines the comparison authority, objective metric vocabulary, normalization limits, comparability gate and claim boundary. Once the M5-R4A contract PR is merged, the next task is **implementation and evidence**, not another broad metric brainstorm.
 
-이 state-only closure가 main에 병합되면 M5-R3는 `VALIDATED — BOUNDED`로 종결됩니다. 다음 작업은 새 renderer 추가나 FluidSynth/FluidR3가 더 좋게 들린다는 즉시 주장이 아닙니다. **기술적 오디오 유효성, renderer capability, 청감·음악 품질**을 분리하는 통제 평가를 설계·실행하는 것이 다음 mission입니다.
+M5-R3는 `VALIDATED — BOUNDED`입니다. M5-R4A는 비교 권한, 객관 지표 어휘, normalization 한계, comparability gate, claim boundary를 정의합니다. M5-R4A 계약 PR이 병합되면 다음 작업은 추가 지표 브레인스토밍이 아니라 **구현과 근거 생성**입니다.
 
-## Governing prior evidence / 선행 권위
+Governing Issue / 지배 Issue:
 
-Read before work:
+- `#46 — M5-R4A — Comparative Audio Evaluation Contract v0`
 
-- `evidence/M5_R1_VALIDATION.md`
-- `evidence/M5_R2_VALIDATION.md`
-- `evidence/M5_R3_VALIDATION.md`
-- `docs/M5_R2_RUNTIME.md`
-- `docs/M5_R3_RUNTIME.md`
-- `memory/CURRENT_STATE.md`
+Normative M5-R4 contract / 규범 계약:
 
-M5-R2 explicitly proved 48 kHz stereo renderer capability but **did not prove perceptual superiority**. M5-R4 exists to address that unknown without overstating evidence.
+- `docs/M5_R4_EVALUATION_CONTRACT.md`
+- `docs/M5_R4_ACCEPTANCE.md`
+- `schemas/audio-comparison-result-v0.schema.json`
 
-## Mission objective / mission 목표
+## Do not reopen the contract casually / 계약을 임의 재개하지 말 것
 
-Create an evidence-backed comparison framework capable of answering, for controlled paired renders:
+The following are frozen for the first bounded implementation unless contradictory execution evidence requires a contract amendment:
 
-1. Are both outputs technically valid under the same musical source authority?
-2. Are differences caused by renderer/content/config rather than different composition state?
-3. Which objective audio descriptors differ, and by how much?
-4. What can and cannot be inferred about perceptual/music quality without human-subject evidence?
-5. Can MUSICA record comparison evidence reproducibly enough to support future renderer selection or quality optimization?
+- objective metric set;
+- no comparison-time resampling;
+- no gain/loudness matching;
+- no time stretching;
+- raw artifact preservation;
+- common physical spectral frequency support;
+- same-source Music IR authority;
+- no human-preference inference from machine metrics.
 
-## Required phase order / 필수 단계 순서
+## Initial controlled pair / 초기 통제 pair
 
-Do not start with subjective scoring. Proceed in this order:
+Use the existing dark-electronic canonical fixture:
 
 ```text
-M5-R4A Evaluation Contract
-→ exact source/paired-render binding
-→ objective descriptor design
-→ confound controls
-→ deterministic/reproducible evidence format
-→ paired reference-vs-FluidSynth execution
-→ objective report + waveform/spectral evidence
-→ optional bounded machine heuristic analysis
-→ claim-boundary review
-→ durable evidence
-→ exact-head CI
-→ merge/state closure
+same accepted Blueprint revision
+→ same exact canonical Music IR SHA-256
+├─ A: musica-reference-local
+│    22,050 Hz / mono / 16-bit PCM
+└─ B: musica-fluidsynth-local
+     FluidSynth 2.6.0 + exact-hash FluidR3_GM 3.1
+     48,000 Hz / stereo / 16-bit PCM
 ```
 
-## M5-R4A — Evaluation contract first / 평가 계약 우선
+The first implementation SHOULD render both A and B in the same Windows CI job from the same checkout and serialized Music IR. This avoids turning environment drift into an untracked confound.
 
-Create a normative acceptance/evaluation specification before implementation. It SHALL distinguish at least three evidence layers:
+## M5-R4B implementation package / 구현 패키지
 
-### Layer 1 — Technical validity / 기술 유효성
-
-Examples:
-
-- exact source Music IR hash equality;
-- requested/final duration;
-- sample rate/channels/sample width;
-- clipping/silence/DC offset/invalid samples;
-- renderer/runtime/content/config provenance;
-- artifact SHA-256;
-- render success/failure and normalization policy.
-
-### Layer 2 — Objective comparative descriptors / 객관 비교 지표
-
-Select bounded, reproducible descriptors with explicit units and interpretation limits, for example:
-
-- integrated/RMS-like level descriptors where implementation is dependency-safe;
-- peak/crest factor;
-- stereo correlation or channel-difference evidence where applicable;
-- spectral centroid/band-energy descriptors;
-- spectral flatness/rolloff or similarly bounded timbral descriptors;
-- transient/onset density if reliably implementable;
-- silence ratio/dynamic-range proxies.
-
-Exact metric set must be selected and documented before coding. Avoid introducing a heavy ML dependency merely to create a score.
-
-### Layer 3 — Perceptual/music-quality claims / 청감·음악 품질 주장
-
-Default state:
+Create a fresh branch from the merged M5-R4A main, preferably:
 
 ```text
+m5-r4b-paired-audio-evaluation-v0
+```
+
+Implement responsibility boundaries along these lines:
+
+```text
+src/musica/audio_compare.py
+  - normalized PCM loading
+  - time-domain metrics
+  - spectral metrics
+  - pair comparability validation
+  - paired delta construction
+  - machine result generation
+
+src/musica/m5_r4_demo.py
+  - exact-source compile/render orchestration
+  - reference + FluidSynth paired execution
+  - evidence manifest/report generation
+
+tests/test_m5_r4_audio_compare.py
+  - metric unit tests
+  - source mismatch negative
+  - QA FAIL negative
+  - missing provenance negative
+  - normalization-policy negative
+  - perceptual-claim tamper negative
+  - deterministic/reproducibility checks
+
+.github/workflows/m5-r4-evidence.yml
+  - Windows paired execution
+  - exact FluidSynth/SoundFont provisioning reused from M5-R2
+  - both renderers in one job
+  - upload bounded evidence artifact
+```
+
+Exact filenames may change if a cleaner structure is justified, but the responsibility split must stay inspectable.
+
+## Dependency policy / 의존성 정책
+
+M5-R4B may add **NumPy only if needed for deterministic FFT/vector analysis**.
+
+Do not introduce SciPy, librosa, a perceptual foundation model, or a heavy ML stack merely to produce a quality score.
+
+If NumPy is added:
+
+- pin a bounded compatible version range;
+- record the observed version in evidence;
+- keep formulas/policies in MUSICA-owned code;
+- do not outsource claim semantics to library defaults.
+
+## Frozen objective metric set / 고정 객관 지표
+
+Implement exactly the v0 set from `docs/M5_R4_EVALUATION_CONTRACT.md`:
+
+1. RMS dBFS;
+2. peak dBFS;
+3. crest factor dB;
+4. silence ratio at `-80 dBFS` frame threshold;
+5. normalized DC offset;
+6. stereo correlation when applicable;
+7. stereo difference RMS dBFS when applicable;
+8. spectral centroid Hz;
+9. spectral rolloff 95% Hz;
+10. low-band energy ratio `20–250 Hz`;
+11. mid-band energy ratio `250–4000 Hz`;
+12. high-band energy ratio `4000 Hz–pair ceiling`.
+
+Spectral policy:
+
+```text
+channel projection = arithmetic channel mean
+window             = Hann
+window duration    = 50 ms
+hop                 = 50% overlap
+frequency floor     = 20 Hz
+pair ceiling        = min(10000 Hz, 0.45 * min(sr_a, sr_b))
+comparison resample = NONE
+```
+
+## Comparability authority / 비교 가능성 권한
+
+A pair can become `COMPARABLE` only when all required source/QA/provenance/duration gates pass.
+
+At minimum fail closed to `NOT_COMPARABLE` when:
+
+- Music IR hashes differ;
+- Blueprint/source binding differs unexpectedly;
+- required AudioQualityReport is `FAIL`;
+- required runtime/content/config provenance is absent;
+- target duration or analysis window is ambiguous;
+- a hidden comparison transform is attempted;
+- raw artifacts are replaced by normalized artifacts;
+- result contract is tampered to claim perceptual superiority.
+
+## Claim boundary / 주장 경계
+
+Every M5-R4-v0 report SHALL retain:
+
+```text
+HUMAN_SUBJECT_EVIDENCE = NOT_VALIDATED
 PERCEPTUAL_SUPERIORITY = UNKNOWN
-HUMAN_SUBJECT_EVIDENCE = NOT VALIDATED
+HUMAN_PREFERENCE_CLAIM_ALLOWED = false
 ```
 
-Machine metrics or an LLM judgment SHALL NOT be presented as proof that one renderer sounds better to humans. If no controlled listening study is executed, the milestone may validate the **comparison framework and objective differences**, not perceptual superiority.
+Do not use `BETTER`, `WORSE`, `SUPERIOR`, or an equivalent preference verdict.
 
-## Paired-source authority / paired source 권한
+## Evidence target / 근거 목표
 
-Every A/B comparison SHALL prove both paths render the **same exact canonical Music IR** or another explicitly equivalent frozen source representation.
+M5-R4B should produce an artifact package containing at least:
 
-Required bindings:
+- frozen canonical Music IR bytes/hash;
+- renderer A request/result/QA and raw WAV;
+- renderer B request/result/QA and raw WAV;
+- comparison JSON validated by `audio-comparison-result-v0.schema.json`;
+- analyzer policy/version;
+- objective metric values and deltas;
+- confound records;
+- negative-case results;
+- reproducibility result;
+- top-level evidence manifest with SHA-256 for every included artifact.
 
-- accepted Blueprint revision ID/hash;
-- canonical Music IR SHA-256;
-- renderer adapter ID/version;
-- renderer executable/runtime identity where external;
-- external content identity/hash where applicable;
-- exact renderer config;
-- output artifact hashes.
+Large external SoundFont content remains outside normal Git.
 
-A pair with different composition state is invalid for renderer-quality comparison.
+## Required merge gate / 필수 병합 gate
 
-## Confound policy / 교란 통제 정책
+M5-R4B cannot merge until the evidence-bearing exact head passes:
 
-The evaluation contract SHALL define how to handle at least:
+- Python 3.11 full suite;
+- Python 3.12 full suite and prior evidence chain;
+- M4-R3 Chromium regression;
+- M5-R2 Windows FluidSynth evidence;
+- M5-R3 DAWproject evidence;
+- M5-R4 paired Windows evidence workflow;
+- durable `evidence/M5_R4_VALIDATION.md` on the exact PR head.
 
-- mono vs stereo capability difference;
-- sample-rate difference;
-- duration/release-tail normalization;
-- gain/loudness differences;
-- different instrument/sample content;
-- renderer effects/reverb defaults;
-- nondeterminism or environment differences.
+## Completion claim / 완료 주장
 
-Do not silently normalize away a difference that is itself part of the renderer behavior. Record raw and comparison-normalized evidence separately when normalization is necessary.
+Without human-subject evidence, successful M5-R4 may claim only:
 
-## Comparison result model / 비교 결과 모델
+> MUSICA can reproducibly compare two exact-source renderer outputs for technical validity and bounded objective signal descriptors while preserving provenance, confounds and perceptual-claim boundaries.
 
-Prefer a machine-readable result with at least:
-
-```text
-source_binding
-renderer_a
-renderer_b
-raw_artifacts
-technical_validity
-objective_metrics_a
-objective_metrics_b
-paired_deltas
-normalizations_applied
-confounds
-interpretations
-claim_boundary
-verdict
-```
-
-Possible bounded verdict vocabulary should separate evidence quality from preference, e.g.:
-
-```text
-COMPARABLE
-NOT_COMPARABLE
-OBJECTIVE_DIFFERENCE_OBSERVED
-NO_MATERIAL_OBJECTIVE_DIFFERENCE_OBSERVED
-PERCEPTUAL_PREFERENCE_UNKNOWN
-```
-
-Do not use `BETTER`/`WORSE` without an explicitly defined, validated preference criterion.
-
-## Initial fixture / 초기 fixture
-
-Begin with the existing deterministic dark-electronic canonical fixture used in M5-R1/M5-R2/M5-R3 so prior source hashes and renderer evidence remain reusable.
-
-First pair:
-
-```text
-same accepted Blueprint
-→ same exact canonical Music IR
-├─ musica-reference-local
-└─ musica-fluidsynth-local + pinned FluidR3_GM 3.1
-```
-
-If CI cannot practically execute both paths in one comparable environment, the acceptance contract must define a hash-bound artifact handoff rather than pretending the runs are directly paired.
-
-## Human listening study / 인간 청취 평가
-
-A formal human study is **not required** for the first M5-R4 bounded closure unless practical and ethically/operationally sound. If absent, record:
-
-```text
-HUMAN_SUBJECT_EVIDENCE = NOT VALIDATED
-PERCEPTUAL_SUPERIORITY = UNKNOWN
-```
-
-A later phase may add blinded AB/ABX or preference testing with a separate protocol.
-
-## Required negative cases / 필수 음성 케이스
-
-At minimum prove that comparison fails closed or becomes `NOT_COMPARABLE` when:
-
-- source Music IR hashes differ;
-- one artifact fails technical QA;
-- required provenance is missing;
-- renderer/content identity is missing where required;
-- duration normalization is ambiguous or unrecorded;
-- an attempted comparison silently substitutes a different Blueprint/revision.
-
-## Repository discipline / 레포 규율
-
-Use normal workflow:
-
-```text
-Issue
-→ evaluation/acceptance specification branch
-→ PR + exact-head CI
-→ merge
-→ fresh implementation branch
-→ tests + paired evidence
-→ durable validation
-→ exact-head CI
-→ merge
-→ state closure
-```
-
-Do not combine renderer selection, subjective product claims and evaluation implementation into one opaque change.
+It may not claim one renderer sounds better to humans.
 
 ## Non-goals / 비목표
 
-M5-R4-v0 does not require or claim:
+Do not add in M5-R4B:
 
-- universal audio-quality scoring;
-- scientific proof of human preference without human evidence;
-- mastering-grade evaluation;
-- training a proprietary perceptual model;
-- adding another renderer before comparison discipline exists;
-- replacing professional listening tests;
-- optimizing music generation merely to improve selected metrics.
-
-## Exit condition / 종료 조건
-
-M5-R4 may close only when repository evidence can truthfully state what was technically compared, what objective differences were observed, what confounds were controlled, and what perceptual conclusions remain unknown.
+- a new renderer backend;
+- a universal quality score;
+- LUFS just to force a ranking;
+- subjective LLM scoring presented as listening evidence;
+- ABX significance without an actual study;
+- optimization of music generation to game selected metrics;
+- product marketing claims from a single fixture.
 
 **Repository evidence remains authoritative over conversation or model memory. / 레포 근거는 대화·모델 기억보다 우선합니다.**

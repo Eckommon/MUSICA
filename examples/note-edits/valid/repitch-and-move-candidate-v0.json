@@ -1,0 +1,36 @@
+{
+  "candidate_version": "0",
+  "candidate_id": "NEC-M6-R0-001",
+  "authority_target": "blueprint_exact_note_material",
+  "source": {
+    "project_id": "MUSICA-M0-DEMO-001",
+    "revision_id": "rev-001",
+    "blueprint_sha256": "085d44ac294631e0816b6cb3e58bc5d616b29dec408f867633506e83a2f7222b"
+  },
+  "actor": {
+    "kind": "user",
+    "actor_id": "local-user"
+  },
+  "reason": "Move the second motif note slightly later and raise it by two semitones while preserving note identity.",
+  "operations": [
+    {
+      "operation_id": "OP-001",
+      "op": "MOVE",
+      "target": {
+        "note_id": "N-MOTIF-002",
+        "part_id": "P-SYNTH"
+      },
+      "start_beat": 1.25
+    },
+    {
+      "operation_id": "OP-002",
+      "op": "REPITCH",
+      "target": {
+        "note_id": "N-MOTIF-002",
+        "part_id": "P-SYNTH"
+      },
+      "pitch": 67
+    }
+  ],
+  "preview_only": true
+}

@@ -9,7 +9,7 @@
   "properties": {
     "preview_version": {"const": "0"},
     "preview_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
-    "kind": {"enum": ["semantic_control", "director_edit"]},
+    "kind": {"enum": ["semantic_control", "director_edit", "note_edit"]},
     "parent_revision_id": {"type": "string", "minLength": 1},
     "candidate_revision_id": {"type": "string", "minLength": 1},
     "branch": {"type": "string", "minLength": 1},

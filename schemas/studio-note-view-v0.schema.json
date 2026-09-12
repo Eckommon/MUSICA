@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/studio-note-view-v0.schema.json",
+  "title": "MUSICA Studio Exact-Note View v0",
+  "description": "Read-only browser-facing projection of accepted exact-note Blueprint state plus an optional non-canonical pending note preview.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "view_version",
+    "exact_note_editing_available",
+    "project_id",
+    "revision_id",
+    "blueprint_sha256",
+    "branch",
+    "timing",
+    "editable_part",
+    "sections",
+    "notes",
+    "note_locks",
+    "preview",
+    "capabilities"
+  ],
+  "properties": {
+    "view_version": {"const": "0"},
+    "exact_note_editing_available": {"type": "boolean"},
+    "project_id": {"type": "string", "minLength": 1},
+    "revision_id": {"type": "string", "minLength": 1},
+    "blueprint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "branch": {"type": "string", "minLength": 1},
+    "timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bpm", "ppq", "total_beats"],
+      "properties": {
+        "bpm": {"type": "number", "minimum": 20, "maximum": 300},
+        "ppq": {"type": "integer", "minimum": 24, "maximum": 9600},
+        "total_beats": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "editable_part": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["part_id", "role", "instrument_family"],
+      "properties": {
+        "part_id": {"type": "string", "minLength": 1},
+        "role": {"enum": ["motif", "lead"]},
+        "instrument_family": {"type": "string", "minLength": 1}
+      }
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["section_id", "name", "start_beat", "end_beat"],
+        "properties": {
+          "section_id": {"type": "string", "minLength": 1},
+          "name": {"type": "string", "minLength": 1},
+          "start_beat": {"type": "number", "minimum": 0},
+          "end_beat": {"type": "number", "exclusiveMinimum": 0}
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "maxItems": 100000,
+      "items": {"$ref": "#/$defs/exactNote"}
+    },
+    "note_locks": {
+      "type": "array",
+      "maxItems": 100000,
+      "items": {"$ref": "#/$defs/noteLock"}
+    },
+    "preview": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["preview_id", "candidate_revision_id", "candidate_blueprint_sha256", "notes", "stable_note_diff", "changed_note_ids"],
+      "properties": {
+        "preview_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "candidate_revision_id": {"type": "string", "minLength": 1},
+        "candidate_blueprint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "notes": {"type": "array", "maxItems": 100000, "items": {"$ref": "#/$defs/exactNote"}},
+        "stable_note_diff": {"type": "array", "maxItems": 100000, "items": {"type": "object"}},
+        "changed_note_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_bound_candidates",
+        "preview_only",
+        "explicit_accept_required",
+        "project_mutation_authorized",
+        "music_ir_mutation_authorized",
+        "operations"
+      ],
+      "properties": {
+        "source_bound_candidates": {"const": true},
+        "preview_only": {"const": true},
+        "explicit_accept_required": {"const": true},
+        "project_mutation_authorized": {"const": false},
+        "music_ir_mutation_authorized": {"const": false},
+        "operations": {
+          "type": "array",
+          "uniqueItems": true,
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {"enum": ["INSERT", "DELETE", "MOVE", "RESIZE", "REPITCH", "SET_VELOCITY"]}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "exactNote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["note_id", "part_id", "section_id", "start_beat", "duration_beats", "pitch", "velocity"],
+      "properties": {
+        "note_id": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+        "part_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "section_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+        "start_beat": {"type": "number", "minimum": 0},
+        "duration_beats": {"type": "number", "exclusiveMinimum": 0},
+        "pitch": {"type": "integer", "minimum": 0, "maximum": 127},
+        "velocity": {"type": "integer", "minimum": 1, "maximum": 127},
+        "articulation": {"enum": ["normal", "legato", "staccato", "tenuto", "accent"]},
+        "identity_tags": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 128}}
+      }
+    },
+    "noteLock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lock_version", "lock_id", "strength", "selector", "mode", "inheriting", "value", "reason"],
+      "properties": {
+        "lock_version": {"const": "0"},
+        "lock_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "strength": {"const": "HARD"},
+        "selector": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["part_id", "note_id", "property"],
+          "properties": {
+            "part_id": {"type": "string", "minLength": 1},
+            "note_id": {"type": "string", "minLength": 1},
+            "property": {"enum": ["pitch", "start_beat", "duration_beats", "velocity"]}
+          }
+        },
+        "mode": {"const": "exact"},
+        "inheriting": {"type": "boolean"},
+        "value": {"type": "number"},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"exact_note_editing_available": {"const": false}}},
+      "then": {
+        "properties": {
+          "editable_part": {"const": null},
+          "notes": {"maxItems": 0},
+          "note_locks": {"maxItems": 0},
+          "preview": {"const": null}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"exact_note_editing_available": {"const": true}}},
+      "then": {"properties": {"editable_part": {"type": "object"}}}
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "candidate_version": "0",
+  "candidate_id": "NEC-M6-R0-INVALID-IR",
+  "authority_target": "music_ir",
+  "source": {
+    "project_id": "MUSICA-M0-DEMO-001",
+    "revision_id": "rev-001",
+    "blueprint_sha256": "085d44ac294631e0816b6cb3e58bc5d616b29dec408f867633506e83a2f7222b"
+  },
+  "actor": {
+    "kind": "user",
+    "actor_id": "local-user"
+  },
+  "reason": "This fixture is deliberately invalid because Music IR may not be selected as accepted creative authority.",
+  "operations": [
+    {
+      "operation_id": "OP-INVALID-IR-001",
+      "op": "REPITCH",
+      "target": {
+        "note_id": "N-MOTIF-001",
+        "part_id": "P-SYNTH"
+      },
+      "pitch": 64
+    }
+  ],
+  "preview_only": true
+}

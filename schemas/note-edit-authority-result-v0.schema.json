@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/note-edit-authority-result-v0.schema.json",
+  "title": "MUSICA Note Edit Authority Result v0",
+  "description": "Fail-closed authority decision for one non-canonical exact-note edit candidate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "result_version",
+    "candidate_id",
+    "source_revision_id",
+    "status",
+    "conflicts",
+    "preview_generation_allowed",
+    "explicit_accept_required",
+    "project_mutation_authorized",
+    "music_ir_mutation_authorized"
+  ],
+  "properties": {
+    "result_version": {"const": "0"},
+    "candidate_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "source_revision_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "status": {"enum": ["READY_FOR_PREVIEW", "BLOCKED"]},
+    "conflicts": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["conflict_id", "code", "status", "reason"],
+        "properties": {
+          "conflict_id": {"type": "string", "minLength": 1, "maxLength": 128},
+          "code": {
+            "enum": [
+              "STALE_SOURCE",
+              "HARD_LOCK_VIOLATION",
+              "CONSTRAINT_VIOLATION",
+              "INVALID_NOTE",
+              "UNKNOWN_NOTE",
+              "PART_MISMATCH",
+              "UNREPRESENTABLE_EDIT"
+            ]
+          },
+          "status": {"const": "BLOCKED"},
+          "operation_id": {"type": ["string", "null"], "maxLength": 128},
+          "note_id": {"type": ["string", "null"], "maxLength": 128},
+          "rule_id": {"type": ["string", "null"], "maxLength": 128},
+          "reason": {"type": "string", "minLength": 1, "maxLength": 2048}
+        }
+      }
+    },
+    "preview_generation_allowed": {"type": "boolean"},
+    "explicit_accept_required": {"const": true},
+    "project_mutation_authorized": {"const": false},
+    "music_ir_mutation_authorized": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "READY_FOR_PREVIEW"}}},
+      "then": {
+        "properties": {
+          "conflicts": {"maxItems": 0},
+          "preview_generation_allowed": {"const": true}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "BLOCKED"}}},
+      "then": {
+        "properties": {
+          "conflicts": {"minItems": 1},
+          "preview_generation_allowed": {"const": false}
+        }
+      }
+    }
+  ]
+}

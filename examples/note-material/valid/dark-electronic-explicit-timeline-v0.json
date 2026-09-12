@@ -1,0 +1,43 @@
+{
+  "material_version": "0",
+  "mode": "explicit_timeline",
+  "time_base": {
+    "unit": "quarter_note_beat",
+    "origin_beat": 0.0
+  },
+  "notes": [
+    {
+      "note_id": "N-MOTIF-001",
+      "part_id": "P-SYNTH",
+      "section_id": "S01",
+      "start_beat": 0.0,
+      "duration_beats": 0.75,
+      "pitch": 62,
+      "velocity": 82,
+      "articulation": "normal",
+      "identity_tags": ["motif-A", "anchor"]
+    },
+    {
+      "note_id": "N-MOTIF-002",
+      "part_id": "P-SYNTH",
+      "section_id": "S01",
+      "start_beat": 1.0,
+      "duration_beats": 0.75,
+      "pitch": 65,
+      "velocity": 76,
+      "articulation": "normal",
+      "identity_tags": ["motif-A"]
+    },
+    {
+      "note_id": "N-MOTIF-003",
+      "part_id": "P-SYNTH",
+      "section_id": "S01",
+      "start_beat": 2.0,
+      "duration_beats": 1.5,
+      "pitch": 69,
+      "velocity": 80,
+      "articulation": "tenuto",
+      "identity_tags": ["motif-A", "cadential-anchor"]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "result_version": "0",
+  "candidate_id": "NEC-M6-R0-001",
+  "source_revision_id": "rev-001",
+  "status": "READY_FOR_PREVIEW",
+  "conflicts": [],
+  "preview_generation_allowed": true,
+  "explicit_accept_required": true,
+  "project_mutation_authorized": false,
+  "music_ir_mutation_authorized": false
+}

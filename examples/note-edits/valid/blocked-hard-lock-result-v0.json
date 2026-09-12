@@ -1,0 +1,21 @@
+{
+  "result_version": "0",
+  "candidate_id": "NEC-M6-R0-LOCKED",
+  "source_revision_id": "rev-001",
+  "status": "BLOCKED",
+  "conflicts": [
+    {
+      "conflict_id": "M6-C-LOCK-001",
+      "code": "HARD_LOCK_VIOLATION",
+      "status": "BLOCKED",
+      "operation_id": "OP-LOCKED-001",
+      "note_id": "N-MOTIF-001",
+      "rule_id": "L-M6-EXACT-PITCH-001",
+      "reason": "This contract example shows the required result when an M6 stable-ID-aware HARD note lock resolves against the requested exact-note mutation. R0 defines the fail-closed result shape; M6-R1 must implement the stable-ID selector before claiming this runtime capability."
+    }
+  ],
+  "preview_generation_allowed": false,
+  "explicit_accept_required": true,
+  "project_mutation_authorized": false,
+  "music_ir_mutation_authorized": false
+}

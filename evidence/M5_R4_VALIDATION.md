@@ -1,59 +1,68 @@
 # M5-R4 Validation / M5-R4 검증 근거
 
-**Status / 상태:** `VALIDATED — BOUNDED ON EVIDENCE-BEARING PR HEAD / 근거 포함 PR head에서 제한 범위 검증 완료`
+**Status / 상태:** `VALIDATED — BOUNDED / 제한 범위 검증 완료`
 
 **Date / 날짜:** 2026-09-12
 
 ## 1. Verdict / 판정
 
-M5-R4 has executable evidence that MUSICA can compare two renderer outputs derived from the **same exact canonical Music IR** for technical validity and the frozen set of objective signal descriptors while preserving source/provenance authority, native-format differences, explicit confounds, reproducibility evidence and a fail-closed perceptual-claim boundary.
+M5-R4 has executable evidence that MUSICA can compare two renderer outputs derived from the **same exact canonical Music IR** for technical validity and a frozen objective signal-descriptor set while preserving source/provenance authority, native-format differences, explicit confounds, reproducibility evidence and a fail-closed perceptual-claim boundary.
 
-M5-R4는 **동일한 정확한 canonical Music IR**에서 파생된 두 renderer 출력을 기술 유효성과 고정된 객관 신호 지표 집합으로 비교할 수 있음을 실행 근거로 검증했습니다. 이 과정에서 source/provenance 권한, native format 차이, 명시적 confound, 재현성 근거, fail-closed 청감 주장 경계를 보존합니다.
+M5-R4는 **동일한 정확한 canonical Music IR**에서 파생된 두 renderer 출력을 기술 유효성과 고정된 객관 신호 지표 집합으로 비교할 수 있음을 실행 근거로 검증했습니다. source/provenance 권한, native format 차이, 명시적 confound, 재현성 근거, fail-closed 청감 주장 경계를 보존합니다.
 
-The validated claim is deliberately limited to:
+Validated result class / 검증 결과 등급:
 
-> **COMPARABLE_OBJECTIVE_ONLY**
+```text
+COMPARABLE_OBJECTIVE_ONLY
+```
 
-The evidence does **not** establish that either renderer sounds better to humans.
-
-검증된 주장은 의도적으로 `COMPARABLE_OBJECTIVE_ONLY`에 제한됩니다. 어느 renderer가 인간에게 더 좋게 들리는지는 검증하지 않았습니다.
+This does **not** establish that either renderer sounds better to humans.
 
 ## 2. Governing repository evidence / 지배 레포 근거
 
 ### Contract phase / 계약 단계
 
 - Issue `#46` — M5-R4A Comparative Audio Evaluation Contract v0 — **COMPLETED**
-- contract PR `#47`
+- PR `#47` — **MERGED**
 - contract exact head: `7aaedd273ef2d9b4908324537889da29e8f4a9eb`
-- contract MUSICA CI: `34672590806` — **SUCCESS**
-- contract M5-R3 regression: `34672590824` — **SUCCESS**
+- contract MUSICA CI run: `34672590806` — **SUCCESS**
 - contract merge: `fa8244009fde4c7a8968f775a000bfe1596b8b83`
 - normative contract: `docs/M5_R4_EVALUATION_CONTRACT.md`
-- normative acceptance: `docs/M5_R4_ACCEPTANCE.md`
+- acceptance contract: `docs/M5_R4_ACCEPTANCE.md`
 - machine contract: `schemas/audio-comparison-result-v0.schema.json`
 
 ### Implementation phase / 구현 단계
 
-- Issue `#48` — M5-R4B Controlled Paired Render Evaluation v0 — **OPEN until merge/closure**
-- implementation PR `#49`
-- first evidence-bearing PR head: `3f4f6bb31bc077ae7f018ad128353896b02ba6ad`
-- M5-R4 paired evidence run: `34673146578` — **SUCCESS**
-- MUSICA full CI run: `34673146596` — **SUCCESS**
-- M5-R3 DAWproject regression run: `34673146605` — **SUCCESS**
+- Issue `#48` — M5-R4B Controlled Paired Render Evaluation v0
+- PR `#49` — **MERGED**
+- first evidence-bearing head: `3f4f6bb31bc077ae7f018ad128353896b02ba6ad`
+- first PR M5-R4 evidence run: `34673146578` — **SUCCESS**
+- first PR full MUSICA CI: `34673146596` — **SUCCESS**
+- first PR M5-R3 regression: `34673146605` — **SUCCESS**
+- durable-evidence exact head: `818886a2834285dabdb5874a58f62606af0d2df7`
+- final M5-R3 regression run: `34673317011` — **SUCCESS**
+- final M5-R4 paired evidence run: `34673317029` — **SUCCESS**
+- final full MUSICA CI run: `34673317078` — **SUCCESS**
+- implementation merge: `34b54ce2cd30347a4d82868dde7ccbf886f51432`
 
-Full MUSICA CI on the evidence-bearing head kept green:
+The final exact head includes this durable evidence and passed all required merge gates before merge.
+
+최종 exact head에는 본 durable evidence가 포함되어 있으며 병합 전 모든 필수 gate를 통과했습니다.
+
+## 3. Final regression gate / 최종 회귀 gate
+
+The durable-evidence exact head kept green:
 
 - Python 3.11 full repository suite — **SUCCESS**
 - Python 3.12 full repository suite + prior evidence chain — **SUCCESS**
 - M4-R3 real Chromium E2E — **SUCCESS**
 - M5-R2 real Windows FluidSynth evidence — **SUCCESS**
 - M5-R3 DAWproject evidence — **SUCCESS**
+- M5-R4 paired Windows evidence — **SUCCESS**
 
-A final exact-head rerun after this durable evidence is committed remains required before merge. This document records the already-observed executable validation and does not pre-authorize merge if that final rerun regresses.
+No completion claim relies only on workflow configuration; the executable runs and uploaded evidence artifacts were inspected.
 
-이 durable evidence가 포함된 새 exact head에서 최종 재실행을 한 번 더 통과해야 병합할 수 있습니다. 본 문서는 이미 관측된 실행 검증을 기록하며 최종 재검증 실패 시 병합을 허용하지 않습니다.
-
-## 3. Initial controlled pair / 초기 통제 pair
+## 4. Initial controlled pair / 초기 통제 pair
 
 Canonical source fixture:
 
@@ -64,11 +73,9 @@ Canonical source fixture:
 - target duration: `20.0 s`
 - input Music IR unchanged after all renders: **true**
 
-The exact same serialized Music IR was supplied to both existing renderer paths within one Windows evidence job.
+The same serialized Music IR was supplied to both renderer paths inside one Windows evidence job.
 
-동일하게 직렬화된 Music IR이 하나의 Windows evidence job 안에서 두 기존 renderer 경로 모두에 전달되었습니다.
-
-## 4. Renderer A — reference / Renderer A — reference
+## 5. Renderer A — reference / Renderer A — reference
 
 - renderer: `musica-reference-local`
 - output: PCM WAV
@@ -78,9 +85,9 @@ The exact same serialized Music IR was supplied to both existing renderer paths 
 - duration: `20.0 s`
 - WAV SHA-256: `e049e83bdda5a1c5710bd4d09b3010ab414d27d5a6705398aae120ae9deac5b8`
 - WAV size: `882,044 bytes`
-- AudioQualityReport: accepted by comparability gate
+- required AudioQualityReport accepted by comparability gate
 
-## 5. Renderer B — FluidSynth / Renderer B — FluidSynth
+## 6. Renderer B — FluidSynth / Renderer B — FluidSynth
 
 - renderer: `musica-fluidsynth-local`
 - FluidSynth observed version: `2.6.0`
@@ -98,10 +105,10 @@ The exact same serialized Music IR was supplied to both existing renderer paths 
 - duration: `20.0 s`
 - WAV SHA-256: `e054ad9cb7d938f50f75d222c1522e71cc7a7f163e8ea7bf3f8dceec628bcfa3`
 - WAV size: `3,840,044 bytes`
-- renderer-level duration normalization: existing validated `trim_tail_to_requested_duration_v0` policy remains visible in provenance
-- AudioQualityReport: accepted by comparability gate
+- renderer-level duration normalization: existing `trim_tail_to_requested_duration_v0`, recorded in provenance
+- required AudioQualityReport accepted by comparability gate
 
-## 6. Comparison policy / 비교 정책
+## 7. Frozen comparison policy / 고정 비교 정책
 
 Analyzer:
 
@@ -110,30 +117,22 @@ Analyzer:
 - observed NumPy: `2.5.3`
 - policy: `musica-objective-audio-comparison-v0`
 
-Frozen policy:
-
 ```text
-sample domain             = native PCM → full-scale-normalized float64
-comparison resampling     = NONE
-comparison gain matching  = NONE
-comparison time stretching= NONE
-spectral channel policy   = arithmetic channel mean
-spectral window           = Hann / 50 ms
-spectral overlap          = 50%
-frequency floor           = 20 Hz
-common pair ceiling       = 9922.5 Hz
-silence threshold         = -80 dBFS
+sample domain              = native PCM → full-scale-normalized float64
+comparison resampling      = NONE
+comparison gain matching   = NONE
+comparison time stretching = NONE
+spectral channel policy    = arithmetic channel mean
+spectral window            = Hann / 50 ms
+spectral overlap           = 50%
+frequency floor            = 20 Hz
+common pair ceiling        = 9922.5 Hz
+silence threshold          = -80 dBFS
 ```
 
 No comparison-time audio artifact is synthesized or substituted for the raw evidence WAVs.
 
-비교를 위해 raw evidence WAV를 대체하는 재샘플링·gain matching·time stretching 등의 새 오디오 artifact를 만들지 않습니다.
-
-## 7. Objective result / 객관 결과
-
-The initial controlled pair produced the following frozen objective descriptors.
-
-초기 통제 pair의 고정 객관 지표 결과는 다음과 같습니다.
+## 8. Objective result / 객관 결과
 
 | Descriptor / 지표 | Reference A | FluidSynth B | B − A |
 |---|---:|---:|---:|
@@ -152,71 +151,62 @@ The initial controlled pair produced the following frozen objective descriptors.
 
 **No sign, magnitude or metric is interpreted as `BETTER`, `WORSE` or human preference.**
 
-**어떤 부호·크기·지표도 `BETTER`, `WORSE` 또는 인간 선호로 해석하지 않습니다.**
+## 9. Explicit confounds / 명시적 confound
 
-## 8. Explicit confounds / 명시적 confound
+The report preserves instead of hiding:
 
-The comparison report preserves instead of hiding:
-
-- `CHANNEL_LAYOUT_DIFFERENCE` — Reference mono vs FluidSynth stereo — `RECORDED`
+- `CHANNEL_LAYOUT_DIFFERENCE` — mono vs stereo — `RECORDED`
 - `SAMPLE_RATE_DIFFERENCE` — `22,050 Hz` vs `48,000 Hz` — `RECORDED`
-- `RENDERER_LEVEL_DURATION_NORMALIZATION` — FluidSynth validated tail trim remains visible — `RECORDED`
+- `RENDERER_LEVEL_DURATION_NORMALIZATION` — validated FluidSynth tail trim remains visible — `RECORDED`
 - `DEFAULT_EFFECT_OR_REVERB_DIFFERENCE` — renderer-internal contribution not independently isolated — `UNKNOWN`
 
-These facts limit interpretation. They are not silently removed by preprocessing.
+These facts constrain interpretation and are not silently removed by preprocessing.
 
-이 요소들은 해석의 한계를 정의하며 전처리로 조용히 제거하지 않습니다.
+## 10. Negative authority proof / 음성 권한 증명
 
-## 9. Negative authority proof / 음성 권한 증명
-
-The evidence suite proves fail-closed behavior for the bounded authority layer:
+The bounded authority layer proves fail-closed behavior:
 
 - different Music IR source → `NOT_COMPARABLE` — **PASS**
-- Blueprint binding mismatch → `NOT_COMPARABLE` — **PASS in unit test**
+- Blueprint binding mismatch → `NOT_COMPARABLE` — **PASS**
 - failed required AudioQualityReport → `NOT_COMPARABLE` — **PASS**
 - missing required FluidSynth content provenance → `NOT_COMPARABLE` — **PASS**
-- raw artifact hash tamper → `NOT_COMPARABLE` — **PASS in unit test**
+- raw artifact hash tamper → `NOT_COMPARABLE` — **PASS**
 - attempted perceptual-superiority schema tamper → **REJECTED**
-- hidden comparison resampling/gain matching in v0 contract → **REJECTED by contract tests**
+- hidden comparison resampling/gain matching under v0 contract → **REJECTED**
 
-The M5-R4 dedicated workflow executed **16 bounded contract/analyzer tests successfully** on Windows.
+The dedicated workflow executed **16 bounded contract/analyzer tests successfully** on Windows.
 
-## 10. Reproducibility / 재현성
+## 11. Reproducibility / 재현성
 
-The exact evidence job independently rendered and analyzed the pair twice.
-
-Results:
+The evidence job independently rendered and analyzed the pair twice.
 
 - reference WAV A/B SHA-256 identity: **true**
 - FluidSynth WAV A/B SHA-256 identity: **true**
-- objective metric values and paired deltas identity: **true**
+- objective metrics and paired deltas identity: **true**
 - canonical comparison JSON A/B identity: **true**
 - comparison A SHA-256: `cb480c03fef734148592d6aeb60049836837371880bfe2e978f03b69493c3343`
 - comparison B SHA-256: `cb480c03fef734148592d6aeb60049836837371880bfe2e978f03b69493c3343`
 
-This proves reproducibility for the exact observed Windows/runtime/content/config/policy boundary. It does not claim universal cross-platform byte identity.
+This proves reproducibility only for the exact observed Windows/runtime/content/config/policy boundary, not universal cross-platform byte identity.
 
-이는 관측된 정확한 Windows/runtime/content/config/policy 경계에서의 재현성을 증명합니다. 모든 OS·환경에서의 보편적 byte identity를 주장하지 않습니다.
+## 12. Final exact-head evidence artifact / 최종 exact-head 근거 artifact
 
-## 11. PR evidence artifact / PR 근거 artifact
+Durable-evidence exact head:
 
-Evidence-bearing PR head:
-
-- head: `3f4f6bb31bc077ae7f018ad128353896b02ba6ad`
-- workflow run: `34673146578`
+- head: `818886a2834285dabdb5874a58f62606af0d2df7`
+- workflow run: `34673317029`
 - artifact: `musica-m5-r4-paired-audio`
-- artifact ID: `10291367529`
+- artifact ID: `10291277918`
 - artifact ZIP size: `6,189,149 bytes`
-- GitHub artifact digest: `sha256:aa0ef19bc3f0ba1c453eab168c398a7d582bef2cbd3b2a781628de5f52fdbcba`
-- `comparison-a.json` SHA-256: `cb480c03fef734148592d6aeb60049836837371880bfe2e978f03b69493c3343`
-- `comparison-b.json` SHA-256: same
-- `proof.json` SHA-256: `3047fe7de1f42ef0b6d766d11c29b8478dc80b1d636f05d517b0c697880cf158`
+- GitHub artifact digest: `sha256:3dd97cc99907ce8bba460981be9530e4983cd5d1899a835208b45e0f9316b111`
+- canonical comparison SHA-256: `cb480c03fef734148592d6aeb60049836837371880bfe2e978f03b69493c3343`
+- implementation merge: `34b54ce2cd30347a4d82868dde7ccbf886f51432`
 
-The ZIP container digest is packaging evidence; the canonical comparison and included artifact hashes are the semantic/reproducibility evidence.
+The ZIP digest is packaging evidence; canonical comparison/artifact hashes are the semantic and reproducibility evidence.
 
-## 12. Claim boundary / 주장 경계
+## 13. Claim boundary / 주장 경계
 
-Every accepted M5-R4-v0 result is constrained to:
+Every accepted M5-R4-v0 result remains constrained to:
 
 ```text
 HUMAN_SUBJECT_EVIDENCE = NOT_VALIDATED
@@ -233,19 +223,12 @@ Therefore M5-R4 does **not** validate or imply:
 - listener preference;
 - ABX significance;
 - psychoacoustic transparency;
-- generalization from the single dark-electronic fixture to all music;
+- generalization from one dark-electronic fixture to all music;
 - a renderer ranking suitable for marketing claims;
 - that higher sample rate or stereo output alone means higher perceptual quality.
 
-## 13. Bounded completion rule / 제한 완료 규칙
+## 14. Closure / 종결
 
-M5-R4 implementation may be merged only after this evidence-bearing head (or its exact successor containing only this durable evidence/runtime-status update) passes again:
+PR `#49` was merged only after the durable-evidence exact head passed all required regression and paired-evidence gates. M5-R4 is therefore **VALIDATED — BOUNDED** in canonical repository state. Any future human-listener study must be recorded separately and must not retroactively reinterpret this objective-only evidence as perceptual evidence.
 
-- Python 3.11 full suite;
-- Python 3.12 full suite and prior evidence chain;
-- M4-R3 Chromium;
-- M5-R2 Windows FluidSynth;
-- M5-R3 DAWproject;
-- M5-R4 paired Windows evidence.
-
-After implementation merge, canonical `CURRENT_STATE`, README and `NEXT_ACTION` must be reconciled in a separate state-only closure before Issue #48 is closed.
+PR `#49`는 durable-evidence exact head가 모든 필수 회귀 및 paired-evidence gate를 통과한 뒤에만 병합되었습니다. 따라서 M5-R4는 공식 레포 상태에서 **VALIDATED — BOUNDED**입니다. 향후 인간 청취자 연구는 별도 근거로 기록해야 하며 본 객관 근거를 청감 근거로 소급 해석해서는 안 됩니다.

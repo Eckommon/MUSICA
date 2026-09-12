@@ -2,11 +2,11 @@
 
 ## Project phase / 프로젝트 단계
 
-**M5-R3 — DAW / INTERCHANGE INTEROPERABILITY v0: VALIDATED — BOUNDED / M5-R3 — DAW·교환 상호운용성 v0: 제한 범위 검증 완료**
+**M5-R4 — COMPARATIVE MUSIC / AUDIO QUALITY EVALUATION v0: VALIDATED — BOUNDED / M5-R4 — 비교 음악·오디오 품질 평가 v0: 제한 범위 검증 완료**
 
-M0→M5-R3 are validated within their explicitly bounded claims. MUSICA now has both replaceable renderer adapters and a bounded deterministic DAWproject 1.0 interchange bridge while keeping accepted `.musica` Blueprint revisions and derived canonical Music IR above every renderer/interchange artifact in authority.
+M0→M5-R4 are validated within their explicitly bounded claims. MUSICA now has a controllable/versioned creative core, provider-neutral AI Director boundary, usable Browser Studio, replaceable renderer adapters, bounded DAWproject interchange, and reproducible exact-source renderer comparison for objective signal descriptors.
 
-M0→M5-R3는 각 명시적 제한 주장 범위에서 검증 완료되었습니다. MUSICA는 교체 가능한 renderer adapter와 제한적 결정론 DAWproject 1.0 interchange bridge를 갖추었으며, 모든 renderer/interchange artifact보다 accepted `.musica` Blueprint revision 및 그로부터 파생된 canonical Music IR의 권한이 우선합니다.
+M0→M5-R4는 각 명시적 제한 주장 범위에서 검증 완료되었습니다. MUSICA는 제어·버전 가능한 창작 코어, provider-neutral AI Director 경계, 사용 가능한 Browser Studio, 교체 가능한 renderer adapter, 제한적 DAWproject 상호운용성, 동일 source renderer 출력의 재현 가능한 객관 신호 비교를 보유합니다.
 
 ## Canonical core proposition / 공식 핵심 명제
 
@@ -36,64 +36,56 @@ Product promise / 제품 약속:
 | M5-R1 Renderer Adapter Contract + Audio QA Baseline | **VALIDATED** | `evidence/M5_R1_VALIDATION.md` |
 | M5-R2 First higher-fidelity local renderer | **VALIDATED — BOUNDED** | `evidence/M5_R2_VALIDATION.md` |
 | M5-R3 DAW / interchange interoperability | **VALIDATED — BOUNDED** | `evidence/M5_R3_VALIDATION.md` |
+| M5-R4 Comparative music/audio quality evaluation | **VALIDATED — BOUNDED** | `evidence/M5_R4_VALIDATION.md` |
 | Live OpenAI provider execution | **NOT VALIDATED** | separate `LIVE_PROVIDER_EVIDENCE` required |
-| M5-R4 Comparative music/audio quality evaluation | **NOT IMPLEMENTED** | exact next bounded mission |
+| Human-subject usability / perceptual evidence | **NOT VALIDATED** | separate controlled study required |
+| Professional note-level editing authority/UI | **NOT IMPLEMENTED — NEXT** | M6-R0 selected |
 
-## M5-R3 final evidence / M5-R3 최종 근거
+## M5-R4 final evidence / M5-R4 최종 근거
 
-### Selection / 선정
+### Contract / 계약
 
-- governing Issue: `#42`
-- selection PR: `#43` — **MERGED**
-- selection exact head: `ef57f08cd42f3f323b6cc67fefc13b09c08e1b5a`
-- selection CI: `34577168697` — **SUCCESS**
-- selection merge: `16d859b4bb5652fb681ba20471927cdb3694b8e9`
-- selected format/profile: `DAWproject 1.0 bounded profile`
+- Issue `#46` — **COMPLETED**
+- PR `#47` — **MERGED**
+- contract exact head: `7aaedd273ef2d9b4908324537889da29e8f4a9eb`
+- contract CI: `34672590806` — **SUCCESS**
+- contract merge: `fa8244009fde4c7a8968f775a000bfe1596b8b83`
 
 ### Implementation / 구현
 
-- implementation PR: `#44` — **MERGED**
-- initial executable head: `d653feadeea9fa3a6205af82a2e4072409fcc8e0`
-- evidence-bearing exact head: `21b7e7315ff80b994f091a274a19c467eeca4bae`
-- dedicated M5-R3 evidence run: `34581150840` — **SUCCESS**
-- final full MUSICA CI run: `34581150808` — **SUCCESS**
-- Python 3.11 full suite: **SUCCESS**
-- Python 3.12 full suite + prior evidence chain: **SUCCESS**
-- M4-R3 Chromium regression: **SUCCESS**
-- M5-R2 Windows FluidSynth regression: **SUCCESS**
-- implementation merge: `5c874b62b1df0abe0ce58077f7dae0f37303aa5d`
-- durable evidence: `evidence/M5_R3_VALIDATION.md`
+- Issue `#48`
+- PR `#49` — **MERGED**
+- first evidence-bearing head: `3f4f6bb31bc077ae7f018ad128353896b02ba6ad`
+- durable-evidence exact head: `818886a2834285dabdb5874a58f62606af0d2df7`
+- final M5-R4 paired evidence run: `34673317029` — **SUCCESS**
+- final M5-R3 regression run: `34673317011` — **SUCCESS**
+- final full MUSICA CI run: `34673317078` — **SUCCESS**
+- final M5-R4 artifact ID: `10291277918`
+- final artifact ZIP digest: `sha256:3dd97cc99907ce8bba460981be9530e4983cd5d1899a835208b45e0f9316b111`
+- implementation merge: `34b54ce2cd30347a4d82868dde7ccbf886f51432`
+- durable evidence: `evidence/M5_R4_VALIDATION.md`
 
-## Exact M5-R3 proof / 정확한 M5-R3 증명
+### Exact controlled-pair proof / 정확한 통제 pair 증명
 
-Source authority:
-
-- source revision: `rev-001`
-- source Blueprint SHA-256: `085d44ac294631e0816b6cb3e58bc5d616b29dec408f867633506e83a2f7222b`
+- accepted Blueprint revision: `rev-001`
+- Blueprint SHA-256: `085d44ac294631e0816b6cb3e58bc5d616b29dec408f867633506e83a2f7222b`
 - canonical Music IR SHA-256: `f28fd7f9268f1ff043f90988bb33800d95fce494cd0cc68c4265a6d8e0abc83d`
+- reference WAV SHA-256: `e049e83bdda5a1c5710bd4d09b3010ab414d27d5a6705398aae120ae9deac5b8`
+- FluidSynth WAV SHA-256: `e054ad9cb7d938f50f75d222c1522e71cc7a7f163e8ea7bf3f8dceec628bcfa3`
+- canonical comparison A/B SHA-256: `cb480c03fef734148592d6aeb60049836837371880bfe2e978f03b69493c3343`
+- repeated comparison identity: **true**
+- comparison-time resampling/gain matching/time stretching: **NONE**
+- result: **`COMPARABLE_OBJECTIVE_ONLY`**
 
-Deterministic export:
+Claim boundary remains:
 
-- A/B DAWproject SHA-256: `2575713e0b3345a8a9c3553ace990f60650f9ed73877330193ae2906483e4b0d`
-- A/B byte identity: **true**
-- `project.xml` SHA-256: `816d7fac3c4789d750de57f6bbf9480867fe0015bca523775216f000419b03e4`
-- `metadata.xml` SHA-256: `73dafa6d8db0afc2bb92b9bb257290f5eefa1de8761f040e9992644dbecab9b7`
-- export mutates accepted M2 state: **false**
+```text
+HUMAN_SUBJECT_EVIDENCE = NOT_VALIDATED
+PERCEPTUAL_SUPERIORITY = UNKNOWN
+HUMAN_PREFERENCE_CLAIM_ALLOWED = false
+```
 
-Round-trip authority:
-
-- unedited import → `PENDING / PASS`
-- external `130 BPM` edit → **BLOCKED** by existing HARD tempo authority
-- arbitrary note edit → **UNSUPPORTED_BLOCKING** for Blueprint v0 reverse mapping
-- external `3/4` meter edit → `PENDING / PASS`
-- branch ref before explicit Accept: **unchanged**
-- explicit Accept only → M2 commit `import-cade96e92cea8682`
-- accepted provenance actor: `import`
-- post-accept project integrity: **PASS**
-
-Normative loss taxonomy:
-
-`PRESERVED | TRANSFORMED | DROPPED | UNSUPPORTED | UNKNOWN`
+M5-R4 does not prove that either renderer sounds better to humans.
 
 ## Validated capability stack / 검증된 기능 스택
 
@@ -128,10 +120,16 @@ Normative loss taxonomy:
 - deterministic bounded DAWproject 1.0 export;
 - safe ZIP/XML/XSD validation;
 - non-canonical import candidate;
-- machine-readable loss report;
-- traceable tempo/meter/track/note subset;
-- HARD-lock and stale-candidate fail-closed protection;
+- structured loss report;
+- HARD-lock/stale-candidate fail-closed protection;
 - explicit M2 acceptance boundary.
+
+### Objective comparison / 객관 비교
+- exact-source comparability gate;
+- fixed objective PCM/spectral descriptors;
+- explicit native-format/confound preservation;
+- reproducibility proof;
+- fail-closed prohibition on perceptual-superiority inference.
 
 ## Canonical authority rule / 공식 권한 규칙
 
@@ -154,14 +152,13 @@ Accepted Blueprint Revision
  ↓ trusted lowering
 Canonical Music IR
  ↓
-M5 adapters
+M5 adapters / analysis
  ├─ Renderer → artifacts + QA + provenance
- └─ Interchange → external artifact → NON-CANONICAL candidate
-                                      ↓ explicit Accept only
-                                     M2 commit
+ ├─ Interchange → external artifact → NON-CANONICAL candidate
+ └─ Comparison → objective evidence only
 ```
 
-**AI output, preview, browser memory, renderer output and external DAW/interchange state never outrank accepted `.musica` project state.**
+**AI output, preview, browser memory, Music IR edits, renderer output, comparison output and external DAW/interchange state never outrank accepted `.musica` project state.**
 
 ## Current claim boundaries / 현재 주장 경계
 
@@ -172,12 +169,11 @@ The repository does **not** yet validate or imply:
 - perceptual superiority of one renderer/audio path over another;
 - professional/mastering audio quality;
 - VST/AU/CLAP hosting;
-- successful real external DAW smoke (`EXTERNAL_APP_SMOKE = NOT VALIDATED`);
-- compatibility with every DAW or any named DAW through MUSICA execution;
+- successful real external DAW smoke;
+- compatibility with every DAW;
 - arbitrary note-edit reverse mapping into Blueprint v0;
 - plug-in/device fidelity;
 - arbitrary automation/mixer fidelity;
-- perfect project interchange;
 - waveform/piano-roll/note-level professional editing UI;
 - cloud collaboration/multi-user security;
 - desktop installer/signing;
@@ -185,13 +181,25 @@ The repository does **not** yet validate or imply:
 
 ## Next phase / 다음 단계
 
-The exact next bounded mission is **M5-R4 — Comparative Music / Audio Quality Evaluation v0**.
+The exact next bounded mission is **M6-R0 — Precision Editing Authority & Canonical Note Model v0**.
 
-정확한 다음 제한 mission은 **M5-R4 — 비교 음악·오디오 품질 평가 v0**입니다.
+정확한 다음 제한 mission은 **M6-R0 — 정밀 편집 권한 및 공식 Note Model v0**입니다.
 
-M5-R4 must evaluate actual rendered outputs without confusing technical signal validity with perceptual/music quality. It shall begin with an acceptance/evaluation contract and controlled paired evidence rather than claiming the higher-fidelity renderer is perceptually superior because it has higher sample rate/stereo capability.
+M6-R0 exists because the conceptual Blueprint permits explicit notes when needed, but the concrete Blueprint v0 currently leaves `materials.melody` structurally open and M5-R3 correctly blocks arbitrary note edits from silently reverse-mapping into canonical Blueprint state. M6-R0 must define the authority contract before any piano-roll UI is allowed to mutate project state.
 
-M5-R4는 실제 렌더 결과를 평가하되 기술적 signal validity와 청감·음악 품질을 혼동하지 않아야 합니다. 높은 sample rate/stereo capability만으로 청감상 우월성을 주장하지 않고, acceptance/evaluation 계약과 통제된 paired evidence 설계부터 시작합니다.
+Core invariant:
+
+```text
+user note edit
+→ typed edit candidate
+→ canonical Blueprint-representable delta
+→ HARD lock / constraint validation
+→ PREVIEW
+→ explicit Accept only
+→ new M2 revision
+```
+
+Direct mutation of canonical Music IR is forbidden.
 
 ## Resume authority / 재개 권위
 
@@ -200,14 +208,12 @@ Before substantive work inspect in order / 실질 작업 전 순서대로 확인
 1. `governance/SOURCE_OF_TRUTH.md`
 2. `docs/PRODUCT_THESIS.md`
 3. normative design package/specs
-4. `evidence/M5_R2_VALIDATION.md`
-5. `docs/M5_R3_INTERCHANGE_SELECTION.md`
-6. `docs/M5_R3_ROUNDTRIP_AUTHORITY.md`
-7. `docs/M5_R3_ACCEPTANCE.md`
-8. `docs/M5_R3_RUNTIME.md`
-9. `evidence/M5_R3_VALIDATION.md`
-10. this file / 본 파일
-11. `memory/NEXT_ACTION.md`
-12. relevant Issue/PR/CI evidence / 관련 Issue·PR·CI 근거
+4. `docs/design/MUSIC_BLUEPRINT_v0.md`
+5. `schemas/music-blueprint-v0.schema.json`
+6. `evidence/M5_R3_VALIDATION.md`
+7. `evidence/M5_R4_VALIDATION.md`
+8. this file / 본 파일
+9. `memory/NEXT_ACTION.md`
+10. relevant Issue/PR/CI evidence / 관련 Issue·PR·CI 근거
 
 **Repository evidence remains authoritative over conversation or model memory. / 레포 근거는 대화·모델 기억보다 우선합니다.**

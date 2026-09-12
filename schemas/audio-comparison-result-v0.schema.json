@@ -1,0 +1,401 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/audio-comparison-result-v0.schema.json",
+  "title": "MUSICA AudioComparisonResult v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "comparison_version",
+    "comparison_id",
+    "evidence_class",
+    "source_binding",
+    "renderer_a",
+    "renderer_b",
+    "technical_validity",
+    "analysis_policy",
+    "objective_metrics_a",
+    "objective_metrics_b",
+    "paired_deltas",
+    "comparison_normalizations",
+    "confounds",
+    "comparability",
+    "claim_boundary",
+    "verdict"
+  ],
+  "properties": {
+    "comparison_version": {"const": "0"},
+    "comparison_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "evidence_class": {"enum": ["CONTRACT_FIXTURE", "EXECUTION_EVIDENCE"]},
+    "source_binding": {"$ref": "#/$defs/sourceBinding"},
+    "renderer_a": {"$ref": "#/$defs/rendererSide"},
+    "renderer_b": {"$ref": "#/$defs/rendererSide"},
+    "technical_validity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_hash_match", "blueprint_binding_match", "qa_acceptable", "target_duration_match", "provenance_complete"],
+      "properties": {
+        "source_hash_match": {"type": "boolean"},
+        "blueprint_binding_match": {"type": "boolean"},
+        "qa_acceptable": {"type": "boolean"},
+        "target_duration_match": {"type": "boolean"},
+        "provenance_complete": {"type": "boolean"}
+      }
+    },
+    "analysis_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "policy_version",
+        "sample_domain",
+        "time_domain_channel_policy",
+        "spectral_channel_policy",
+        "spectral_window_ms",
+        "spectral_overlap_ratio",
+        "spectral_window_function",
+        "frequency_floor_hz",
+        "frequency_ceiling_hz",
+        "silence_threshold_dbfs",
+        "comparison_resampling",
+        "comparison_gain_matching",
+        "comparison_time_stretching"
+      ],
+      "properties": {
+        "policy_id": {"const": "musica-objective-audio-comparison-v0"},
+        "policy_version": {"const": "0"},
+        "sample_domain": {"const": "full_scale_normalized_native_pcm"},
+        "time_domain_channel_policy": {"const": "all_channel_sample_energy"},
+        "spectral_channel_policy": {"const": "arithmetic_channel_mean"},
+        "spectral_window_ms": {"const": 50.0},
+        "spectral_overlap_ratio": {"const": 0.5},
+        "spectral_window_function": {"const": "hann"},
+        "frequency_floor_hz": {"const": 20.0},
+        "frequency_ceiling_hz": {"type": "number", "exclusiveMinimum": 4000.0, "maximum": 10000.0},
+        "silence_threshold_dbfs": {"const": -80.0},
+        "comparison_resampling": {"const": "NONE"},
+        "comparison_gain_matching": {"const": "NONE"},
+        "comparison_time_stretching": {"const": "NONE"}
+      }
+    },
+    "objective_metrics_a": {"$ref": "#/$defs/objectiveMetrics"},
+    "objective_metrics_b": {"$ref": "#/$defs/objectiveMetrics"},
+    "paired_deltas": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/pairedDelta"},
+      "uniqueItems": true
+    },
+    "comparison_normalizations": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/normalization"}
+    },
+    "confounds": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/confound"}
+    },
+    "comparability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reasons"],
+      "properties": {
+        "status": {"enum": ["COMPARABLE", "NOT_COMPARABLE"]},
+        "reasons": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 256}
+        }
+      }
+    },
+    "claim_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["human_subject_evidence", "perceptual_superiority", "human_preference_claim_allowed"],
+      "properties": {
+        "human_subject_evidence": {"const": "NOT_VALIDATED"},
+        "perceptual_superiority": {"const": "UNKNOWN"},
+        "human_preference_claim_allowed": {"const": false}
+      }
+    },
+    "verdict": {"enum": ["COMPARABLE_OBJECTIVE_ONLY", "NOT_COMPARABLE"]}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "comparability": {
+            "properties": {"status": {"const": "COMPARABLE"}},
+            "required": ["status"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "technical_validity": {
+            "properties": {
+              "source_hash_match": {"const": true},
+              "blueprint_binding_match": {"const": true},
+              "qa_acceptable": {"const": true},
+              "target_duration_match": {"const": true},
+              "provenance_complete": {"const": true}
+            }
+          },
+          "verdict": {"const": "COMPARABLE_OBJECTIVE_ONLY"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "comparability": {
+            "properties": {"status": {"const": "NOT_COMPARABLE"}},
+            "required": ["status"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "comparability": {
+            "properties": {
+              "reasons": {"minItems": 1}
+            }
+          },
+          "verdict": {"const": "NOT_COMPARABLE"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "sourceBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "blueprint_revision_id", "blueprint_sha256", "music_ir_sha256", "target_duration_seconds"],
+      "properties": {
+        "project_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "blueprint_revision_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "blueprint_sha256": {"$ref": "#/$defs/sha256"},
+        "music_ir_sha256": {"$ref": "#/$defs/sha256"},
+        "target_duration_seconds": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "runtimeIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "version", "executable_sha256", "os", "architecture"],
+      "properties": {
+        "kind": {"enum": ["in_process", "external_process"]},
+        "name": {"type": "string", "minLength": 1, "maxLength": 128},
+        "version": {"type": "string", "minLength": 1, "maxLength": 128},
+        "executable_sha256": {
+          "oneOf": [
+            {"$ref": "#/$defs/sha256"},
+            {"type": "null"}
+          ]
+        },
+        "os": {"type": "string", "minLength": 1, "maxLength": 128},
+        "architecture": {"type": "string", "minLength": 1, "maxLength": 64}
+      }
+    },
+    "contentIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["content_id", "version", "sha256"],
+      "properties": {
+        "content_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "version": {"type": "string", "minLength": 1, "maxLength": 128},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "sha256", "size_bytes", "sample_rate", "channels", "bit_depth", "duration_seconds"],
+      "properties": {
+        "role": {"const": "wav"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size_bytes": {"type": "integer", "minimum": 1},
+        "sample_rate": {"type": "integer", "minimum": 1},
+        "channels": {"type": "integer", "minimum": 1},
+        "bit_depth": {"type": "integer", "minimum": 1},
+        "duration_seconds": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "qaBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["report_id", "report_sha256", "status"],
+      "properties": {
+        "report_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "report_sha256": {"$ref": "#/$defs/sha256"},
+        "status": {"enum": ["PASS", "WARN", "FAIL", "UNKNOWN"]}
+      }
+    },
+    "rendererNormalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "status", "description"],
+      "properties": {
+        "type": {"type": "string", "minLength": 1, "maxLength": 128},
+        "status": {"enum": ["APPLIED", "NOT_APPLIED", "UNKNOWN"]},
+        "description": {"type": "string", "minLength": 1, "maxLength": 512}
+      }
+    },
+    "rendererSide": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "renderer_id",
+        "renderer_version",
+        "bound_music_ir_sha256",
+        "runtime",
+        "content",
+        "config_sha256",
+        "raw_artifact",
+        "audio_quality_report",
+        "renderer_normalizations"
+      ],
+      "properties": {
+        "renderer_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "renderer_version": {"type": "string", "minLength": 1, "maxLength": 128},
+        "bound_music_ir_sha256": {"$ref": "#/$defs/sha256"},
+        "runtime": {"$ref": "#/$defs/runtimeIdentity"},
+        "content": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/contentIdentity"}
+        },
+        "config_sha256": {"$ref": "#/$defs/sha256"},
+        "raw_artifact": {"$ref": "#/$defs/artifact"},
+        "audio_quality_report": {"$ref": "#/$defs/qaBinding"},
+        "renderer_normalizations": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/rendererNormalization"}
+        }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "value", "unit", "method"],
+      "properties": {
+        "status": {"enum": ["MEASURED", "NOT_APPLICABLE", "UNKNOWN"]},
+        "value": {"type": ["number", "null"]},
+        "unit": {"enum": ["dBFS", "dB", "ratio", "normalized", "correlation", "Hz"]},
+        "method": {"type": "string", "minLength": 1, "maxLength": 256}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "MEASURED"}}, "required": ["status"]},
+          "then": {"properties": {"value": {"type": "number"}}}
+        },
+        {
+          "if": {"properties": {"status": {"enum": ["NOT_APPLICABLE", "UNKNOWN"]}}, "required": ["status"]},
+          "then": {"properties": {"value": {"type": "null"}}}
+        }
+      ]
+    },
+    "objectiveMetrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rms_dbfs",
+        "peak_dbfs",
+        "crest_factor_db",
+        "silence_ratio",
+        "dc_offset_normalized",
+        "stereo_correlation",
+        "stereo_difference_rms_dbfs",
+        "spectral_centroid_hz",
+        "spectral_rolloff_95_hz",
+        "band_energy_low_ratio",
+        "band_energy_mid_ratio",
+        "band_energy_high_ratio"
+      ],
+      "properties": {
+        "rms_dbfs": {"$ref": "#/$defs/metric"},
+        "peak_dbfs": {"$ref": "#/$defs/metric"},
+        "crest_factor_db": {"$ref": "#/$defs/metric"},
+        "silence_ratio": {"$ref": "#/$defs/metric"},
+        "dc_offset_normalized": {"$ref": "#/$defs/metric"},
+        "stereo_correlation": {"$ref": "#/$defs/metric"},
+        "stereo_difference_rms_dbfs": {"$ref": "#/$defs/metric"},
+        "spectral_centroid_hz": {"$ref": "#/$defs/metric"},
+        "spectral_rolloff_95_hz": {"$ref": "#/$defs/metric"},
+        "band_energy_low_ratio": {"$ref": "#/$defs/metric"},
+        "band_energy_mid_ratio": {"$ref": "#/$defs/metric"},
+        "band_energy_high_ratio": {"$ref": "#/$defs/metric"}
+      }
+    },
+    "pairedDelta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metric", "status", "delta_b_minus_a", "unit"],
+      "properties": {
+        "metric": {
+          "enum": [
+            "rms_dbfs",
+            "peak_dbfs",
+            "crest_factor_db",
+            "silence_ratio",
+            "dc_offset_normalized",
+            "stereo_correlation",
+            "stereo_difference_rms_dbfs",
+            "spectral_centroid_hz",
+            "spectral_rolloff_95_hz",
+            "band_energy_low_ratio",
+            "band_energy_mid_ratio",
+            "band_energy_high_ratio"
+          ]
+        },
+        "status": {"enum": ["MEASURED", "NOT_APPLICABLE", "UNKNOWN"]},
+        "delta_b_minus_a": {"type": ["number", "null"]},
+        "unit": {"enum": ["dBFS", "dB", "ratio", "normalized", "correlation", "Hz"]}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "MEASURED"}}, "required": ["status"]},
+          "then": {"properties": {"delta_b_minus_a": {"type": "number"}}}
+        },
+        {
+          "if": {"properties": {"status": {"enum": ["NOT_APPLICABLE", "UNKNOWN"]}}, "required": ["status"]},
+          "then": {"properties": {"delta_b_minus_a": {"type": "null"}}}
+        }
+      ]
+    },
+    "normalization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "status", "description", "derived_artifact_sha256"],
+      "properties": {
+        "type": {"enum": ["RESAMPLE", "GAIN_MATCH", "LOUDNESS_MATCH", "TRIM", "PAD", "TIME_STRETCH", "CHANNEL_CONVERSION", "OTHER"]},
+        "status": {"enum": ["APPLIED", "NOT_APPLIED"]},
+        "description": {"type": "string", "minLength": 1, "maxLength": 512},
+        "derived_artifact_sha256": {
+          "oneOf": [
+            {"$ref": "#/$defs/sha256"},
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "confound": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "status", "description"],
+      "properties": {
+        "code": {
+          "enum": [
+            "CHANNEL_LAYOUT_DIFFERENCE",
+            "SAMPLE_RATE_DIFFERENCE",
+            "BIT_DEPTH_DIFFERENCE",
+            "RENDERER_LEVEL_DURATION_NORMALIZATION",
+            "RUNTIME_OS_DIFFERENCE",
+            "DEFAULT_EFFECT_OR_REVERB_DIFFERENCE",
+            "NONDETERMINISM",
+            "MISSING_PROVENANCE",
+            "UNKNOWN_RENDERER_BEHAVIOR"
+          ]
+        },
+        "status": {"enum": ["CONTROLLED", "RECORDED", "NOT_APPLICABLE", "UNKNOWN"]},
+        "description": {"type": "string", "minLength": 1, "maxLength": 512}
+      }
+    }
+  }
+}

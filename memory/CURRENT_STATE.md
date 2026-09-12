@@ -2,11 +2,11 @@
 
 ## Project phase / 프로젝트 단계
 
-**M5-R2 — FIRST HIGHER-FIDELITY LOCAL RENDERER ADAPTER v0: VALIDATED — BOUNDED / M5-R2 — 첫 고음질 로컬 렌더러 어댑터 v0: 제한 범위 검증 완료**
+**M5-R3 — DAW / INTERCHANGE INTEROPERABILITY v0: VALIDATED — BOUNDED / M5-R3 — DAW·교환 상호운용성 v0: 제한 범위 검증 완료**
 
-M0→M5-R2 are validated within their explicitly bounded claims. MUSICA now has a replaceable real local renderer path in addition to its deterministic reference renderer: exact accepted Music IR can be rendered through FluidSynth 2.6.0 with an exact-hash-bound external FluidR3_GM 3.1 SoundFont while canonical project authority remains outside the renderer.
+M0→M5-R3 are validated within their explicitly bounded claims. MUSICA now has both replaceable renderer adapters and a bounded deterministic DAWproject 1.0 interchange bridge while keeping accepted `.musica` Blueprint revisions and derived canonical Music IR above every renderer/interchange artifact in authority.
 
-M0→M5-R2는 각 명시적 제한 주장 범위에서 검증 완료되었습니다. MUSICA는 결정론적 reference renderer 외에 교체 가능한 실제 local renderer 경로를 갖췄습니다. 승인된 exact Music IR을 FluidSynth 2.6.0 + exact-hash-bound 외부 FluidR3_GM 3.1 SoundFont로 렌더할 수 있으며 canonical project authority는 renderer 외부에 유지됩니다.
+M0→M5-R3는 각 명시적 제한 주장 범위에서 검증 완료되었습니다. MUSICA는 교체 가능한 renderer adapter와 제한적 결정론 DAWproject 1.0 interchange bridge를 갖추었으며, 모든 renderer/interchange artifact보다 accepted `.musica` Blueprint revision 및 그로부터 파생된 canonical Music IR의 권한이 우선합니다.
 
 ## Canonical core proposition / 공식 핵심 명제
 
@@ -35,124 +35,103 @@ Product promise / 제품 약속:
 | M4-R3 Usable MVP / real-browser E2E | **VALIDATED** | `evidence/M4_R3_VALIDATION.md` |
 | M5-R1 Renderer Adapter Contract + Audio QA Baseline | **VALIDATED** | `evidence/M5_R1_VALIDATION.md` |
 | M5-R2 First higher-fidelity local renderer | **VALIDATED — BOUNDED** | `evidence/M5_R2_VALIDATION.md` |
+| M5-R3 DAW / interchange interoperability | **VALIDATED — BOUNDED** | `evidence/M5_R3_VALIDATION.md` |
 | Live OpenAI provider execution | **NOT VALIDATED** | separate `LIVE_PROVIDER_EVIDENCE` required |
-| M5-R3 DAW / interchange interoperability | **NOT IMPLEMENTED** | next bounded mission |
-| M5-R4 Comparative music/audio quality evaluation | **NOT IMPLEMENTED** | later phase |
+| M5-R4 Comparative music/audio quality evaluation | **NOT IMPLEMENTED** | exact next bounded mission |
 
-## M5-R2 final evidence / M5-R2 최종 근거
+## M5-R3 final evidence / M5-R3 최종 근거
 
 ### Selection / 선정
 
-- implementation Issue: `#38` — **CLOSED / completed**
-- selection PR: `#39` — **MERGED**
-- selection exact head: `c841ec3c3ca46f38bb6494bcb14f89ae5d630a9f`
-- selection CI: `34572291199` — Python 3.11 / 3.12 + Chromium **SUCCESS**
-- selection merge: `72afaf90bd7d28861b4adb3d9117e37ff7e12b1c`
-- selected engine: `FluidSynth 2.6.0`
-- selected evidence content: external `FluidR3_GM 3.1`
-- architectural selection score: `91.8 / 100`
-- selection artifact: `docs/M5_R2_BACKEND_SELECTION.md`
+- governing Issue: `#42`
+- selection PR: `#43` — **MERGED**
+- selection exact head: `ef57f08cd42f3f323b6cc67fefc13b09c08e1b5a`
+- selection CI: `34577168697` — **SUCCESS**
+- selection merge: `16d859b4bb5652fb681ba20471927cdb3694b8e9`
+- selected format/profile: `DAWproject 1.0 bounded profile`
 
 ### Implementation / 구현
 
-- implementation PR: `#40` — **MERGED**
-- exact evidence-bearing head: `041ce64846f5ae4998122d24c8c0f23f158fa884`
-- exact-head CI: `34575439880`
-- Python 3.11: **SUCCESS**
-- Python 3.12: **SUCCESS**
-- exact-head pytest: **100 passed**
-- M0→M5-R1 canonical evidence chain: **SUCCESS**
-- M4-R3 Playwright Chromium regression: **SUCCESS**
-- Windows real FluidSynth evidence: **SUCCESS**
-- final exact-head artifact: `musica-m5-r2-fluidsynth`
-- artifact ID: `10189445028`
-- GitHub artifact digest: `sha256:4574660bce161ef7574751a75e142a84194bd8a4832922ec22286539622b2f73`
-- independently downloaded ZIP digest: **MATCH**
-- implementation merge: `713c3ab854f15ee8f5e0155d05d51aae95a4987f`
-- durable evidence: `evidence/M5_R2_VALIDATION.md`
+- implementation PR: `#44` — **MERGED**
+- initial executable head: `d653feadeea9fa3a6205af82a2e4072409fcc8e0`
+- evidence-bearing exact head: `21b7e7315ff80b994f091a274a19c467eeca4bae`
+- dedicated M5-R3 evidence run: `34581150840` — **SUCCESS**
+- final full MUSICA CI run: `34581150808` — **SUCCESS**
+- Python 3.11 full suite: **SUCCESS**
+- Python 3.12 full suite + prior evidence chain: **SUCCESS**
+- M4-R3 Chromium regression: **SUCCESS**
+- M5-R2 Windows FluidSynth regression: **SUCCESS**
+- implementation merge: `5c874b62b1df0abe0ce58077f7dae0f37303aa5d`
+- durable evidence: `evidence/M5_R3_VALIDATION.md`
 
-## Exact M5-R2 renderer proof / 정확한 M5-R2 renderer 증명
+## Exact M5-R3 proof / 정확한 M5-R3 증명
 
-Canonical Music IR:
+Source authority:
 
-- SHA-256: `f28fd7f9268f1ff043f90988bb33800d95fce494cd0cc68c4265a6d8e0abc83d`
-- reference and FluidSynth requests bound to the same exact Music IR: **true**
-- input Music IR unchanged after rendering: **true**
-- renderer project authority: **false**
+- source revision: `rev-001`
+- source Blueprint SHA-256: `085d44ac294631e0816b6cb3e58bc5d616b29dec408f867633506e83a2f7222b`
+- canonical Music IR SHA-256: `f28fd7f9268f1ff043f90988bb33800d95fce494cd0cc68c4265a6d8e0abc83d`
 
-Runtime/content provenance:
+Deterministic export:
 
-- renderer ID: `musica-fluidsynth-local`
-- FluidSynth observed version: `2.6.0`
-- official Windows x64 source archive SHA-256: `817262deacaa748edb3af6731dffe1766b00146790becfccc949a9f701e76681`
-- executed `fluidsynth.exe` SHA-256: `08c72384a47f67b0c5be9ee8c88b1f0b6afe39a8217ed2adb83a88b41c051632`
-- external SoundFont logical ID: `FluidR3_GM-3.1`
-- external SoundFont SHA-256: `74594e8f4250680adf590507a306655a299935343583256f3b722c48a1bc1cb0`
-- SoundFont normal-Git inclusion: **false**
-- bounded render-time network requirement: **false**
+- A/B DAWproject SHA-256: `2575713e0b3345a8a9c3553ace990f60650f9ed73877330193ae2906483e4b0d`
+- A/B byte identity: **true**
+- `project.xml` SHA-256: `816d7fac3c4789d750de57f6bbf9480867fe0015bca523775216f000419b03e4`
+- `metadata.xml` SHA-256: `73dafa6d8db0afc2bb92b9bb257290f5eefa1de8761f040e9992644dbecab9b7`
+- export mutates accepted M2 state: **false**
 
-Final audio evidence:
+Round-trip authority:
 
-- sample rate: **48,000 Hz**
-- channels: **2 stereo**
-- sample width: **16-bit PCM**
-- final frame count: **960,000**
-- final duration: **20.0 s**
-- AudioQualityReport: **PASS**
-- hard clipping samples: **0**
-- independent A/B MIDI SHA-256: `b7b5f5cbeff58888132032f13880d2bc5aad701e906c37daa077c6e8a834248f`
-- independent A/B final WAV SHA-256: `e054ad9cb7d938f50f75d222c1522e71cc7a7f163e8ea7bf3f8dceec628bcfa3`
-- byte identity observed for the exact Windows runtime/content/config: **true**
-- declared reproducibility remains `stable_parameters`; individual result `verified=false`
+- unedited import → `PENDING / PASS`
+- external `130 BPM` edit → **BLOCKED** by existing HARD tempo authority
+- arbitrary note edit → **UNSUPPORTED_BLOCKING** for Blueprint v0 reverse mapping
+- external `3/4` meter edit → `PENDING / PASS`
+- branch ref before explicit Accept: **unchanged**
+- explicit Accept only → M2 commit `import-cade96e92cea8682`
+- accepted provenance actor: `import`
+- post-accept project integrity: **PASS**
 
-### Duration normalization / 길이 정규화
+Normative loss taxonomy:
 
-The first real strict run correctly failed because FluidSynth produced a `22.549333333 s` release/effect tail for an explicit `20.0 s` MUSICA request. MUSICA did not weaken QA or hide the discrepancy.
-
-첫 실제 strict run은 20초 MUSICA 요청에 FluidSynth가 `22.549333333초` release/effect tail을 생성해 정상적으로 실패했습니다. MUSICA는 QA를 완화하거나 차이를 숨기지 않았습니다.
-
-Validated policy: `trim_tail_to_requested_duration_v0`
-
-- raw engine SHA-256/duration/frame count recorded in provenance;
-- raw output shorter than target → **FAIL CLOSED**;
-- raw output longer than target → exact excess frames only are trimmed;
-- padding/invented audio: **forbidden**;
-- final normalized artifact is QA-measured again;
-- unmanaged raw WAV is removed after successful normalization;
-- final exact-head evidence ZIP contains `render.engine.wav`: **0 files**.
+`PRESERVED | TRANSFORMED | DROPPED | UNSUPPORTED | UNKNOWN`
 
 ## Validated capability stack / 검증된 기능 스택
 
 ### Music authority core / 음악 권한 코어
 - typed Intent / Blueprint / Semantic Control / Music IR contracts;
 - deterministic composition/lowering paths;
-- six bounded semantic axes;
+- bounded semantic controls;
 - HARD-lock/constraint fail-closed validation;
 - immutable accepted revisions/branches and audit chain.
 
 ### AI Director / AI 디렉터
 - provider-neutral typed proposal boundary;
 - explicit user intent outranks provider inference;
-- providers cannot directly mutate accepted Blueprint/Project state;
-- OpenAI adapter contract is validated offline, but **live OpenAI execution remains NOT VALIDATED**.
+- provider output cannot directly mutate accepted state;
+- OpenAI adapter contract validated offline;
+- live OpenAI execution remains **NOT VALIDATED**.
 
 ### Studio / Studio
 - local-first Browser Studio with `Direct → Shape → Inspect → Code`;
-- non-canonical audible Preview separated from accepted state;
+- non-canonical Preview separated from accepted state;
 - explicit Accept/Discard;
-- visible HARD locks, structured diff, branch/history/export;
-- real Chromium create → preview → accept → branch/history/export → Code → restart/reopen validated.
+- visible locks/diff/history/export;
+- real Chromium E2E regression remains green.
 
 ### Renderer / Renderer
 - renderer-neutral Request/Capability/Result/QA boundary;
-- exact Music IR + external resource hash binding;
-- reference deterministic renderer retained;
-- real external-process FluidSynth adapter validated on Windows CI;
-- 48 kHz stereo 16-bit PCM capability proven;
-- executable/content provenance and artifact hashes recorded;
-- workspace confinement and tamper verification;
-- renderer has no accepted-project mutation authority;
-- third-party engine/content remains external to normal Git.
+- deterministic reference renderer;
+- real Windows FluidSynth 2.6.0 + exact-hash-bound FluidR3_GM 3.1 bounded renderer evidence;
+- renderer has no accepted-project mutation authority.
+
+### Interchange / 교환
+- deterministic bounded DAWproject 1.0 export;
+- safe ZIP/XML/XSD validation;
+- non-canonical import candidate;
+- machine-readable loss report;
+- traceable tempo/meter/track/note subset;
+- HARD-lock and stale-candidate fail-closed protection;
+- explicit M2 acceptance boundary.
 
 ## Canonical authority rule / 공식 권한 규칙
 
@@ -168,23 +147,21 @@ M3 proposal boundary or validated semantic command
 M1/M0 trusted core + HARD locks
  ↓
 PREVIEW — non-canonical
- ↓ explicit user Accept only
+ ↓ explicit Accept only
 M2 Project Engine
  ↓
 Accepted Blueprint Revision
  ↓ trusted lowering
 Canonical Music IR
- ↓ exact hash-bound RendererRequest
-M5 Renderer Registry
- ├─ musica-reference-local
- └─ musica-fluidsynth-local
-        ↓
-Artifacts + QA + provenance only
+ ↓
+M5 adapters
+ ├─ Renderer → artifacts + QA + provenance
+ └─ Interchange → external artifact → NON-CANONICAL candidate
+                                      ↓ explicit Accept only
+                                     M2 commit
 ```
 
-**Browser, AI provider, preview, renderer process, SoundFont and renderer artifacts never outrank the accepted `.musica` Project Bundle or canonical Music IR derived from its accepted revision.**
-
-**Browser, AI provider, preview, renderer process, SoundFont, renderer artifact는 승인된 `.musica` Project Bundle 또는 그 승인 revision에서 파생된 canonical Music IR보다 우선할 수 없습니다.**
+**AI output, preview, browser memory, renderer output and external DAW/interchange state never outrank accepted `.musica` project state.**
 
 ## Current claim boundaries / 현재 주장 경계
 
@@ -192,28 +169,29 @@ The repository does **not** yet validate or imply:
 
 - successful live OpenAI API execution;
 - human-subject usability-study evidence;
-- perceptual superiority of FluidSynth/FluidR3 over the reference renderer;
+- perceptual superiority of one renderer/audio path over another;
 - professional/mastering audio quality;
-- byte-exact identity across all FluidSynth versions, operating systems or SoundFonts;
-- bundled redistribution of FluidR3_GM as MUSICA product content;
-- VST/AU hosting;
-- professional DAW automation/interchange round-trip;
+- VST/AU/CLAP hosting;
+- successful real external DAW smoke (`EXTERNAL_APP_SMOKE = NOT VALIDATED`);
+- compatibility with every DAW or any named DAW through MUSICA execution;
+- arbitrary note-edit reverse mapping into Blueprint v0;
+- plug-in/device fidelity;
+- arbitrary automation/mixer fidelity;
+- perfect project interchange;
 - waveform/piano-roll/note-level professional editing UI;
 - cloud collaboration/multi-user security;
 - desktop installer/signing;
 - remote HTTP serving.
 
-특히 **48 kHz stereo capability 향상은 검증되었지만 청감상 더 좋은 음악이라는 주장은 아직 UNKNOWN**입니다. 해당 비교는 별도 M5-R4 범위입니다.
-
 ## Next phase / 다음 단계
 
-The exact next bounded mission is **M5-R3 — DAW / Interchange Interoperability v0**.
+The exact next bounded mission is **M5-R4 — Comparative Music / Audio Quality Evaluation v0**.
 
-정확한 다음 제한 mission은 **M5-R3 — DAW / Interchange Interoperability v0 / DAW·교환 상호운용성 v0**입니다.
+정확한 다음 제한 mission은 **M5-R4 — 비교 음악·오디오 품질 평가 v0**입니다.
 
-M5-R3 shall begin with evidence-backed interchange-target selection and round-trip authority design rather than coupling MUSICA Core directly to a specific DAW.
+M5-R4 must evaluate actual rendered outputs without confusing technical signal validity with perceptual/music quality. It shall begin with an acceptance/evaluation contract and controlled paired evidence rather than claiming the higher-fidelity renderer is perceptually superior because it has higher sample rate/stereo capability.
 
-M5-R3는 특정 DAW에 MUSICA Core를 직접 결합하지 않고, 근거 기반 interchange target 선정과 round-trip 권한 설계부터 시작합니다.
+M5-R4는 실제 렌더 결과를 평가하되 기술적 signal validity와 청감·음악 품질을 혼동하지 않아야 합니다. 높은 sample rate/stereo capability만으로 청감상 우월성을 주장하지 않고, acceptance/evaluation 계약과 통제된 paired evidence 설계부터 시작합니다.
 
 ## Resume authority / 재개 권위
 
@@ -222,12 +200,12 @@ Before substantive work inspect in order / 실질 작업 전 순서대로 확인
 1. `governance/SOURCE_OF_TRUTH.md`
 2. `docs/PRODUCT_THESIS.md`
 3. normative design package/specs
-4. prior milestone durable evidence
-5. `docs/M5_R1_ACCEPTANCE.md`
-6. `docs/M5_R2_BACKEND_SELECTION.md`
-7. `docs/M5_R2_ACCEPTANCE.md`
-8. `docs/M5_R2_RUNTIME.md`
-9. `evidence/M5_R2_VALIDATION.md`
+4. `evidence/M5_R2_VALIDATION.md`
+5. `docs/M5_R3_INTERCHANGE_SELECTION.md`
+6. `docs/M5_R3_ROUNDTRIP_AUTHORITY.md`
+7. `docs/M5_R3_ACCEPTANCE.md`
+8. `docs/M5_R3_RUNTIME.md`
+9. `evidence/M5_R3_VALIDATION.md`
 10. this file / 본 파일
 11. `memory/NEXT_ACTION.md`
 12. relevant Issue/PR/CI evidence / 관련 Issue·PR·CI 근거

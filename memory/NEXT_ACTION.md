@@ -2,100 +2,139 @@
 
 ## Exact resume point / 정확한 재개점
 
-**M6-R1 — TYPED EXACT-NOTE MATERIAL + EDIT ENGINE / M6-R1 — Typed Exact-Note Material + Edit Engine**
+**M6-R2 — BROWSER STUDIO PIANO-ROLL / INSPECT SURFACE / M6-R2 — Browser Studio Piano-Roll / Inspect Surface**
 
-M6-R0 is `VALIDATED — CONTRACT/DESIGN ONLY`. The next task is to implement the accepted exact-note authority path in the MUSICA core. Do not build the piano roll first and do not mutate Music IR directly.
+M6-R1 is `VALIDATED — BOUNDED CORE RUNTIME`. The next task is to expose the already validated exact-note authority path through the existing local-first Browser Studio without giving the browser, DOM, canvas or Music IR direct project authority.
 
-M6-R0는 `VALIDATED — CONTRACT/DESIGN ONLY`입니다. 다음 작업은 승인된 exact-note 권한 경로를 MUSICA core에 실제 구현하는 것입니다. Piano-roll UI를 먼저 만들거나 Music IR을 직접 수정하지 않습니다.
+M6-R1은 `VALIDATED — BOUNDED CORE RUNTIME`입니다. 다음 작업은 이미 검증된 exact-note 권한 경로를 기존 local-first Browser Studio에 노출하되 browser/DOM/canvas/Music IR에 직접 프로젝트 권한을 부여하지 않는 것입니다.
 
 ## Canonical starting point / 공식 시작점
 
-- M6-R0 implementation/design merge: `9a7beb133c4094d16a58466e97baec831ea98a01`
-- Issue #51: **COMPLETED**
-- PR #52: **MERGED**
-- final validated M6-R0 exact head: `7bd51827913bd9dec62b8f452ac37f508bd54dfe`
-- final MUSICA CI: `34688992955` — **SUCCESS**
-- final M5-R3 regression: `34688993005` — **SUCCESS**
-- final M5-R4 regression: `34688992941` — **SUCCESS**
-- durable evidence: `evidence/M6_R0_VALIDATION.md`
+- M6-R1 implementation merge: `7adf507630334021459e89055e98627d184f5354`
+- Issue #54: **COMPLETED**
+- PR #55: **MERGED**
+- final evidence-bearing M6-R1 exact head: `4cff9ae28bcaa49ac4c96019d4d0d4e47b773857`
+- final MUSICA CI: `34691729996` — **SUCCESS**
+- final M6-R1 evidence: `34691730003` — **SUCCESS**
+- final M5-R3 regression: `34691730001` — **SUCCESS**
+- final M5-R4 regression: `34691730000` — **SUCCESS**
+- final M6-R1 artifact ID: `10297550295`
+- final artifact packaging digest: `sha256:585df28c91652d7965de898c32ba568ddb0eb5c0b9abb164a4f45387378f7020`
+- internal M6-R1 manifest SHA-256: `4f00c0da286c0b62d00a9bfe98e0ea33a8f8cfdb0945803fe1574b21daf66bcc`
+- durable evidence: `evidence/M6_R1_VALIDATION.md`
 
 ## Governing contracts / 지배 계약
 
 Read and obey:
 
-1. `docs/M6_PRECISION_EDITING_AUTHORITY.md`
-2. `docs/M6_ACCEPTANCE.md`
-3. `schemas/exact-note-material-v0.schema.json`
-4. `schemas/note-edit-candidate-v0.schema.json`
-5. `schemas/note-edit-authority-result-v0.schema.json`
-6. `src/musica/contracts.py`
-7. `src/musica/compiler.py`
-8. `src/musica/project.py`
-9. `src/musica/diff.py`
+1. `governance/SOURCE_OF_TRUTH.md`
+2. `docs/PRODUCT_THESIS.md`
+3. `docs/M6_PRECISION_EDITING_AUTHORITY.md`
+4. `docs/M6_ACCEPTANCE.md`
+5. `docs/M6_R1_RUNTIME.md`
+6. `schemas/exact-note-material-v0.schema.json`
+7. `schemas/note-edit-candidate-v0.schema.json`
+8. `schemas/note-edit-authority-result-v0.schema.json`
+9. `schemas/exact-note-lock-v0.schema.json`
+10. `src/musica/note_edit.py`
+11. `src/musica/studio.py`
+12. `src/musica/studio_http.py`
+13. `src/musica/studio_web/index.html`
+14. `src/musica/studio_web/app.js`
+15. `src/musica/studio_web/app.css`
+16. `evidence/M6_R1_VALIDATION.md`
 
 ## Core invariant / 핵심 불변식
 
 ```text
-Accepted Blueprint revision
-→ trusted lowering
-→ Music IR
-
-NoteEditCandidate
-→ validate exact source revision + Blueprint SHA-256
-→ validate exact-note material
-→ apply stable-ID operations to Blueprint candidate
-→ HARD lock / constraint evaluation
-→ authority result
+Accepted exact-note Blueprint
+→ Studio read projection
+→ Browser piano-roll projection
+→ user edit gesture/form input
+→ typed NoteEditCandidate
+→ M6-R1 source/lock/constraint authority
+→ READY_FOR_PREVIEW or BLOCKED
 → PREVIEW — non-canonical
-→ explicit Accept only
-→ new M2 revision
-→ trusted lowering
-→ new Music IR
+→ audible + diff inspection
+→ explicit Accept or Discard
+→ existing M2 authority only
 ```
 
 Forbidden:
 
 ```text
-Music IR direct mutation → accepted project state
+DOM/canvas state → canonical project
+Music IR event mutation → canonical project
+browser-local note array → canonical project
 ```
 
-## Required M6-R1 implementation / 필수 구현
+## Required M6-R2 implementation / 필수 구현
 
-### 1. Exact-note Blueprint integration
+### 1. Studio service exact-note read projection
 
-Add executable validation/invariants for optional `materials.melody.explicit_timeline` while preserving existing `motif_notes` projects unchanged.
+Add a stable read-only service boundary that exposes the accepted exact-note material required by the piano roll without leaking direct filesystem authority.
 
-Required invariants:
-
-- `note_id` unique within the exact-note material;
-- every note `part_id` resolves to a Blueprint part;
-- every optional `section_id` resolves to a Blueprint section;
-- `start_beat >= 0` and `duration_beats > 0`;
-- pitch/velocity remain schema bounded;
-- deterministic ordering is defined independently of input array order;
-- legacy motif-only fixtures remain valid.
-
-### 2. Exact deterministic lowering
-
-Extend compiler behavior so `explicit_timeline` notes lower exactly to Music IR note events.
-
-Rules:
-
-- beat → tick uses the existing canonical PPQ policy;
-- pitch/start/duration/velocity lower faithfully;
-- semantic energy/density/motion logic must not silently rescale explicit exact-note event properties;
-- derived Music IR remains non-canonical;
-- deterministic compile must produce byte/logically identical IR for identical Blueprint state.
-
-### 3. Note edit engine
-
-Recommended module:
+Recommended operation:
 
 ```text
-src/musica/note_edit.py
+GET /v0/sessions/{session_id}/notes
 ```
 
-Implement the R0 vocabulary:
+Response should include at minimum:
+
+- exact accepted `project_id`;
+- accepted `revision_id`;
+- canonical Blueprint SHA-256;
+- current branch;
+- fixed tempo and PPQ projection metadata;
+- editable part metadata;
+- section ranges;
+- stable exact notes sorted canonically;
+- stable-ID HARD note locks relevant to visible notes;
+- capability flags describing the bounded R2 editing surface.
+
+If the accepted Blueprint has no `exact_timeline`, R2 must fail closed or expose an explicit `exact_note_editing_available=false` state. It must not silently reverse-map Music IR into canonical exact notes.
+
+### 2. Studio service note-edit Preview boundary
+
+Add a Studio operation that receives a typed `NoteEditCandidate` payload or safely constructs one from a bounded browser command, then delegates to the M6-R1 engine.
+
+Recommended operation:
+
+```text
+POST /v0/sessions/{session_id}/preview/notes
+```
+
+Required behavior:
+
+- bind candidate to the current accepted project/revision/Blueprint hash;
+- use stable `note_id + part_id` only;
+- call the trusted M6-R1 note-edit authority path;
+- map `BLOCKED` to a visible Studio conflict without installing a pending Preview;
+- on `READY_FOR_PREVIEW`, install the candidate through existing `_install_preview()`;
+- preserve the canonical branch ref before explicit Accept;
+- reuse existing `accept_preview` and `discard_preview` paths;
+- never create a second acceptance/versioning system.
+
+### 3. Inspect piano-roll projection
+
+Extend the existing **Inspect** depth rather than creating a disconnected editor mode.
+
+The first bounded piano roll must provide:
+
+- pitch rows and beat/time grid;
+- section boundary overlays;
+- accepted notes with stable identity;
+- selected-note detail;
+- visible locked-note/property state;
+- preview notes visually distinct from accepted state;
+- no dependence on third-party CDN/framework.
+
+The visual surface may use plain DOM/SVG/Canvas, but authority must remain in the Studio service. Browser coordinates are merely interaction data.
+
+### 4. Bounded R2 edit interactions
+
+R2 must expose the M6-R1 primitive operations without inventing new authority semantics:
 
 ```text
 INSERT
@@ -106,163 +145,154 @@ REPITCH
 SET_VELOCITY
 ```
 
-Operations must use stable `note_id + part_id`, never array indices.
+A minimal professional-enough interaction set for R2 may use:
 
-Recommended public boundary:
+- click/select note;
+- numeric/property controls for exact pitch/start/duration/velocity;
+- move/resize controls or bounded drag where deterministically mapped;
+- insert/delete actions;
+- keyboard-accessible alternatives for any pointer interaction.
 
-```text
-build_note_edit_preview(parent_blueprint, candidate) -> NoteEditPreview
-```
+R2 does not need advanced multi-select, quantize, humanize or automation.
 
-The preview result should expose:
+### 5. Preview authority UX
 
-- validated authority result;
-- candidate Blueprint;
-- exact structured diff;
-- source/candidate hashes;
-- changed stable note IDs;
-- compile preview metadata where useful;
-- no project-ref mutation.
+The existing Preview/Accept/Discard semantics must be reused.
 
-### 4. Source binding / stale protection
+When a note edit is ready:
 
-Before applying operations verify all candidate source bindings against the supplied accepted parent:
+- show `PREVIEW · NOT ACCEPTED`;
+- render/play preview audio via the existing pending-preview media path;
+- show stable-note diff rather than only generic JSON pointer noise where possible;
+- show changed note IDs and operation summary;
+- keep `Accept` explicit and separate from the edit gesture.
 
-- `project_id` exact match;
-- `source_revision_id` exact match;
-- `source_blueprint_sha256` exact canonical hash.
+When blocked:
 
-Any mismatch → `BLOCKED / STALE_SOURCE` and no preview candidate.
+- do not install Preview;
+- show bounded conflict code (`STALE_SOURCE`, `HARD_LOCK_VIOLATION`, etc.);
+- show stable `note_id`, operation ID and rule ID where available;
+- keep project ref unchanged.
 
-### 5. Stable-ID note lock selector
+### 6. Session/read model changes
 
-Implement an ID-aware M6 note-lock rule rather than array-index JSON Pointer identity.
+Extend Studio session data only where necessary. Do not overload `studio-session-v0` with a huge note list if a dedicated note-view contract is cleaner.
 
-The minimum R1 mechanism must support exact locks over stable note properties such as:
-
-```text
-part_id + note_id + property(pitch/start_beat/duration_beats/velocity)
-```
-
-Do not silently reinterpret existing M0 JSON-pointer locks. Existing locks continue to work unchanged; M6 note-lock behavior is additive and explicitly typed.
-
-If a requested operation violates an inherited HARD note lock:
+Prefer additive machine contracts such as:
 
 ```text
-BLOCKED / HARD_LOCK_VIOLATION
+schemas/studio-note-view-v0.schema.json
+schemas/studio-note-preview-v0.schema.json   # only if existing response contracts are insufficient
 ```
 
-### 6. Constraints
+All browser-facing JSON must remain schema validated.
 
-Reuse existing Blueprint `validate_revision()` for current top-level locks/constraints after candidate construction. M6-specific exact-note invariants must run before acceptance.
+### 7. Security/local-first constraints
 
-Do not invent unsupported tonal/harmonic intelligence in R1. Structural exact-note constraints are in scope; perceptual/musical-quality judgement is not.
+Preserve all M4 boundaries:
 
-### 7. Preview vs Accept
+- loopback-only server;
+- no wildcard CORS;
+- no directory listing;
+- no upload endpoint;
+- no third-party CDN dependency;
+- no remote telemetry;
+- existing CSP remains valid;
+- bounded JSON request sizes;
+- project paths remain workspace-confined.
 
-Candidate resolution must be side-effect free with respect to `MusicaProject`.
+### 8. Backward compatibility
 
-Required proof:
+Projects without exact-note material must continue to open, play, Shape, Inspect history/locks and export as before.
 
-```text
-before preview: ref = X
-resolve candidate
-compile candidate
-ref still = X
-explicit commit_revision(...)
-ref advances only after explicit acceptance
-```
-
-Use existing M2 commit/revision/audit mechanisms instead of creating a second version-control path.
-
-### 8. Diff and provenance
-
-Ensure exact-note edits appear in deterministic structured diff/provenance with stable note identity visible enough for audit.
-
-Do not use Music IR diffs as project authority evidence.
+The piano roll should clearly explain that exact-note editing is unavailable for legacy motif-only material rather than fabricating canonical notes from Music IR.
 
 ## Required tests / 필수 테스트
 
-At minimum add tests proving:
+At minimum prove:
 
-1. legacy motif Blueprint still validates and compiles identically;
-2. valid explicit timeline validates;
-3. duplicate `note_id` blocked;
-4. unknown `part_id` blocked;
-5. unknown `section_id` blocked;
-6. exact timeline compiles deterministically;
-7. explicit note pitch/start/duration/velocity survive compile faithfully;
-8. semantic scaling does not silently rewrite exact note properties;
-9. each of INSERT/DELETE/MOVE/RESIZE/REPITCH/SET_VELOCITY works by stable ID;
-10. stale project/revision/hash blocks;
-11. missing target note blocks;
-12. duplicate operation IDs block;
-13. HARD stable-note lock conflict blocks;
-14. existing top-level HARD locks/constraints still block where applicable;
-15. preview is side-effect free;
-16. explicit M2 accept creates a new accepted revision;
-17. direct Music IR authority remains impossible;
-18. deterministic diff/provenance is stable across repeat execution.
+1. accepted exact-note project returns deterministic note-view payload;
+2. note view binds exact project/revision/Blueprint hash;
+3. legacy motif-only project reports exact editing unavailable without failure;
+4. read endpoint never mutates project refs;
+5. browser-facing note payload is canonically ordered;
+6. INSERT Preview through Studio leaves ref unchanged;
+7. DELETE Preview through Studio leaves ref unchanged;
+8. MOVE Preview through Studio leaves ref unchanged;
+9. RESIZE Preview through Studio leaves ref unchanged;
+10. REPITCH Preview through Studio leaves ref unchanged;
+11. SET_VELOCITY Preview through Studio leaves ref unchanged;
+12. blocked stable-ID HARD lock produces no pending Preview;
+13. stale source produces no pending Preview;
+14. explicit Accept advances exactly once through M2;
+15. Discard preserves accepted ref;
+16. accepted note state reloads after browser/session refresh;
+17. existing semantic/director Preview behavior remains valid;
+18. existing M4 Browser Studio tests remain green;
+19. CSP/same-origin/local-only guarantees remain green;
+20. no browser route can mutate Music IR directly.
 
-## Evidence target / 근거 목표
+## Browser evidence target / Browser 근거 목표
 
-Add a canonical M6-R1 demo/evidence runner, preferably:
+M6-R2 should add deterministic service/UI evidence but reserve full real-browser gesture acceptance for M6-R3.
+
+Recommended bounded R2 evidence:
 
 ```text
-python -m musica.m6_r1_demo --out artifacts/m6-r1-exact-note-edit
+python -m musica.m6_r2_demo --out artifacts/m6-r2-piano-roll
 ```
 
-It should prove at least:
+It should prove:
 
-- motif-only backward compatibility;
-- exact-note Blueprint compile;
-- valid multi-operation edit preview;
-- stable-ID authority;
-- stale-source block;
-- HARD note-lock block;
-- project ref unchanged before Accept;
-- explicit Accept creates exactly one new accepted revision;
-- accepted exact notes compile deterministically;
-- evidence manifest binds exact source/candidate/IR hashes.
+- exact-note project exposed through Studio note view;
+- stable note identity visible;
+- Browser assets include the Inspect piano-roll surface;
+- valid note edit becomes a non-canonical pending Preview;
+- accepted ref unchanged before Accept;
+- blocked lock/stale cases create no Preview;
+- explicit Accept uses the existing Studio/M2 path;
+- accepted exact notes survive reopen;
+- manifest binds source/view/candidate/accepted hashes.
 
-## M6-R1 merge discipline / 병합 규율
+## M6-R2 merge discipline / 병합 규율
 
 ```text
 Issue
-→ fresh branch from canonical main
-→ implementation + tests
+→ fresh branch from canonical main after M6-R1 state closure
+→ machine contracts + Studio service integration
+→ Browser Inspect piano-roll surface
+→ service/UI tests
 → PR
-→ exact-head full CI + previous evidence regressions
-→ inspect evidence artifact
-→ durable evidence/M6_R1_VALIDATION.md
-→ exact evidence-bearing head rerun
+→ exact-head full CI + prior evidence regressions
+→ inspect M6-R2 evidence artifact
+→ durable evidence/M6_R2_VALIDATION.md
+→ exact evidence-bearing rerun
 → merge
-→ state-only closure to M6-R2
+→ state-only closure to M6-R3
 ```
 
 ## Scope control / 범위 통제
 
-Do **not** add in M6-R1:
+Do **not** claim or add in M6-R2:
 
-- piano-roll browser UI;
+- full DAW piano-roll parity;
+- arbitrary polyphonic/every-part editing;
+- arbitrary tempo-map editing;
+- quantize/humanize/batch transforms unless separately contracted;
 - waveform/destructive audio editing;
-- automation lanes;
-- mixer console;
+- automation lanes or mixer console;
 - live MIDI recording;
 - VST/AU/CLAP hosting;
 - arbitrary DAW reverse mapping;
-- new perceptual-quality claims;
-- live OpenAI evidence;
-- collaborative editing.
+- collaborative editing;
+- human-subject usability evidence;
+- perceptual-quality superiority claims.
 
-These can follow only after the core authority/runtime path is proven.
+## Expected next after R2 / R2 이후 예상
 
-## Expected next after R1 / R1 이후 예상
-
-If M6-R1 is validated:
+If M6-R2 is validated:
 
 ```text
-M6-R2 — Browser Studio Piano-Roll / Inspect Surface
 M6-R3 — Real-browser exact-note E2E + lock/conflict UX
 M6-R4 — bounded interchange reconciliation for representable note edits
 ```

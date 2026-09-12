@@ -20,6 +20,13 @@ def _open(page, base: str, slug: str) -> None:
     page.locator("#panel-inspect").wait_for(state="visible")
 
 
+def _wait_badge(page, text: str) -> None:
+    page.wait_for_function(
+        "expected => document.getElementById('projectStateBadge')?.textContent === expected",
+        text,
+    )
+
+
 def main() -> None:
     root = Path("artifacts/m6-r3-http-diagnostic")
     if root.exists():
@@ -81,9 +88,9 @@ def main() -> None:
                     note.click()
                     page.locator("#m6Start").fill("0.25")
                     page.locator("#m6PreviewChanges").click()
-                    page.locator("#projectStateBadge").get_by_text("PREVIEW · NOT ACCEPTED", exact=True).wait_for()
+                    _wait_badge(page, "PREVIEW · NOT ACCEPTED")
                     page.locator("#discardButton").click()
-                    page.locator("#projectStateBadge").get_by_text("ACCEPTED", exact=True).wait_for()
+                    _wait_badge(page, "ACCEPTED")
                 page.close()
 
             _stop_server(server, thread)

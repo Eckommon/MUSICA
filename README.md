@@ -18,19 +18,22 @@ MUSICA는 text-to-song 복제 제품도 특정 renderer/DAW 중심 시스템도 
 
 ## Current canonical status / 현재 공식 상태
 
-**M0 → M5-R3 are validated within their explicitly bounded claims.**
+**M0 → M5-R4 are validated within their explicitly bounded claims.**
 
-**M0 → M5-R3는 각 명시적 제한 주장 범위에서 검증 완료되었습니다.**
+**M0 → M5-R4는 각 명시적 제한 주장 범위에서 검증 완료되었습니다.**
 
-Validated external-output boundaries now include:
+Validated external-output/evaluation boundaries include:
 
 - `musica-reference-local` — deterministic bounded reference renderer;
 - `musica-fluidsynth-local` — bounded real Windows FluidSynth 2.6.0 + exact-hash-bound external FluidR3_GM 3.1 renderer path;
-- `DAWproject 1.0 bounded profile` — deterministic export + safe non-canonical import-candidate bridge with explicit loss reporting and M2 acceptance authority.
+- `DAWproject 1.0 bounded profile` — deterministic export + safe non-canonical import-candidate bridge with explicit loss reporting and M2 acceptance authority;
+- `musica-objective-audio-comparison-v0` — exact-source objective renderer comparison with explicit confounds and no perceptual-superiority inference.
 
-The next bounded milestone is **M5-R4 — Comparative Music / Audio Quality Evaluation v0**. It will compare controlled paired renders without converting technical capability into an unsupported perceptual-superiority claim.
+The next bounded milestone is **M6-R0 — Precision Editing Authority & Canonical Note Model v0**.
 
-다음 제한 마일스톤은 **M5-R4 — 비교 음악·오디오 품질 평가 v0**입니다. 기술 capability를 근거 없는 청감상 우월성 주장으로 바꾸지 않고 통제된 paired render를 비교하는 단계입니다.
+다음 제한 마일스톤은 **M6-R0 — 정밀 편집 권한 및 공식 Note Model v0**입니다.
+
+M6-R0 will define how exact note-level user edits become canonical Blueprint candidates without allowing direct Music IR mutation or silently breaking locks, constraints, revision provenance or backward compatibility.
 
 ## Try the local Studio / 로컬 Studio 실행
 
@@ -69,6 +72,8 @@ The Browser Studio exposes progressively deeper control over the same canonical 
 
 These are views over one project state, not separate databases or incompatible modes.
 
+M6 will deepen **Inspect** from inspection into bounded exact-note editing while preserving the same authority model.
+
 ## Canonical authority / 공식 권한 구조
 
 ```text
@@ -87,19 +92,20 @@ PREVIEW — non-canonical
 M2 Project & Version Engine
   ↓
 Accepted Blueprint Revision
-  ↓ trusted lowering
+  ↓
+trusted lowering
+  ↓
 Canonical Music IR
   ↓
-M5 replaceable adapters
+M5 replaceable adapters / evaluation
   ├─ Renderer → audio/artifacts + QA + provenance
-  └─ Interchange → external artifact → NON-CANONICAL candidate
-                                        ↓ explicit Accept only
-                                       M2 commit
+  ├─ Interchange → external artifact → NON-CANONICAL candidate
+  └─ Comparison → objective evidence only
 ```
 
-**AI output is not accepted state. Preview audio is not accepted state. Browser memory is not accepted state. Renderer output is not accepted state. Imported DAW/interchange state is not accepted state.**
+**AI output is not accepted state. Preview audio is not accepted state. Browser memory is not accepted state. Direct Music IR edits are not accepted state. Renderer output is not accepted state. Comparison output is not accepted state. Imported DAW/interchange state is not accepted state.**
 
-**AI 출력, Preview 오디오, Browser memory, Renderer output, 외부 DAW/interchange import 상태는 승인 상태가 아닙니다.**
+**AI 출력, Preview 오디오, Browser memory, Music IR 직접 편집, Renderer output, 비교 결과, 외부 DAW/interchange import 상태는 승인 상태가 아닙니다.**
 
 The accepted `.musica` Project Bundle remains canonical.
 
@@ -120,9 +126,9 @@ Music Compiler
   ↓
 Music IR
   ↓
-Renderer / Interchange Adapters
+Renderer / Interchange / Evaluation Adapters
   ↓
-MIDI / local synth / DAWproject / future sampler·DAW·DSP·generative audio
+MIDI / local synth / DAWproject / objective analysis / future sampler·DAW·DSP·generative audio
 ```
 
 Important distinction / 중요 구분:
@@ -131,7 +137,7 @@ Important distinction / 중요 구분:
 >
 > **Music IR = lower-level executable representation produced by compilation. / 컴파일로 생성되는 저수준 실행 표현.**
 >
-> **External renderer/interchange artifact = non-canonical output or candidate carrier. / 외부 renderer/interchange artifact는 비공식 출력 또는 candidate 운반체.**
+> **External renderer/interchange/comparison artifact = non-canonical output, candidate carrier or evidence. / 외부 renderer/interchange/comparison artifact는 비공식 출력·candidate 운반체·근거이다.**
 
 ## Validated milestone stack / 검증 마일스톤 스택
 
@@ -147,33 +153,38 @@ Important distinction / 중요 구분:
 | M5-R1 Renderer Adapter Contract + Audio QA Baseline | **VALIDATED** | `evidence/M5_R1_VALIDATION.md` |
 | M5-R2 First Higher-Fidelity Local Renderer | **VALIDATED — BOUNDED** | `evidence/M5_R2_VALIDATION.md` |
 | M5-R3 DAW / Interchange Interoperability | **VALIDATED — BOUNDED** | `evidence/M5_R3_VALIDATION.md` |
-| M5-R4 Comparative Music/Audio Quality Evaluation | **NOT IMPLEMENTED — NEXT** | `memory/NEXT_ACTION.md` |
+| M5-R4 Comparative Music/Audio Quality Evaluation | **VALIDATED — BOUNDED** | `evidence/M5_R4_VALIDATION.md` |
+| M6-R0 Precision Editing Authority & Canonical Note Model | **NOT IMPLEMENTED — NEXT** | `memory/NEXT_ACTION.md` |
 | Live OpenAI provider execution | **NOT VALIDATED** | separate `LIVE_PROVIDER_EVIDENCE` required |
+| Human-subject usability/perceptual evidence | **NOT VALIDATED** | separate controlled study required |
 
-## M5-R3 validated boundary / M5-R3 검증 경계
+## M5-R4 validated boundary / M5-R4 검증 경계
 
-M5-R3 selected and implemented **DAWproject 1.0** as the first bounded project-interchange target.
+M5-R4 can reproducibly compare two renderer outputs derived from the same exact canonical Music IR for technical validity and a frozen objective signal-descriptor set.
 
-Validated authority model:
+Validated boundary:
 
 ```text
-Accepted .musica revision
-→ canonical Music IR
-→ deterministic DAWproject export
-→ optional external edit
-→ safe ZIP/XML/XSD import
-→ NON-CANONICAL candidate
-→ structured diff + five-state loss report
-→ HARD lock / constraint validation
-→ explicit user Accept
-→ M2 commit
+same accepted Blueprint revision
+→ same exact canonical Music IR
+├─ reference renderer
+└─ FluidSynth renderer
+→ exact provenance + QA gate
+→ native-format objective analysis
+→ explicit confounds
+→ paired descriptive deltas
+→ COMPARABLE_OBJECTIVE_ONLY
 ```
 
-The evidence proves deterministic A/B export, bounded note/track/transport round-trip, fail-closed HARD-lock handling, unsupported arbitrary note reverse mapping, explicit meter-candidate acceptance and project-integrity preservation.
+The comparison does not resample, loudness-match/gain-match, time-stretch or silently normalize the pair for ranking. It preserves the mono/stereo and sample-rate differences as explicit evidence/confounds.
 
-외부 DAW 파일은 변경을 제안할 수 있지만 MUSICA 권한을 조용히 덮어쓸 수 없습니다.
+M5-R4 does **not** prove listener preference or renderer superiority:
 
-M5-R3 does **not** validate a real external DAW smoke, every-DAW compatibility, plug-in/device fidelity, arbitrary mixer/automation fidelity, or perfect interchange.
+```text
+HUMAN_SUBJECT_EVIDENCE = NOT_VALIDATED
+PERCEPTUAL_SUPERIORITY = UNKNOWN
+HUMAN_PREFERENCE_CLAIM_ALLOWED = false
+```
 
 ## Repository as Source of Truth / GitHub를 공식 근거로 사용
 
@@ -184,7 +195,7 @@ Authority rule / 권위 규칙:
 ```text
 Accepted repository artifacts/tests/evidence
 > merged specs/current-state records
-> issue/PR/CI evidence
+> Issue/PR/CI evidence
 > conversation context
 > model memory
 > model inference
@@ -204,6 +215,8 @@ Before substantive work read / 실질 작업 전 확인:
 
 ## Current exact next point / 현재 정확한 다음 재개점
 
-Start **M5-R4A Evaluation Contract**. Do not add another renderer or assert that FluidSynth/FluidR3 sounds better. First define the paired-source authority, objective descriptor set, confound controls, machine-readable comparison result and claim boundary described in `memory/NEXT_ACTION.md`.
+Start **M6-R0 — Precision Editing Authority & Canonical Note Model v0**.
 
-**M5-R4A Evaluation Contract**부터 시작합니다. 새 renderer를 추가하거나 FluidSynth/FluidR3가 더 좋게 들린다고 먼저 주장하지 않습니다. `memory/NEXT_ACTION.md`에 정의된 paired-source 권한, 객관 descriptor 집합, 교란 통제, machine-readable comparison result 및 claim boundary를 먼저 확정합니다.
+Do not implement a piano roll that edits Music IR directly. First define a typed exact-note representation, edit-candidate authority, stable note identity/time semantics, HARD-lock/constraint behavior, exact diff/provenance and backward-compatible Blueprint migration policy. The accepted project state must remain Blueprint/M2-owned.
+
+**M6-R0 — 정밀 편집 권한 및 공식 Note Model v0**부터 시작합니다. Music IR을 직접 수정하는 piano roll을 먼저 만들지 않습니다. typed exact-note 표현, edit candidate 권한, note identity/time semantics, HARD lock/constraint 동작, 정확한 diff/provenance, 하위 호환 Blueprint migration 정책을 먼저 확정합니다.

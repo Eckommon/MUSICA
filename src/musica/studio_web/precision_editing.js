@@ -8,6 +8,8 @@
     selectedKey: null,
     requestCounter: 0,
     root: null,
+    lastSubmittedCandidate: null,
+    lastAuthorityResult: null,
   };
 
   const el = (id) => document.getElementById(id);
@@ -174,11 +176,26 @@
       badge.className = "m6-lock-badge";
       badge.textContent = `🔒 ${lock.selector.property}`;
       badge.title = `${lock.lock_id}: ${lock.reason}`;
+      badge.dataset.lockId = lock.lock_id;
+      badge.dataset.lockProperty = lock.selector.property;
       lockRoot.appendChild(badge);
     });
     ["start_beat", "duration_beats", "pitch", "velocity"].forEach((property) => {
       const id = { start_beat: "m6Start", duration_beats: "m6Duration", pitch: "m6Pitch", velocity: "m6Velocity" }[property];
-      el(id).disabled = pending || locks.some((lock) => lock.selector.property === property);
+      const input = el(id);
+      const lock = locks.find((item) => item.selector.property === property);
+      // M6-R3 deliberately keeps locked properties inspectable/editable as proposal inputs.
+      // The trusted authority remains the enforcement point and must return BLOCKED.
+      input.disabled = pending;
+      if (lock) {
+        input.dataset.hardLockId = lock.lock_id;
+        input.title = `HARD lock ${lock.lock_id}: ${lock.reason}. A changed proposal will be blocked by trusted authority.`;
+        input.setAttribute("aria-describedby", "m6NoteStatus");
+      } else {
+        delete input.dataset.hardLockId;
+        input.removeAttribute("title");
+        input.removeAttribute("aria-describedby");
+      }
     });
   }
 
@@ -292,18 +309,31 @@
     };
   }
 
+  function conflictText(item) {
+    const context = [
+      item.code,
+      item.operation_id ? `operation ${item.operation_id}` : null,
+      item.note_id ? `note ${item.note_id}` : null,
+      item.rule_id ? `rule ${item.rule_id}` : null,
+    ].filter(Boolean).join(" · ");
+    return `${context}: ${item.reason}`;
+  }
+
   async function sendPreview(operations, reason) {
     if (!precision.sessionId || !precision.view) return;
     clearStatus();
     try {
+      const candidate = candidateFor(operations, reason);
+      precision.lastSubmittedCandidate = candidate;
       const data = await precisionFetch(`/v0/sessions/${encodeURIComponent(precision.sessionId)}/preview/notes`, {
         method: "POST",
-        body: { candidate: candidateFor(operations, reason) },
+        body: { candidate },
       });
+      precision.lastAuthorityResult = data.authority_result || null;
       precision.view = data.note_view;
       if (!data.preview_installed) {
         const conflicts = (data.authority_result && data.authority_result.conflicts) || [];
-        const text = conflicts.map((item) => `${item.code}${item.note_id ? ` · ${item.note_id}` : ""}: ${item.reason}`).join(" | ");
+        const text = conflicts.map(conflictText).join(" | ");
         status(text || "Edit blocked by trusted authority / trusted authority에 의해 편집이 차단되었습니다.", "error");
       } else {
         status("Exact-note Preview ready. Accepted revision is unchanged / exact-note Preview가 준비되었고 승인 리비전은 변경되지 않았습니다.", "success");

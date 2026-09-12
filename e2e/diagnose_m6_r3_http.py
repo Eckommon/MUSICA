@@ -23,7 +23,7 @@ def _open(page, base: str, slug: str) -> None:
 def _wait_badge(page, text: str) -> None:
     page.wait_for_function(
         "expected => document.getElementById('projectStateBadge')?.textContent === expected",
-        text,
+        arg=text,
     )
 
 

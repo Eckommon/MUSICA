@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/exact-note-material-v0.schema.json",
+  "title": "MUSICA Exact Note Material v0",
+  "description": "Canonical Blueprint-facing exact note timeline material. This is creative material, not Music IR.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["material_version", "mode", "time_base", "notes"],
+  "properties": {
+    "material_version": {"const": "0"},
+    "mode": {"const": "explicit_timeline"},
+    "time_base": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit", "origin_beat"],
+      "properties": {
+        "unit": {"const": "quarter_note_beat"},
+        "origin_beat": {"type": "number", "const": 0.0}
+      }
+    },
+    "notes": {
+      "type": "array",
+      "maxItems": 100000,
+      "items": {"$ref": "#/$defs/exactNote"}
+    }
+  },
+  "$defs": {
+    "exactNote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "note_id",
+        "part_id",
+        "section_id",
+        "start_beat",
+        "duration_beats",
+        "pitch",
+        "velocity"
+      ],
+      "properties": {
+        "note_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "part_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "section_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+        "start_beat": {"type": "number", "minimum": 0, "maximum": 1000000},
+        "duration_beats": {"type": "number", "exclusiveMinimum": 0, "maximum": 100000},
+        "pitch": {"type": "integer", "minimum": 0, "maximum": 127},
+        "velocity": {"type": "integer", "minimum": 1, "maximum": 127},
+        "articulation": {
+          "enum": ["normal", "legato", "staccato", "tenuto", "accent"]
+        },
+        "identity_tags": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 128},
+          "uniqueItems": true,
+          "maxItems": 32
+        }
+      }
+    }
+  }
+}

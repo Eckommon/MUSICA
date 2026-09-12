@@ -202,6 +202,26 @@ def make_handler(application: StudioApplication):
                     return
 
                 if (
+                    method == "GET"
+                    and len(parts) == 4
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3] == "preview"
+                ):
+                    # This is a read model, not an authority operation. Browser refresh can race
+                    # with Accept/Discard, so an existing session with no pending Preview is a
+                    # normal 200 empty state. Unknown sessions still fail closed via _get_session.
+                    session = application.service._get_session(parts[2])
+                    pending = session.pending
+                    data = {
+                        "pending": pending is not None,
+                        "preview": None if pending is None else pending.descriptor,
+                        "diff": [] if pending is None else pending.diff,
+                        "detail": {} if pending is None else pending.detail,
+                    }
+                    self._send_json(HTTPStatus.OK, application._response("preview_detail", data))
+                    return
+
+                if (
                     method == "POST"
                     and len(parts) == 5
                     and parts[:2] == ["v0", "sessions"]

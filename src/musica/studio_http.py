@@ -1,9 +1,8 @@
-"""Localhost HTTP bridge and static Browser Studio for MUSICA M4.
+"""Localhost HTTP bridge and static Browser Studio for MUSICA M4/M6.
 
 The bridge serves only the validated Studio application JSON/media surface plus packaged
-same-origin M4 HTML/CSS/JavaScript assets. It intentionally provides no cloud binding,
-directory browsing, upload endpoint, wildcard CORS, third-party asset dependency, or
-remote telemetry.
+same-origin HTML/CSS/JavaScript assets. M6-R2 adds a bounded exact-note projection and
+Preview route while preserving the loopback-only, no-upload, no-telemetry boundary.
 """
 
 from __future__ import annotations
@@ -16,6 +15,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from .studio import StudioApplication, StudioService, StudioServiceError
+from .studio_notes import StudioNoteSurface
 
 MAX_JSON_BODY_BYTES = 1_048_576
 DEFAULT_HOST = "127.0.0.1"
@@ -67,15 +67,29 @@ def _browser_asset_bytes(name: str) -> bytes:
         # must be escaped inside a class. Preserve the exact accepted character set.
         return _static_bytes("index.html").replace(_PROJECT_NAME_PATTERN_OLD, _PROJECT_NAME_PATTERN_V)
     if name == "app.js":
-        return _static_bytes("create_policy.js") + b"\n" + _static_bytes("app.js")
+        return (
+            _static_bytes("create_policy.js")
+            + b"\n"
+            + _static_bytes("precision_editing.js")
+            + b"\n"
+            + _static_bytes("app.js")
+        )
     if name == "app.css":
-        return _static_bytes("create_policy.css") + b"\n" + _static_bytes("app.css")
+        return (
+            _static_bytes("create_policy.css")
+            + b"\n"
+            + _static_bytes("precision_editing.css")
+            + b"\n"
+            + _static_bytes("app.css")
+        )
     return _static_bytes(name)
 
 
 def make_handler(application: StudioApplication):
+    note_surface = StudioNoteSurface(application.service)
+
     class StudioRequestHandler(BaseHTTPRequestHandler):
-        server_version = "MUSICAStudio/0.3"
+        server_version = "MUSICAStudio/0.4"
         protocol_version = "HTTP/1.1"
 
         def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
@@ -158,6 +172,7 @@ def make_handler(application: StudioApplication):
                             "status": "ok",
                             "local_first": True,
                             "browser_ui": True,
+                            "exact_note_surface": True,
                         },
                     )
                     return
@@ -174,6 +189,30 @@ def make_handler(application: StudioApplication):
                     data = application.service.media_bytes(parts[2], kind)
                     content_type = "audio/wav" if kind == "audio" else "audio/midi"
                     self._send_bytes(HTTPStatus.OK, content_type, data)
+                    return
+
+                if (
+                    method == "GET"
+                    and len(parts) == 4
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3] == "notes"
+                ):
+                    data = note_surface.note_view(parts[2])
+                    self._send_json(HTTPStatus.OK, application._response("note_view", data))
+                    return
+
+                if (
+                    method == "POST"
+                    and len(parts) == 5
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3:] == ["preview", "notes"]
+                ):
+                    body = self._read_json()
+                    candidate = body.get("candidate")
+                    if not isinstance(candidate, dict):
+                        raise StudioServiceError("invalid_request", "note Preview requires candidate object")
+                    data = note_surface.preview_note_edit(parts[2], candidate=candidate)
+                    self._send_json(HTTPStatus.OK, application._response("preview_note_edit", data))
                     return
 
                 body = self._read_json() if method == "POST" else None
@@ -202,7 +241,7 @@ def create_local_server(
 ) -> ThreadingHTTPServer:
     """Create, but do not start, the local Studio server.
 
-    M4 deliberately accepts only loopback hosts. A future deployment mode must be a
+    M4/M6 deliberately accept only loopback hosts. A future deployment mode must be a
     separate security decision rather than an accidental consequence of this helper.
     """
 

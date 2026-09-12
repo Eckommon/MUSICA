@@ -10,8 +10,8 @@
       "status": "BLOCKED",
       "operation_id": "OP-LOCKED-001",
       "note_id": "N-MOTIF-001",
-      "rule_id": "L-MELODY-IDENTITY",
-      "reason": "The requested exact-note mutation conflicts with an inherited HARD melody identity rule and cannot proceed silently."
+      "rule_id": "L-M6-EXACT-PITCH-001",
+      "reason": "This contract example shows the required result when an M6 stable-ID-aware HARD note lock resolves against the requested exact-note mutation. R0 defines the fail-closed result shape; M6-R1 must implement the stable-ID selector before claiming this runtime capability."
     }
   ],
   "preview_generation_allowed": false,

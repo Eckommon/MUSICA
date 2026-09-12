@@ -1,0 +1,86 @@
+name: M5-R4 Paired Audio Evidence
+
+on:
+  push:
+    branches: [m5-r4b-paired-audio-evaluation-v0]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  m5-r4-paired-audio-evidence:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA / MUSICA 설치
+        shell: pwsh
+        run: python -m pip install -e '.[dev]'
+      - name: Provision exact FluidSynth 2.6.0 / 정확한 FluidSynth 2.6.0 준비
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $url = 'https://github.com/FluidSynth/fluidsynth/releases/download/v2.6.0/fluidsynth-v2.6.0-win10-x64-cpp11.zip'
+          $expected = '817262deacaa748edb3af6731dffe1766b00146790becfccc949a9f701e76681'
+          $archive = Join-Path $env:RUNNER_TEMP 'fluidsynth-v2.6.0-win10-x64-cpp11.zip'
+          $dest = Join-Path $env:RUNNER_TEMP 'fluidsynth-v2.6.0'
+          Invoke-WebRequest -Uri $url -OutFile $archive
+          $actual = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $expected) { throw "FluidSynth archive SHA-256 mismatch: $actual" }
+          Expand-Archive -Path $archive -DestinationPath $dest -Force
+          $exe = Get-ChildItem -Path $dest -Recurse -Filter 'fluidsynth.exe' | Select-Object -First 1
+          if (-not $exe) { throw 'fluidsynth.exe not found after verified archive extraction' }
+          "MUSICA_FLUIDSYNTH_BIN=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "MUSICA_FLUIDSYNTH_EXPECTED_VERSION=2.6.0" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "MUSICA_FLUIDSYNTH_SOURCE_URL=$url" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "MUSICA_FLUIDSYNTH_SOURCE_SHA256=$expected" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Provision exact FluidR3_GM 3.1 / 정확한 FluidR3_GM 3.1 준비
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $url = 'https://deb.debian.org/debian/pool/main/f/fluid-soundfont/fluid-soundfont_3.1.orig.tar.gz'
+          $expected = '2621acaa1c78e4abdb24bdd163230cc577e61276936d6aa6e3180582142f0343'
+          $archive = Join-Path $env:RUNNER_TEMP 'fluid-soundfont_3.1.orig.tar.gz'
+          $dest = Join-Path $env:RUNNER_TEMP 'fluid-soundfont-3.1'
+          Invoke-WebRequest -Uri $url -OutFile $archive
+          $actual = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $expected) { throw "FluidR3 archive SHA-256 mismatch: $actual" }
+          New-Item -ItemType Directory -Path $dest -Force | Out-Null
+          tar -xzf $archive -C $dest
+          if ($LASTEXITCODE -ne 0) { throw "FluidR3 archive extraction failed: $LASTEXITCODE" }
+          $sf = Get-ChildItem -Path $dest -Recurse -Filter 'FluidR3_GM.sf2' | Select-Object -First 1
+          if (-not $sf) { throw 'FluidR3_GM.sf2 not found after verified source extraction' }
+          "MUSICA_FLUIDSYNTH_SOUNDFONT=$($sf.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "MUSICA_FLUIDSYNTH_SOUNDFONT_ID=FluidR3_GM-3.1" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "MUSICA_FLUIDSYNTH_SOUNDFONT_SOURCE_URL=$url" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "MUSICA_FLUIDSYNTH_SOUNDFONT_SOURCE_SHA256=$expected" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "MUSICA_FLUIDSYNTH_SOUNDFONT_LICENSE=MIT" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Preflight exact renderer/content / 정확한 renderer·content 사전 검증
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & $env:MUSICA_FLUIDSYNTH_BIN --version
+          if ($LASTEXITCODE -ne 0) { throw "FluidSynth version probe failed: $LASTEXITCODE" }
+          $sfHash = (Get-FileHash $env:MUSICA_FLUIDSYNTH_SOUNDFONT -Algorithm SHA256).Hash.ToLowerInvariant()
+          Write-Host "SoundFont SHA-256: $sfHash"
+          Write-Host "SoundFont bytes: $((Get-Item $env:MUSICA_FLUIDSYNTH_SOUNDFONT).Length)"
+      - name: Run M5-R4 bounded comparison tests / M5-R4 제한 비교 테스트
+        shell: pwsh
+        run: pytest -q tests/test_m5_r4_contract.py tests/test_m5_r4_audio_compare.py
+      - name: Generate M5-R4 paired evidence / M5-R4 쌍대 비교 근거 생성
+        shell: pwsh
+        run: >-
+          python -m musica.m5_r4_demo
+          --blueprint examples/blueprints/valid/dark-electronic-20s-r1.json
+          --out artifacts/m5-r4-paired-audio
+      - name: Upload M5-R4 paired evidence / M5-R4 쌍대 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-m5-r4-paired-audio
+          path: artifacts/m5-r4-paired-audio
+          if-no-files-found: error

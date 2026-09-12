@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from .contracts import validate_contract
-from .evidence import artifact_record, canonical_json_bytes, write_canonical_json
+from .evidence import artifact_record, write_canonical_json
 from .note_edit import blueprint_sha256
 from .project import create_project
 from .studio import StudioService
@@ -121,6 +121,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
     project = service._get_session("m6-r2-canonical").project
 
     source_view = surface.note_view("m6-r2-canonical")
+    source_view_repeat = surface.note_view("m6-r2-canonical")
     source_ref = project.head_revision_id()
     candidate = _candidate(parent, _all_operations(), "NEC-M6-R2-EVIDENCE-ALL")
     preview_result = surface.preview_note_edit("m6-r2-canonical", candidate=candidate)
@@ -188,7 +189,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
     accepted_notes = {item["note_id"]: item for item in accepted_view["notes"]}
     proof = {
         "proof_version": "0",
-        "source_view_deterministic": source_view == surface.note_view("m6-r2-reopen") if False else True,
+        "source_view_deterministic": source_view == source_view_repeat,
         "source_bound_to_exact_blueprint_hash": source_view["blueprint_sha256"] == blueprint_sha256(parent),
         "exact_note_editing_available": source_view["exact_note_editing_available"],
         "all_six_operations_exercised": sorted(op["op"] for op in candidate["operations"]) == sorted(NOTE_OPERATIONS),
@@ -222,6 +223,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
         "ui_precision_surface_present": all(ui_proof.values()),
     }
     required_true = [
+        "source_view_deterministic",
         "source_bound_to_exact_blueprint_hash",
         "exact_note_editing_available",
         "all_six_operations_exercised",
@@ -245,6 +247,8 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
     ]
     if not all(bool(proof[key]) for key in required_true):
         raise RuntimeError("M6-R2 positive/negative integration proof failed")
+    if proof["preview_authority_status"] != "READY_FOR_PREVIEW":
+        raise RuntimeError("M6-R2 Preview authority did not resolve READY_FOR_PREVIEW")
     if proof["accepted_project_integrity"] != "PASS" or proof["accepted_revision_count"] != 2:
         raise RuntimeError("M6-R2 accepted project integrity/version proof failed")
     if proof["music_ir_mutation_authorized"] or proof["browser_project_mutation_authorized"]:
@@ -252,6 +256,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
 
     tracked = [
         write_canonical_json(root / "source-note-view.json", source_view),
+        write_canonical_json(root / "source-note-view-repeat.json", source_view_repeat),
         write_canonical_json(root / "candidate.json", candidate),
         write_canonical_json(root / "preview-result.json", preview_result),
         write_canonical_json(root / "preview-note-view.json", preview_view),

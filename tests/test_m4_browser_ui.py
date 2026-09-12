@@ -123,6 +123,15 @@ def test_browser_visible_http_flow_preserves_preview_accept_authority(tmp_path):
         accepted_head = session["head_revision_id"]
         assert session["pending_preview"] is None
 
+        empty_status, empty_preview = http_json(base, "GET", f"/v0/sessions/{session_id}/preview")
+        assert empty_status == 200
+        assert empty_preview["data"] == {
+            "pending": False,
+            "preview": None,
+            "diff": [],
+            "detail": {},
+        }
+
         _, preview = http_json(
             base,
             "POST",
@@ -140,6 +149,12 @@ def test_browser_visible_http_flow_preserves_preview_accept_authority(tmp_path):
         assert preview_session["pending_preview"] is not None
         assert preview["data"]["diff"]
 
+        detail_status, preview_detail = http_json(base, "GET", f"/v0/sessions/{session_id}/preview")
+        assert detail_status == 200
+        assert preview_detail["data"]["pending"] is True
+        assert preview_detail["data"]["preview"]["preview_id"] == preview["data"]["preview"]["preview_id"]
+        assert preview_detail["data"]["diff"] == preview["data"]["diff"]
+
         audio_status, audio_headers, audio = http_get(base, f"/v0/sessions/{session_id}/media/audio.wav")
         assert audio_status == 200
         assert audio_headers["Content-Type"] == "audio/wav"
@@ -151,12 +166,31 @@ def test_browser_visible_http_flow_preserves_preview_accept_authority(tmp_path):
         assert accepted_session["pending_preview"] is None
         assert accepted_session["integrity_status"] == "PASS"
 
+        after_status, after_preview = http_json(base, "GET", f"/v0/sessions/{session_id}/preview")
+        assert after_status == 200
+        assert after_preview["data"] == {
+            "pending": False,
+            "preview": None,
+            "diff": [],
+            "detail": {},
+        }
+
         _, history = http_json(base, "GET", f"/v0/sessions/{session_id}/history")
         assert len(history["data"]["revisions"]) == 2
 
         _, exported = http_json(base, "POST", f"/v0/sessions/{session_id}/export", {})
         assert exported["data"]["export_relpath"].startswith("exports/")
         assert len(exported["data"]["sha256"]) == 64
+
+
+def test_preview_detail_unknown_session_remains_not_found(tmp_path):
+    with running_server(tmp_path) as (_, base):
+        try:
+            http_json(base, "GET", "/v0/sessions/studio-does-not-exist/preview")
+        except HTTPError as exc:
+            assert exc.code == 404
+        else:
+            raise AssertionError("unknown preview-detail session unexpectedly returned success")
 
 
 def test_static_unknown_path_does_not_expose_package_or_filesystem(tmp_path):

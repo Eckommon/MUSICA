@@ -1,0 +1,21 @@
+{
+  "result_version": "0",
+  "candidate_id": "NEC-M6-R0-STALE",
+  "source_revision_id": "rev-001",
+  "status": "BLOCKED",
+  "conflicts": [
+    {
+      "conflict_id": "M6-C-STALE-001",
+      "code": "STALE_SOURCE",
+      "status": "BLOCKED",
+      "operation_id": null,
+      "note_id": null,
+      "rule_id": "active-source-binding",
+      "reason": "Candidate source revision/hash no longer matches the active accepted project state."
+    }
+  ],
+  "preview_generation_allowed": false,
+  "explicit_accept_required": true,
+  "project_mutation_authorized": false,
+  "music_ir_mutation_authorized": false
+}

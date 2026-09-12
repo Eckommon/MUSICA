@@ -1,10 +1,9 @@
-"""Deterministic Blueprint -> Music IR compiler for MUSICA M1.
+"""Deterministic Blueprint -> Music IR compiler for MUSICA.
 
-MUSICA M1 결정론 Blueprint -> Music IR 컴파일러.
+MUSICA 결정론 Blueprint -> Music IR 컴파일러.
 
-The compiler remains intentionally small. It lowers explicit motif/drum material,
-profile-selected programs, semantic support density, and bounded timbre controls into
-renderer-independent Music IR.
+Legacy motif lowering remains unchanged. M6 adds an explicit exact-note timeline path
+whose accepted note properties lower faithfully without hidden semantic rescaling.
 """
 
 from __future__ import annotations
@@ -12,7 +11,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from .contracts import ContractError, validate_contract
+from .contracts import ContractError, exact_timeline, validate_contract
 
 PPQ = 480
 COMPILER_ID = "musica-deterministic-core"
@@ -110,6 +109,8 @@ def _semantic_controls(blueprint: dict[str, Any], bpm: float) -> list[dict[str, 
 def _compile_motif(
     blueprint: dict[str, Any], total_beats: float, bpm: float
 ) -> list[dict[str, Any]]:
+    """Legacy motif path. Keep byte/logical behavior stable for existing projects."""
+
     melody = blueprint["materials"]["melody"]
     pattern_length = float(melody.get("motif_length_beats", 0))
     notes = melody.get("motif_notes")
@@ -138,6 +139,27 @@ def _compile_motif(
             )
         cycle += pattern_length
     return sorted(events, key=lambda event: (event["tick"], event["note"]))
+
+
+def _compile_exact_timeline(blueprint: dict[str, Any]) -> list[dict[str, Any]]:
+    """Lower accepted exact-note material faithfully to Music IR note events."""
+
+    timeline = exact_timeline(blueprint)
+    if timeline is None:
+        raise ContractError("exact-note lowering requires melody.exact_timeline")
+    events = [
+        _note_event(
+            round(float(note["start_beat"]) * PPQ),
+            round(float(note["duration_beats"]) * PPQ),
+            int(note["pitch"]),
+            int(note["velocity"]),
+        )
+        for note in timeline["notes"]
+    ]
+    return sorted(
+        events,
+        key=lambda event: (event["tick"], event["note"], event["duration"], event["velocity"]),
+    )
 
 
 def _compile_drums(blueprint: dict[str, Any], total_beats: float) -> list[dict[str, Any]]:
@@ -221,6 +243,12 @@ def compile_blueprint(blueprint: dict[str, Any]) -> dict[str, Any]:
     motif_program = int(sound_design.get("motif_program", 81))
     bass_program = int(sound_design.get("bass_program", 38))
     controls = _semantic_controls(blueprint, bpm)
+    has_exact_timeline = exact_timeline(blueprint) is not None
+    motif_events = (
+        _compile_exact_timeline(blueprint)
+        if has_exact_timeline
+        else _compile_motif(blueprint, total_beats, bpm)
+    )
 
     ir = {
         "ir_version": "0",
@@ -234,7 +262,7 @@ def compile_blueprint(blueprint: dict[str, Any]) -> dict[str, Any]:
                 "channel": 0,
                 "program": motif_program,
                 "events": sorted(
-                    _compile_motif(blueprint, total_beats, bpm) + controls,
+                    motif_events + controls,
                     key=lambda event: (event["tick"], 0 if event["type"] == "control" else 1, event.get("note", 0)),
                 ),
             },
@@ -260,7 +288,9 @@ def compile_blueprint(blueprint: dict[str, Any]) -> dict[str, Any]:
             "compiler_id": COMPILER_ID,
             "compiler_version": COMPILER_VERSION,
             "lowering_policy": (
-                "explicit motif/drums + chord-root support + six-axis semantic lowering + profile programs"
+                "explicit exact-note timeline + chord-root support + semantic controls + profile programs"
+                if has_exact_timeline
+                else "explicit motif/drums + chord-root support + six-axis semantic lowering + profile programs"
             ),
             "approximations": [
                 "M1 semantic axes use explicit deterministic musical mechanisms, not universal perceptual models.",

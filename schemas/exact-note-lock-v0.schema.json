@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/exact-note-lock-v0.schema.json",
+  "title": "MUSICA Exact Note Lock v0",
+  "description": "Stable-ID-aware HARD exact lock for one canonical exact-note property.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "lock_version",
+    "lock_id",
+    "strength",
+    "selector",
+    "mode",
+    "inheriting",
+    "value",
+    "reason"
+  ],
+  "properties": {
+    "lock_version": {"const": "0"},
+    "lock_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "strength": {"const": "HARD"},
+    "selector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["part_id", "note_id", "property"],
+      "properties": {
+        "part_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "note_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "property": {
+          "enum": ["pitch", "start_beat", "duration_beats", "velocity"]
+        }
+      }
+    },
+    "mode": {"const": "exact"},
+    "inheriting": {"type": "boolean"},
+    "value": {"type": "number"},
+    "reason": {"type": "string", "minLength": 1, "maxLength": 2048}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "selector": {
+            "properties": {"property": {"enum": ["pitch", "velocity"]}}
+          }
+        }
+      },
+      "then": {"properties": {"value": {"type": "integer"}}}
+    }
+  ]
+}

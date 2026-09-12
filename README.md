@@ -18,19 +18,19 @@ MUSICA는 text-to-song 복제 제품도 특정 renderer/DAW 중심 시스템도 
 
 ## Current canonical status / 현재 공식 상태
 
-**M0 → M6-R1 are validated within their explicitly bounded claims.**
+**M0 → M6-R2 are validated within their explicitly bounded claims.**
 
-**M0 → M6-R1은 각 명시적 제한 주장 범위에서 검증 완료되었습니다.**
+**M0 → M6-R2는 각 명시적 제한 주장 범위에서 검증 완료되었습니다.**
 
-M6-R0 ratified the exact-note authority/data model. M6-R1 then implemented and validated the bounded trusted-core runtime for exact-note material, stable-ID note editing, fail-closed stale/lock handling, non-canonical Preview, explicit M2 acceptance and deterministic lowering.
+M6-R0 ratified the exact-note authority/data model. M6-R1 implemented and validated the bounded trusted-core runtime. M6-R2 now exposes that authority through the local-first Browser Studio Inspect piano-roll surface with deterministic note-view projection, typed note Preview, fail-closed stale/lock handling, and explicit existing M2 acceptance.
 
-M6-R0는 exact-note 권한/데이터 모델을 비준했고, M6-R1은 exact-note material, stable-ID note editing, stale/lock fail-closed 처리, non-canonical Preview, 명시적 M2 Accept, 결정론 lowering을 trusted core에 구현·검증했습니다.
+M6-R0는 exact-note 권한/데이터 모델을 비준했고, M6-R1은 제한된 trusted-core runtime을 구현·검증했습니다. M6-R2는 이를 local-first Browser Studio Inspect piano-roll surface에 연결하여 deterministic note-view projection, typed note Preview, stale/lock fail-closed 처리, 기존 M2의 명시적 Accept 경로를 검증했습니다.
 
-The next bounded milestone is **M6-R2 — Browser Studio Piano-Roll / Inspect Surface**.
+The next bounded milestone is **M6-R3 — Real-browser Exact-Note E2E + Lock/Conflict UX**.
 
-다음 제한 마일스톤은 **M6-R2 — Browser Studio Piano-Roll / Inspect Surface**입니다.
+다음 제한 마일스톤은 **M6-R3 — 실제 Browser Exact-Note E2E + Lock/Conflict UX**입니다.
 
-R2 exposes the already validated M6-R1 authority path through Browser Studio Inspect. It does **not** grant browser DOM/canvas state or Music IR direct project authority.
+R3 does not create a new editing authority. It proves the validated R2 Browser integration in real Chromium and validates visible fail-closed conflict handling while keeping DOM/canvas/browser state and Music IR non-canonical.
 
 ## Try the local Studio / 로컬 Studio 실행
 
@@ -99,12 +99,14 @@ M6 exact-note editing preserves the same ownership rule:
 
 ```text
 Accepted exact-note Blueprint
-→ read projection
+→ deterministic Studio note view
+→ Browser Inspect piano roll
 → typed NoteEditCandidate
-→ source + lock + constraint validation
+→ source + stable-ID lock + constraint validation
+→ READY_FOR_PREVIEW or BLOCKED
 → PREVIEW — non-canonical
-→ explicit Accept
-→ M2 revision
+→ explicit Accept / Discard
+→ existing M2 revision authority
 → trusted deterministic Music IR
 ```
 
@@ -161,24 +163,26 @@ Important distinction / 중요 구분:
 | M5-R4 Comparative Music/Audio Quality Evaluation | **VALIDATED — BOUNDED** | `evidence/M5_R4_VALIDATION.md` |
 | M6-R0 Precision Editing Authority & Canonical Note Model | **VALIDATED — CONTRACT/DESIGN ONLY** | `evidence/M6_R0_VALIDATION.md` |
 | M6-R1 Typed Exact-Note Material + Edit Engine | **VALIDATED — BOUNDED CORE RUNTIME** | `evidence/M6_R1_VALIDATION.md` |
-| M6-R2 Browser Studio Piano-Roll / Inspect Surface | **NOT IMPLEMENTED — NEXT** | `memory/NEXT_ACTION.md` |
+| M6-R2 Browser Studio Piano-Roll / Inspect Surface | **VALIDATED — BOUNDED BROWSER INTEGRATION** | `evidence/M6_R2_VALIDATION.md` |
+| M6-R3 Real-browser Exact-Note E2E + Lock/Conflict UX | **NOT IMPLEMENTED — NEXT** | `memory/NEXT_ACTION.md` |
 | Live OpenAI provider execution | **NOT VALIDATED** | separate `LIVE_PROVIDER_EVIDENCE` required |
 | Human-subject usability/perceptual evidence | **NOT VALIDATED** | separate controlled study required |
 
-## M6-R1 validated boundary / M6-R1 검증 경계
+## M6-R2 validated boundary / M6-R2 검증 경계
 
-M6-R1 validates the trusted-core exact-note authority/runtime path:
+M6-R2 validates the bounded Browser Studio integration over the trusted M6-R1 exact-note authority:
 
 ```text
 Accepted Blueprint revision
-→ exact source binding
-→ stable-ID NoteEditCandidate
-→ exact-note invariants
-→ stable-ID HARD note lock + existing lock/constraint validation
+→ deterministic Studio exact-note read projection
+→ Browser Studio Inspect piano roll
+→ bounded exact-note browser controls
+→ typed stable-ID NoteEditCandidate
+→ exact source binding + M6-R1 authority
 → READY_FOR_PREVIEW or BLOCKED
-→ PREVIEW — non-canonical
-→ explicit Accept only
-→ existing M2 commit
+→ PREVIEW — NOT ACCEPTED
+→ explicit Accept / Discard
+→ existing M2 commit only
 → accepted Blueprint
 → deterministic exact-note lowering
 → Music IR
@@ -186,17 +190,24 @@ Accepted Blueprint revision
 
 Validated bounded properties include:
 
-- optional `materials.melody.exact_timeline`;
-- legacy `motif_notes` compatibility;
-- stable `note_id + part_id` addressing;
-- operations `INSERT / DELETE / MOVE / RESIZE / REPITCH / SET_VELOCITY`;
-- exact project/revision/Blueprint SHA-256 stale protection;
-- stable-ID HARD note locks that cannot be bypassed by direct M2 commit;
-- faithful pitch/start/duration/velocity lowering;
-- side-effect-free Preview and explicit M2 acceptance;
-- deterministic evidence and project integrity after acceptance.
+- schema-validated `studio-note-view-v0` projection;
+- deterministic `GET /v0/sessions/{id}/notes`;
+- `POST /v0/sessions/{id}/preview/notes` delegated to M6-R1 authority;
+- stable note identity and stable-ID HARD note-lock visibility;
+- Browser Inspect piano-roll UI with accepted/Preview distinction;
+- browser-accessible `INSERT / DELETE / MOVE / RESIZE / REPITCH / SET_VELOCITY` controls;
+- exact project/revision/Blueprint SHA-256 source binding;
+- stale source `BLOCKED / STALE_SOURCE` with no pending Preview;
+- HARD lock `BLOCKED / HARD_LOCK_VIOLATION` with no pending Preview;
+- explicit existing M2 acceptance only;
+- accepted exact-note state survives reopen;
+- legacy motif-only projects expose exact-note editing unavailable and fabricate no canonical notes;
+- same-origin packaged assets and existing loopback/CSP/no-upload/no-telemetry boundaries;
+- browser project mutation authority and Music IR mutation authority remain false.
 
-M6-R1 does **not** validate Browser Studio piano-roll interaction. That claim begins only after M6-R2/M6-R3 evidence.
+The final evidence-bearing M6-R2 artifact is `10298037150`; its internal manifest SHA-256 is `6e97d79b19248b03d2fe705223fb5f3c5de7ff95a2d80ef279e7fd86a8b27b7e`. The full 59-file evidence tree is byte-identical to the strengthened pre-durable artifact.
+
+M6-R2 does **not** yet validate real-browser end-to-end exact-note edit acceptance across the full six-operation Browser journey or real-browser HARD-lock/stale-source conflict UX. Those claims begin only after M6-R3 evidence.
 
 ## M5-R4 validated boundary / M5-R4 검증 경계
 
@@ -234,14 +245,15 @@ Before substantive work read / 실질 작업 전 확인:
 5. `docs/M6_ACCEPTANCE.md`
 6. `docs/M6_R1_RUNTIME.md`
 7. `evidence/M6_R1_VALIDATION.md`
-8. `memory/CURRENT_STATE.md`
-9. `memory/NEXT_ACTION.md`
-10. relevant Issue / PR / exact-head CI evidence
+8. `evidence/M6_R2_VALIDATION.md`
+9. `memory/CURRENT_STATE.md`
+10. `memory/NEXT_ACTION.md`
+11. relevant Issue / PR / exact-head CI evidence
 
 ## Current exact next point / 현재 정확한 다음 재개점
 
-Start **M6-R2 — Browser Studio Piano-Roll / Inspect Surface**.
+Start **M6-R3 — Real-browser Exact-Note E2E + Lock/Conflict UX**.
 
-Integrate the validated M6-R1 exact-note engine into the existing Studio service and Inspect UI: deterministic accepted-note read projection, typed note-edit Preview endpoint, stable-ID/lock visibility, audible Preview, explicit Accept/Discard, and bounded piano-roll interaction. Do not create browser-side canonical state or direct Music IR mutation authority.
+Use the existing Chromium/Playwright Browser Studio harness to prove the already implemented R2 exact-note path end-to-end: render accepted exact notes, exercise the six typed operations through browser-accessible controls, prove `PREVIEW · NOT ACCEPTED`, explicit Accept/Discard, accepted-state persistence after refresh/reopen, and visible fail-closed HARD-lock/stale-source conflicts. Preserve the existing M6 authority boundary; do not create browser-side canonical state or direct Music IR mutation authority.
 
-**M6-R2 — Browser Studio Piano-Roll / Inspect Surface**부터 시작합니다. 검증된 M6-R1 exact-note engine을 기존 Studio service/Inspect UI에 통합하되 browser-side canonical state나 Music IR 직접 수정 권한을 만들지 않습니다.
+**M6-R3 — 실제 Browser Exact-Note E2E + Lock/Conflict UX**부터 시작합니다. 기존 Chromium/Playwright Browser Studio harness에서 R2 exact-note 경로를 실제 end-to-end로 증명하되 browser-side canonical state나 Music IR 직접 수정 권한을 만들지 않습니다.

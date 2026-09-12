@@ -1,10 +1,12 @@
 # M6 Precision Editing Authority & Canonical Note Model v0 / M6 정밀 편집 권한 및 공식 Note Model v0
 
-**Status / 상태:** `RATIFIED — M6-R0 CONTRACT; M6-R1 BOUNDED CORE RUNTIME VALIDATED`
+**Status / 상태:** `RATIFIED — M6-R0 CONTRACT; M6-R1 BOUNDED CORE RUNTIME VALIDATED; M6-R2 BOUNDED BROWSER INTEGRATION VALIDATED`
 
 **Governing Issue / 지배 Issue:** `#51`
 
 **Runtime implementation / 런타임 구현:** `M6-R1 / Issue #54 / PR #55 / evidence/M6_R1_VALIDATION.md`
+
+**Browser integration / Browser 통합:** `M6-R2 / Issue #57 / PR #58 / evidence/M6_R2_VALIDATION.md`
 
 ## 1. Purpose / 목적
 
@@ -28,9 +30,9 @@ Repository evidence before M6 had a deliberate gap:
 - `music-blueprint-v0.schema.json` leaves `materials.melody` structurally open;
 - the legacy compiler lowers a repeating `motif_notes` pattern to Music IR;
 - M5-R3 exports note events but correctly refuses arbitrary note edits when no Blueprint reverse mapping exists;
-- Browser Studio exposes Inspect but does not yet validate piano-roll exact-note interaction.
+- Browser Studio originally exposed Inspect without a validated piano-roll exact-note path.
 
-M6 closes this gap by adding a typed exact-note authority layer above Music IR. M6-R1 has now validated the bounded trusted-core runtime described by this contract; Browser Studio interaction remains an M6-R2+ concern.
+M6-R0 closed the authority/data-contract gap, M6-R1 validated the bounded trusted-core runtime, and M6-R2 validated the bounded Browser Studio service/UI integration over that runtime. Full real-browser exact-note end-to-end interaction and conflict UX remain an M6-R3 concern.
 
 ## 3. Authority model / 권한 모델
 
@@ -101,7 +103,7 @@ Reasons:
 3. beat coordinates survive deterministic re-lowering and align with DAWproject's bounded beat representation;
 4. future tempo-map support can map musical position to seconds without rewriting accepted note identity.
 
-The validated M6-R1 runtime is bounded to the currently supported fixed-tempo context. Adaptive/multi-event tempo-map editing remains outside the validated boundary.
+The validated M6-R1/M6-R2 runtime and Browser integration remain bounded to the currently supported fixed-tempo context. Adaptive/multi-event tempo-map editing remains outside the validated boundary.
 
 ### 4.2 Exact note fields / exact note 필드
 
@@ -133,7 +135,7 @@ Rules:
 - reorder of JSON array storage is not itself a musical edit;
 - canonical presentation order is `(start_beat, part_id, pitch, note_id)`.
 
-M6-R1 enforces the cross-field uniqueness/order and ownership invariants in trusted runtime validation; JSON Schema alone is not treated as sufficient evidence for those invariants.
+M6-R1 enforces the cross-field uniqueness/order and ownership invariants in trusted runtime validation; JSON Schema alone is not treated as sufficient evidence for those invariants. M6-R2 exposes the resulting stable identity through the Browser Studio note-view contract without transferring authority to browser array order.
 
 ## 6. Backward compatibility / 하위 호환
 
@@ -169,6 +171,7 @@ Because Blueprint v0 already permits structured material extension under `materi
 
 - existing projects without `exact_timeline` retain legacy compiler behavior;
 - when `exact_timeline` exists, M6-R1 validates it against `exact-note-material-v0.schema.json` plus trusted cross-field invariants;
+- M6-R2 reports exact-note editing unavailable for legacy motif-only Browser Studio projects and does not fabricate canonical notes from Music IR;
 - any future change that makes exact-note material mandatory or changes incompatible semantics requires an explicit Blueprint schema/version decision.
 
 ## 7. Material mode and precedence / material mode와 우선순위
@@ -190,7 +193,7 @@ explicit exact-note material
 → semantic change affecting those notes must first become a new explicit Blueprint candidate/diff
 ```
 
-M6-R1 implements and validates this bounded precedence rule.
+M6-R1 implements and validates this bounded precedence rule. M6-R2 reuses it unchanged through the Studio note Preview boundary.
 
 ## 8. Note edit candidate / Note Edit Candidate
 
@@ -230,7 +233,7 @@ project_id
 + canonical Blueprint SHA-256
 ```
 
-M6-R1 fails closed when any source binding no longer matches the active accepted project state.
+M6-R1 fails closed when any source binding no longer matches the active accepted project state. M6-R2 preserves that exact binding through the Browser Studio note-view and Preview service boundary.
 
 A stale edit is not rebased silently. A fresh candidate must be produced against the new accepted revision.
 
@@ -263,6 +266,8 @@ M6-R1 implements the additive stable-ID-aware note-lock contract:
 - `schemas/exact-note-lock-v0.schema.json`
 
 The trusted runtime resolves note locks by stable note identity/property and also enforces them inside `validate_revision()` so direct M2 commit cannot bypass the note-edit preflight.
+
+M6-R2 exposes stable-ID lock state to the Browser Studio view and proves `HARD_LOCK_VIOLATION` remains fail-closed with no pending Preview. Rich real-browser conflict presentation is deferred to M6-R3.
 
 Unsupported future lock semantics must continue to fail closed rather than degrade into advisory behavior.
 
@@ -299,6 +304,8 @@ Bounded conflict codes:
 - `PART_MISMATCH`
 - `UNREPRESENTABLE_EDIT`
 
+M6-R2 preserves these results through the Studio service and validates that stale/HARD-lock blocked results install no pending Preview.
+
 ## 12. Part and section ownership / Part·Section 소유권
 
 `part_id` is mandatory for every exact note and targeted edit.
@@ -312,6 +319,8 @@ The validated M6-R1 semantic boundary proves that:
 - note timing remains inside project bounds;
 - section/time consistency is checked under the accepted fixed-tempo context.
 
+M6-R2 projects this bounded ownership into Browser Studio without expanding the supported exact-edit part/tempo scope.
+
 Expanding exact editing to arbitrary parts or tempo maps requires new evidence.
 
 ## 13. Diff and provenance / Diff·provenance
@@ -322,6 +331,8 @@ Every accepted exact-note edit is explainable as:
 2. the resulting structured/stable-note Blueprint diff.
 
 Accepted revision provenance remains bound to the source revision, actor, reason and exact accepted Blueprint. M2 acceptance remains the only project-state commit boundary.
+
+M6-R2 presents stable-note edit/diff context at the Browser Studio boundary without granting display state revision authority.
 
 ## 14. Compiler impact / Compiler 영향
 
@@ -341,6 +352,8 @@ M6-R1 validates and implements a lowering path that:
 - records exact-note lowering provenance;
 - avoids silent semantic velocity scaling.
 
+M6-R2 does not introduce a separate compiler path; accepted Browser Studio edits return to the same M2/Blueprint authority and trusted lowering.
+
 Music IR remains derived and non-canonical.
 
 ## 15. Interchange impact / 상호운용성 영향
@@ -351,27 +364,45 @@ A later M6-R4 may allow a bounded DAWproject note edit to become a `NoteEditCand
 
 ## 16. Browser Studio impact / Browser Studio 영향
 
-M6-R0 did not build the piano roll and M6-R1 validated the core runtime only.
-
-M6-R2 Inspect should operate as:
+M6-R0 defined the exact-note authority contract and M6-R1 validated the trusted-core runtime. M6-R2 now validates the bounded Browser Studio integration:
 
 ```text
 accepted exact-note material
-→ visual piano-roll projection
+→ deterministic Studio note-view projection
+→ Browser Studio Inspect piano roll
+→ bounded browser edit control
 → typed NoteEditCandidate
 → M6-R1 authority result
-→ Preview
-→ audible/diff inspection
+→ PREVIEW · NOT ACCEPTED or BLOCKED
 → explicit Accept / Discard
+→ existing M2 authority only
 ```
 
+M6-R2 validates:
+
+- schema-validated browser-facing note view;
+- stable note identity and lock visibility;
+- six primitive operation controls;
+- non-canonical Preview installation only after `READY_FOR_PREVIEW`;
+- stale and HARD-lock cases blocked with no Preview;
+- explicit existing M2 acceptance;
+- accepted exact-note persistence after reopen;
+- legacy motif-only `exact_note_editing_available=false` without fabricated notes;
+- same-origin/local-first security boundaries;
+- browser and Music IR mutation authority remain false.
+
 The browser must never directly persist mutated Music IR or browser-local note arrays as project truth.
+
+M6-R3 is responsible for proving this already validated integration through a real Chromium exact-note E2E journey and for validating visible lock/stale conflict UX. R3 must not create new canonical authority semantics.
 
 ## 17. Non-goals / 비목표
 
 The currently validated M6 boundary does not claim:
 
 - full professional DAW piano-roll parity;
+- real-browser six-operation exact-note E2E acceptance evidence;
+- real-browser pointer drag/move/resize behavior as a validated capability;
+- validated real-browser HARD-lock/stale-source conflict UX;
 - waveform/destructive audio editing;
 - arbitrary automation lanes;
 - mixer/device/plugin editing;
@@ -390,12 +421,12 @@ The currently validated M6 boundary does not claim:
 ```text
 M6-R0 — Precision Editing Authority & Canonical Note Model       VALIDATED
 M6-R1 — Typed Exact-Note Material + Edit Engine                  VALIDATED — BOUNDED CORE RUNTIME
-M6-R2 — Browser Studio Piano-Roll / Inspect Surface              NEXT
-M6-R3 — Real-browser exact-note E2E + lock/conflict UX           PLANNED
+M6-R2 — Browser Studio Piano-Roll / Inspect Surface              VALIDATED — BOUNDED BROWSER INTEGRATION
+M6-R3 — Real-browser exact-note E2E + lock/conflict UX           NEXT
 M6-R4 — bounded interchange reconciliation for note edits         PLANNED
 ```
 
-## 19. Ratified claim / 비준 주장
+## 19. Ratified claims / 비준 주장
 
 M6-R0 contract claim:
 
@@ -405,4 +436,8 @@ M6-R1 bounded runtime claim:
 
 > **MUSICA can represent, validate, preview, accept, version and deterministically compile bounded exact note-level edits through stable identities while preserving Blueprint/M2 authority above Music IR.**
 
-Browser piano-roll usability remains unvalidated until M6-R2/M6-R3 evidence.
+M6-R2 bounded Browser integration claim:
+
+> **MUSICA can expose accepted exact-note material through a local Browser Studio piano-roll / Inspect surface, construct bounded stable-ID exact-note edits, preview them through the trusted M6-R1 authority path, and accept them only through existing M2 project authority.**
+
+Real-browser exact-note E2E interaction and lock/conflict UX remain unvalidated until M6-R3 evidence.

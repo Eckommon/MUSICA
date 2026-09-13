@@ -1,0 +1,40 @@
+name: M6-R4 Interchange Note Reconciliation
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  m6-r4-interchange-note-reconciliation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA / MUSICA 설치
+        run: python -m pip install -e '.[dev]'
+      - name: Run M5-R3 + M6-R1/R2 + M6-R4 reconciliation regressions / 상호운용·정밀편집 회귀 실행
+        run: >-
+          pytest -q
+          tests/test_m5_r3_dawproject.py
+          tests/test_m6_r1_note_edit.py
+          tests/test_m6_r2_studio_notes.py
+          tests/test_m6_r4_interchange_note_reconcile.py
+      - name: Generate M6-R4 canonical reconciliation evidence twice / M6-R4 공식 근거 2회 생성
+        run: |
+          MUSICA_M6_R4_EVIDENCE_OUT=artifacts/m6-r4-a python -m musica.m6_r4_deterministic_evidence
+          MUSICA_M6_R4_EVIDENCE_OUT=artifacts/m6-r4-b python -m musica.m6_r4_deterministic_evidence
+      - name: Prove byte-reproducible M6-R4 evidence / M6-R4 근거 byte 재현성 증명
+        run: diff -qr artifacts/m6-r4-a artifacts/m6-r4-b
+      - name: Upload M6-R4 reconciliation evidence / M6-R4 reconciliation 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-m6-r4-interchange-note-reconciliation
+          path: artifacts/m6-r4-a
+          if-no-files-found: error

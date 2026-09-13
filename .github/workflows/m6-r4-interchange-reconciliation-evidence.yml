@@ -1,0 +1,37 @@
+name: M6-R4 Interchange Reconciliation Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  m6-r4-interchange-reconciliation-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA / MUSICA 설치
+        run: python -m pip install -e '.[dev]'
+      - name: Run M5-R3 + M6-R1 + M6-R4 authority regressions / 권한 회귀 테스트
+        run: >-
+          pytest -q
+          tests/test_m5_r3_dawproject.py
+          tests/test_m6_r1_note_edit.py
+          tests/test_m6_r4_interchange_reconcile.py
+      - name: Generate M6-R4 canonical evidence / M6-R4 공식 근거 생성
+        run: >-
+          python -m musica.m6_r4_demo
+          --out artifacts/m6-r4-interchange-reconciliation
+      - name: Upload M6-R4 evidence / M6-R4 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-m6-r4-interchange-reconciliation
+          path: artifacts/m6-r4-interchange-reconciliation
+          if-no-files-found: error

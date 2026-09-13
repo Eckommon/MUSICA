@@ -41,10 +41,16 @@
   },
   "$defs": {
     "stableId": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
-    "target": {
+    "laneTarget": {
       "type": "object",
       "additionalProperties": false,
       "required": ["lane_id"],
+      "properties": {"lane_id": {"$ref": "#/$defs/stableId"}}
+    },
+    "pointTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lane_id", "point_id"],
       "properties": {
         "lane_id": {"$ref": "#/$defs/stableId"},
         "point_id": {"$ref": "#/$defs/stableId"}
@@ -70,12 +76,7 @@
           "properties": {
             "operation_id": {"$ref": "#/$defs/stableId"},
             "op": {"const": "INSERT_POINT"},
-            "target": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": ["lane_id"],
-              "properties": {"lane_id": {"$ref": "#/$defs/stableId"}}
-            },
+            "target": {"$ref": "#/$defs/laneTarget"},
             "point": {"$ref": "#/$defs/pointValue"}
           }
         },
@@ -86,7 +87,7 @@
           "properties": {
             "operation_id": {"$ref": "#/$defs/stableId"},
             "op": {"const": "DELETE_POINT"},
-            "target": {"$ref": "#/$defs/target"}
+            "target": {"$ref": "#/$defs/pointTarget"}
           }
         },
         {
@@ -96,7 +97,7 @@
           "properties": {
             "operation_id": {"$ref": "#/$defs/stableId"},
             "op": {"const": "MOVE_POINT"},
-            "target": {"$ref": "#/$defs/target"},
+            "target": {"$ref": "#/$defs/pointTarget"},
             "beat": {"type": "number", "minimum": 0, "maximum": 1000000}
           }
         },
@@ -107,7 +108,7 @@
           "properties": {
             "operation_id": {"$ref": "#/$defs/stableId"},
             "op": {"const": "SET_VALUE"},
-            "target": {"$ref": "#/$defs/target"},
+            "target": {"$ref": "#/$defs/pointTarget"},
             "value": {"type": "number"}
           }
         },
@@ -118,7 +119,7 @@
           "properties": {
             "operation_id": {"$ref": "#/$defs/stableId"},
             "op": {"const": "SET_INTERPOLATION"},
-            "target": {"$ref": "#/$defs/target"},
+            "target": {"$ref": "#/$defs/pointTarget"},
             "interpolation": {"enum": ["hold", "linear"]}
           }
         }

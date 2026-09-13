@@ -6,8 +6,6 @@
 
 MUSICA is an **AI-native programmable music workstation** built around one product promise:
 
-MUSICA는 하나의 제품 약속을 중심으로 구축하는 **AI-native 프로그래머블 음악 워크스테이션**입니다.
-
 > **Easy enough to direct in natural language, precise enough to edit as a professional music system.**
 >
 > **자연어로 지시할 만큼 쉽고, 전문 음악 시스템처럼 세밀하게 편집할 만큼 정밀해야 한다.**
@@ -18,19 +16,19 @@ MUSICA는 text-to-song 복제 제품도 특정 renderer/DAW 중심 시스템도 
 
 ## Current canonical status / 현재 공식 상태
 
-**M0 → M6-R2 are validated within their explicitly bounded claims.**
+**M0 → M6-R3 are validated within their explicitly bounded claims.**
 
-**M0 → M6-R2는 각 명시적 제한 주장 범위에서 검증 완료되었습니다.**
+**M0 → M6-R3는 각 명시적 제한 주장 범위에서 검증 완료되었습니다.**
 
-M6-R0 ratified the exact-note authority/data model. M6-R1 implemented and validated the bounded trusted-core runtime. M6-R2 now exposes that authority through the local-first Browser Studio Inspect piano-roll surface with deterministic note-view projection, typed note Preview, fail-closed stale/lock handling, and explicit existing M2 acceptance.
+M6-R0 ratified the canonical exact-note authority/data model. M6-R1 implemented the bounded trusted-core edit engine. M6-R2 exposed it through the Browser Studio Inspect piano roll. M6-R3 proved that exact-note path through real Chromium, including all six primitive operations, explicit Preview/Accept/Discard, restart/reopen persistence, and visible fail-closed HARD-lock/stale-source conflict UX.
 
-M6-R0는 exact-note 권한/데이터 모델을 비준했고, M6-R1은 제한된 trusted-core runtime을 구현·검증했습니다. M6-R2는 이를 local-first Browser Studio Inspect piano-roll surface에 연결하여 deterministic note-view projection, typed note Preview, stale/lock fail-closed 처리, 기존 M2의 명시적 Accept 경로를 검증했습니다.
+M6-R0는 canonical exact-note 권한/데이터 모델을 비준했고, M6-R1은 제한된 trusted-core edit engine을 구현했습니다. M6-R2는 이를 Browser Studio Inspect piano roll에 연결했으며, M6-R3는 실제 Chromium에서 6개 primitive operation, 명시적 Preview/Accept/Discard, 재시작·재오픈 보존, HARD-lock/stale-source fail-closed conflict UX까지 검증했습니다.
 
-The next bounded milestone is **M6-R3 — Real-browser Exact-Note E2E + Lock/Conflict UX**.
+The next bounded milestone is **M6-R4 — bounded interchange reconciliation for representable exact-note edits**.
 
-다음 제한 마일스톤은 **M6-R3 — 실제 Browser Exact-Note E2E + Lock/Conflict UX**입니다.
+다음 제한 마일스톤은 **M6-R4 — 표현 가능한 exact-note 편집의 제한된 interchange reconciliation**입니다.
 
-R3 does not create a new editing authority. It proves the validated R2 Browser integration in real Chromium and validates visible fail-closed conflict handling while keeping DOM/canvas/browser state and Music IR non-canonical.
+R4 will not grant a DAW or DAWproject artifact canonical authority. It may only convert provably source-bound, stable-identity, representable note differences from a MUSICA-origin bounded DAWproject artifact into the existing typed M6 `NoteEditCandidate` primitives, which still require normal M6 validation and explicit M2 acceptance.
 
 ## Try the local Studio / 로컬 Studio 실행
 
@@ -56,16 +54,14 @@ musica-studio --no-browser
 
 The Studio is loopback-only by design. It requires no cloud account, telemetry, remote asset CDN, or live OpenAI credential to start. The offline fixture Director is the default; OpenAI is an explicit optional provider mode.
 
-Studio는 설계상 loopback-only입니다. 시작에 cloud account, telemetry, remote asset CDN, live OpenAI credential이 필요하지 않습니다. Offline fixture Director가 기본이며 OpenAI는 명시적으로 선택하는 provider mode입니다.
-
 ## One state, four depths / 하나의 상태, 네 가지 깊이
 
-The Browser Studio exposes progressively deeper control over the same canonical `.musica` project state.
+The Browser Studio exposes progressively deeper control over the same canonical `.musica` project state:
 
-- **Direct / 간편 디렉팅** — natural-language creation/refinement and audition / 자연어 생성·수정·청취
-- **Shape / 의미·구조 편집** — semantic axes, sections and scoped preview / 의미 제어·구간·범위 preview
-- **Inspect / 전문 편집·검사** — locks, exact diff, accepted/preview state, branches/history and the M6 precision-editing surface / lock·정확 diff·상태·버전 이력·M6 정밀 편집
-- **Code / 코드·근거** — read-only validated JSON and authority evidence / 읽기 전용 검증 JSON·권한 근거
+- **Direct / 간편 디렉팅** — natural-language creation/refinement and audition
+- **Shape / 의미·구조 편집** — semantic axes, sections and scoped Preview
+- **Inspect / 전문 편집·검사** — locks, exact diff, accepted/preview state, branches/history and exact-note piano roll
+- **Code / 코드·근거** — read-only validated JSON and authority evidence
 
 These are views over one project state, not separate databases or incompatible modes.
 
@@ -74,45 +70,39 @@ These are views over one project state, not separate databases or incompatible m
 ```text
 User / 사용자
   ↓
-Browser Studio / API
+Browser Studio / API / bounded interchange proposal
   ↓
-M4 Application Service
+M4 Application Service + typed candidate boundaries
   ↓
-M3 AI Music Director proposal boundary
-  ↓
-M1 Creative Core + M0 contracts / HARD locks
+M0/M1 contracts + HARD locks + M6 exact-note authority
   ↓
 PREVIEW — non-canonical
   ↓ explicit Accept only
 M2 Project & Version Engine
   ↓
 Accepted Blueprint Revision
-  ↓
-trusted lowering
-  ↓
+  ↓ trusted lowering
 Music IR — derived executable state
   ↓
-M5 replaceable adapters / evaluation
+M5 replaceable renderer / interchange / evaluation adapters
 ```
 
 M6 exact-note editing preserves the same ownership rule:
 
 ```text
 Accepted exact-note Blueprint
-→ deterministic Studio note view
-→ Browser Inspect piano roll
+→ deterministic source-bound projection
+→ Browser or future bounded interchange input
 → typed NoteEditCandidate
 → source + stable-ID lock + constraint validation
 → READY_FOR_PREVIEW or BLOCKED
-→ PREVIEW — non-canonical
+→ PREVIEW · NOT ACCEPTED
 → explicit Accept / Discard
 → existing M2 revision authority
 → trusted deterministic Music IR
 ```
 
 **AI output is not accepted state. Preview audio is not accepted state. Browser memory/DOM/canvas state is not accepted state. Direct Music IR edits are not accepted state. Renderer output is not accepted state. Comparison output is not accepted state. Imported DAW/interchange state is not accepted state.**
-
-**AI 출력, Preview 오디오, Browser memory/DOM/canvas 상태, Music IR 직접 편집, Renderer output, 비교 결과, 외부 DAW/interchange import 상태는 승인 상태가 아닙니다.**
 
 The accepted `.musica` Project Bundle remains canonical.
 
@@ -140,11 +130,11 @@ Renderer / Interchange / Evaluation Adapters
 
 Important distinction / 중요 구분:
 
-> **Music Blueprint = canonical human/AI creative state. / 인간·AI가 공유하는 공식 창작 상태.**
+> **Music Blueprint = canonical human/AI creative state.**
 >
-> **Music IR = lower-level executable representation produced by compilation. / 컴파일로 생성되는 저수준 실행 표현.**
+> **Music IR = lower-level executable representation produced by compilation.**
 >
-> **External renderer/interchange/comparison artifact = non-canonical output, candidate carrier or evidence. / 외부 renderer/interchange/comparison artifact는 비공식 출력·candidate 운반체·근거이다.**
+> **External renderer/interchange/comparison artifact = non-canonical output, candidate carrier or evidence.**
 
 ## Validated milestone stack / 검증 마일스톤 스택
 
@@ -164,50 +154,64 @@ Important distinction / 중요 구분:
 | M6-R0 Precision Editing Authority & Canonical Note Model | **VALIDATED — CONTRACT/DESIGN ONLY** | `evidence/M6_R0_VALIDATION.md` |
 | M6-R1 Typed Exact-Note Material + Edit Engine | **VALIDATED — BOUNDED CORE RUNTIME** | `evidence/M6_R1_VALIDATION.md` |
 | M6-R2 Browser Studio Piano-Roll / Inspect Surface | **VALIDATED — BOUNDED BROWSER INTEGRATION** | `evidence/M6_R2_VALIDATION.md` |
-| M6-R3 Real-browser Exact-Note E2E + Lock/Conflict UX | **NOT IMPLEMENTED — NEXT** | `memory/NEXT_ACTION.md` |
+| M6-R3 Real-browser Exact-Note E2E + Lock/Conflict UX | **VALIDATED — BOUNDED REAL-BROWSER EXACT-NOTE E2E** | `evidence/M6_R3_VALIDATION.md` |
+| M6-R4 Bounded interchange exact-note reconciliation | **NOT IMPLEMENTED — NEXT** | `memory/NEXT_ACTION.md` |
 | Live OpenAI provider execution | **NOT VALIDATED** | separate `LIVE_PROVIDER_EVIDENCE` required |
 | Human-subject usability/perceptual evidence | **NOT VALIDATED** | separate controlled study required |
 
-## M6-R2 validated boundary / M6-R2 검증 경계
+## M6-R3 validated boundary / M6-R3 검증 경계
 
-M6-R2 validates the bounded Browser Studio integration over the trusted M6-R1 exact-note authority:
+M6-R3 validates the real-browser path over the already trusted M6 authority:
 
 ```text
-Accepted Blueprint revision
-→ deterministic Studio exact-note read projection
-→ Browser Studio Inspect piano roll
-→ bounded exact-note browser controls
+Accepted exact-note Blueprint
+→ deterministic Studio note view
+→ real Chromium Browser Studio Inspect piano roll
+→ browser exact-note input
 → typed stable-ID NoteEditCandidate
-→ exact source binding + M6-R1 authority
+→ M6-R1 authority
 → READY_FOR_PREVIEW or BLOCKED
-→ PREVIEW — NOT ACCEPTED
+→ PREVIEW · NOT ACCEPTED
 → explicit Accept / Discard
 → existing M2 commit only
 → accepted Blueprint
-→ deterministic exact-note lowering
-→ Music IR
+→ restart/reopen persistence
 ```
 
 Validated bounded properties include:
 
-- schema-validated `studio-note-view-v0` projection;
-- deterministic `GET /v0/sessions/{id}/notes`;
-- `POST /v0/sessions/{id}/preview/notes` delegated to M6-R1 authority;
-- stable note identity and stable-ID HARD note-lock visibility;
-- Browser Inspect piano-roll UI with accepted/Preview distinction;
-- browser-accessible `INSERT / DELETE / MOVE / RESIZE / REPITCH / SET_VELOCITY` controls;
+- all six primitive operations browser-exercised: `INSERT / DELETE / MOVE / RESIZE / REPITCH / SET_VELOCITY`;
 - exact project/revision/Blueprint SHA-256 source binding;
-- stale source `BLOCKED / STALE_SOURCE` with no pending Preview;
-- HARD lock `BLOCKED / HARD_LOCK_VIOLATION` with no pending Preview;
-- explicit existing M2 acceptance only;
-- accepted exact-note state survives reopen;
-- legacy motif-only projects expose exact-note editing unavailable and fabricate no canonical notes;
-- same-origin packaged assets and existing loopback/CSP/no-upload/no-telemetry boundaries;
+- accepted ref unchanged before explicit Accept;
+- Discard preserves accepted state;
+- explicit Accept advances exactly once through M2;
+- accepted REPITCH persists after service restart/browser reopen;
+- real-browser HARD lock conflict is visibly `BLOCKED / HARD_LOCK_VIOLATION` with stable note/rule context and no pending Preview;
+- real-browser stale source is visibly `BLOCKED / STALE_SOURCE` with no pending Preview or silent rebase;
+- legacy motif-only projects expose exact editing unavailable and fabricate no canonical notes;
+- browser console/page error counts are zero in canonical evidence;
 - browser project mutation authority and Music IR mutation authority remain false.
 
-The final evidence-bearing M6-R2 artifact is `10298037150`; its internal manifest SHA-256 is `6e97d79b19248b03d2fe705223fb5f3c5de7ff95a2d80ef279e7fd86a8b27b7e`. The full 59-file evidence tree is byte-identical to the strengthened pre-durable artifact.
+Final M6-R3 evidence-bearing head: `c4b525a9083ff8a537b411789b8bbfbf39c04a7b`  
+Implementation merge: `327939e71bd63611f747bac147c4ba6591052b93`  
+Final artifact ID: `10305989929`  
+Artifact SHA-256: `2e44021ddd2a2803379f2223b045463d1a81c334afdb695d10df9b8fc5d914c0`  
+Internal manifest SHA-256: `825c5d69f55a40ba77deefe1bdb3bba4974f0ed26d0cf1696aa11718dcff58ec`
 
-M6-R2 does **not** yet validate real-browser end-to-end exact-note edit acceptance across the full six-operation Browser journey or real-browser HARD-lock/stale-source conflict UX. Those claims begin only after M6-R3 evidence.
+## M6-R4 boundary / M6-R4 경계
+
+M5-R3 historical evidence correctly blocks arbitrary external note reverse mapping. M6-R4 may introduce a new bounded path only when all of the following are proven:
+
+```text
+MUSICA-origin export lineage
++ exact accepted source binding
++ deterministic baseline-versus-returned comparison
++ stable note identity/part mapping
++ exact representation as existing M6 primitives
++ normal M6 lock/constraint authority
+```
+
+A returned DAWproject is never accepted by itself. Unsupported, ambiguous, stale or provenance-broken changes must fail closed. Arbitrary external DAW reverse mapping remains outside the claim boundary.
 
 ## M5-R4 validated boundary / M5-R4 검증 경계
 
@@ -240,20 +244,21 @@ Before substantive work read / 실질 작업 전 확인:
 
 1. `governance/SOURCE_OF_TRUTH.md`
 2. `docs/PRODUCT_THESIS.md`
-3. `docs/design/MUSICA_DESIGN_PACKAGE_v0.1.md`
-4. `docs/M6_PRECISION_EDITING_AUTHORITY.md`
-5. `docs/M6_ACCEPTANCE.md`
-6. `docs/M6_R1_RUNTIME.md`
+3. `docs/M6_PRECISION_EDITING_AUTHORITY.md`
+4. `docs/M5_R3_ACCEPTANCE.md`
+5. `docs/M5_R3_ROUNDTRIP_AUTHORITY.md`
+6. `evidence/M5_R3_VALIDATION.md`
 7. `evidence/M6_R1_VALIDATION.md`
 8. `evidence/M6_R2_VALIDATION.md`
-9. `memory/CURRENT_STATE.md`
-10. `memory/NEXT_ACTION.md`
-11. relevant Issue / PR / exact-head CI evidence
+9. `evidence/M6_R3_VALIDATION.md`
+10. `memory/CURRENT_STATE.md`
+11. `memory/NEXT_ACTION.md`
+12. relevant Issue / PR / exact-head CI evidence
 
 ## Current exact next point / 현재 정확한 다음 재개점
 
-Start **M6-R3 — Real-browser Exact-Note E2E + Lock/Conflict UX**.
+Start **M6-R4 — bounded interchange reconciliation for representable exact-note edits**.
 
-Use the existing Chromium/Playwright Browser Studio harness to prove the already implemented R2 exact-note path end-to-end: render accepted exact notes, exercise the six typed operations through browser-accessible controls, prove `PREVIEW · NOT ACCEPTED`, explicit Accept/Discard, accepted-state persistence after refresh/reopen, and visible fail-closed HARD-lock/stale-source conflicts. Preserve the existing M6 authority boundary; do not create browser-side canonical state or direct Music IR mutation authority.
+Reuse the existing M5-R3 DAWproject parser/exporter and M6-R1 exact-note authority. Establish an exact export lineage and stable note identity mapping, compare returned artifacts against the exact MUSICA-exported normalized baseline, and convert only provably representable note changes into existing typed M6 primitives. Unsupported or ambiguous changes remain blocked; explicit M2 Accept remains the only canonical mutation path.
 
-**M6-R3 — 실제 Browser Exact-Note E2E + Lock/Conflict UX**부터 시작합니다. 기존 Chromium/Playwright Browser Studio harness에서 R2 exact-note 경로를 실제 end-to-end로 증명하되 browser-side canonical state나 Music IR 직접 수정 권한을 만들지 않습니다.
+**Repository evidence remains authoritative over conversation or model memory. / 레포 근거는 대화·모델 기억보다 우선합니다.**

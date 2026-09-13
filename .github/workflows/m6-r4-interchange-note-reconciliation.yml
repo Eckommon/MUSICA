@@ -26,3 +26,13 @@ jobs:
           tests/test_m6_r1_note_edit.py
           tests/test_m6_r2_studio_notes.py
           tests/test_m6_r4_interchange_note_reconcile.py
+      - name: Generate M6-R4 canonical reconciliation evidence / M6-R4 공식 reconciliation 근거 생성
+        env:
+          MUSICA_M6_R4_EVIDENCE_OUT: artifacts/m6-r4-interchange-note-reconciliation
+        run: python -m musica.m6_r4_evidence
+      - name: Upload M6-R4 reconciliation evidence / M6-R4 reconciliation 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-m6-r4-interchange-note-reconciliation
+          path: artifacts/m6-r4-interchange-note-reconciliation
+          if-no-files-found: error

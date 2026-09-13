@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/automation-material-v0.schema.json",
+  "title": "MUSICA Automation Material v0",
+  "description": "Canonical Blueprint-facing explicit automation material. Creative authority, not Music IR or renderer state.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["material_version", "mode", "time_base", "lanes"],
+  "properties": {
+    "material_version": {"const": "0"},
+    "mode": {"const": "explicit_automation"},
+    "time_base": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit", "origin_beat"],
+      "properties": {
+        "unit": {"const": "quarter_note_beat"},
+        "origin_beat": {"type": "number", "const": 0.0}
+      }
+    },
+    "lanes": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {"$ref": "#/$defs/lane"}
+    }
+  },
+  "$defs": {
+    "stableId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["parameter_id", "scope", "owner_id", "unit", "minimum", "maximum"],
+      "properties": {
+        "parameter_id": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 160,
+          "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z][a-z0-9_-]*)+$"
+        },
+        "scope": {"enum": ["project", "part", "track"]},
+        "owner_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+        "unit": {"enum": ["normalized", "decibel", "hertz", "semitone", "ratio"]},
+        "minimum": {"type": "number"},
+        "maximum": {"type": "number"}
+      }
+    },
+    "point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["point_id", "beat", "value", "interpolation"],
+      "properties": {
+        "point_id": {"$ref": "#/$defs/stableId"},
+        "beat": {"type": "number", "minimum": 0, "maximum": 1000000},
+        "value": {"type": "number"},
+        "interpolation": {"enum": ["hold", "linear"]}
+      }
+    },
+    "lane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lane_id", "target", "section_id", "points"],
+      "properties": {
+        "lane_id": {"$ref": "#/$defs/stableId"},
+        "target": {"$ref": "#/$defs/target"},
+        "section_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+        "points": {
+          "type": "array",
+          "maxItems": 100000,
+          "items": {"$ref": "#/$defs/point"}
+        }
+      }
+    }
+  }
+}

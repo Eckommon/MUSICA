@@ -2,11 +2,13 @@
 
 ## Project phase / 프로젝트 단계
 
-**M6-R3 — REAL-BROWSER EXACT-NOTE E2E + LOCK/CONFLICT UX: VALIDATED — BOUNDED REAL-BROWSER EXACT-NOTE E2E / M6-R3 — 실제 Browser Exact-Note E2E + Lock/Conflict UX: 제한된 real-browser exact-note E2E 검증 완료**
+**M6-R4 — BOUNDED INTERCHANGE NOTE RECONCILIATION: VALIDATED — BOUNDED**
 
-M0→M6-R3 are validated within their explicitly bounded claims. M6-R3 proves the M6-R2 exact-note Browser Studio path through real Chromium while preserving Blueprint/M2 authority above browser state, DAW/interchange state and Music IR.
+**M6 Precision Editing tranche: COMPLETE within its explicit bounded claims.**
 
-M0→M6-R3는 각 명시적 제한 주장 범위에서 검증 완료되었습니다. M6-R3는 M6-R2 exact-note Browser Studio 경로를 실제 Chromium에서 증명했으며 browser state, DAW/interchange state, Music IR보다 상위에 있는 Blueprint/M2 권한을 유지합니다.
+M0→M6-R4 are validated only within their durable repository claims. M6-R4 completes the first precision-editing tranche by proving that one uniquely representable note change from an exact MUSICA-origin DAWproject export can be translated into the existing M6 note authority without granting external interchange state canonical authority.
+
+M0→M6-R4는 영속 repo 근거가 허용하는 제한 범위에서 검증되었습니다. M6-R4는 정확한 MUSICA-origin DAWproject export의 유일하게 표현 가능한 하나의 note 변경을 외부 interchange 상태에 canonical authority를 부여하지 않고 기존 M6 note authority로 환원할 수 있음을 증명하여 첫 precision-editing tranche를 종결합니다.
 
 ## Canonical proposition / 공식 핵심 명제
 
@@ -14,15 +16,13 @@ M0→M6-R3는 각 명시적 제한 주장 범위에서 검증 완료되었습니
 >
 > **MUSICA는 누구나 의도로 음악을 만들 수 있게 하되, 모든 음악적 결정을 검사하고, 잠그고, 편집하고, 재현하고, 프로그래밍할 수 있게 하는 시스템이다.**
 
-Product promise / 제품 약속:
+Product promise:
 
 > **Easy enough to direct in natural language, precise enough to edit as a professional music system.**
->
-> **자연어로 지시할 만큼 쉽고, 전문 음악 시스템처럼 세밀하게 편집할 만큼 정밀해야 한다.**
 
 ## Canonical milestone ledger / 공식 마일스톤 원장
 
-| Milestone | Status | Durable evidence / 영속 근거 |
+| Milestone | Status | Durable evidence |
 |---|---|---|
 | M0 Controllable Core | **VALIDATED** | `evidence/M0_R2_VALIDATION.md` |
 | M1 Creative Core | **VALIDATED** | `evidence/M1_VALIDATION.md` |
@@ -31,185 +31,142 @@ Product promise / 제품 약속:
 | M4-R1 Studio Application Service | **VALIDATED** | `evidence/M4_R1_VALIDATION.md` |
 | M4-R2 Browser Studio UI | **VALIDATED** | `evidence/M4_R2_VALIDATION.md` |
 | M4-R3 Usable MVP / real-browser E2E | **VALIDATED** | `evidence/M4_R3_VALIDATION.md` |
-| M5-R1 Renderer Adapter Contract + Audio QA Baseline | **VALIDATED** | `evidence/M5_R1_VALIDATION.md` |
-| M5-R2 First Higher-Fidelity Local Renderer | **VALIDATED — BOUNDED** | `evidence/M5_R2_VALIDATION.md` |
-| M5-R3 DAW / Interchange Interoperability | **VALIDATED — BOUNDED** | `evidence/M5_R3_VALIDATION.md` |
-| M5-R4 Comparative Music/Audio Quality Evaluation | **VALIDATED — BOUNDED** | `evidence/M5_R4_VALIDATION.md` |
-| M6-R0 Precision Editing Authority & Canonical Note Model | **VALIDATED — CONTRACT/DESIGN ONLY** | `evidence/M6_R0_VALIDATION.md` |
-| M6-R1 Typed Exact-Note Material + Edit Engine | **VALIDATED — BOUNDED CORE RUNTIME** | `evidence/M6_R1_VALIDATION.md` |
-| M6-R2 Browser Studio Piano-Roll / Inspect Surface | **VALIDATED — BOUNDED BROWSER INTEGRATION** | `evidence/M6_R2_VALIDATION.md` |
-| M6-R3 Real-browser Exact-Note E2E + Lock/Conflict UX | **VALIDATED — BOUNDED REAL-BROWSER EXACT-NOTE E2E** | `evidence/M6_R3_VALIDATION.md` |
-| M6-R4 Bounded interchange reconciliation for representable exact-note edits | **NOT IMPLEMENTED — NEXT** | `memory/NEXT_ACTION.md` |
-| Live OpenAI provider execution | **NOT VALIDATED** | separate `LIVE_PROVIDER_EVIDENCE` required |
+| M5-R1 Renderer Adapter + Audio QA | **VALIDATED** | `evidence/M5_R1_VALIDATION.md` |
+| M5-R2 Higher-Fidelity Local Renderer | **VALIDATED — BOUNDED** | `evidence/M5_R2_VALIDATION.md` |
+| M5-R3 DAW / Interchange | **VALIDATED — BOUNDED** | `evidence/M5_R3_VALIDATION.md` |
+| M5-R4 Comparative Audio Evaluation | **VALIDATED — BOUNDED** | `evidence/M5_R4_VALIDATION.md` |
+| M6-R0 Exact-Note Authority & Model | **VALIDATED — CONTRACT/DESIGN ONLY** | `evidence/M6_R0_VALIDATION.md` |
+| M6-R1 Exact-Note Runtime | **VALIDATED — BOUNDED CORE RUNTIME** | `evidence/M6_R1_VALIDATION.md` |
+| M6-R2 Browser Piano Roll | **VALIDATED — BOUNDED BROWSER INTEGRATION** | `evidence/M6_R2_VALIDATION.md` |
+| M6-R3 Real-Browser Exact-Note E2E | **VALIDATED — BOUNDED** | `evidence/M6_R3_VALIDATION.md` |
+| M6-R4 Interchange Note Reconciliation | **VALIDATED — BOUNDED** | `evidence/M6_R4_VALIDATION.md` |
+| Live OpenAI provider execution | **NOT VALIDATED** | separate live-provider evidence required |
 | Human-subject usability/perceptual evidence | **NOT VALIDATED** | separate controlled study required |
 
-## M6-R3 final evidence / M6-R3 최종 근거
+## M6-R4 final evidence / M6-R4 최종 근거
 
-- Issue `#60` — **COMPLETED**
-- PR `#61` — **MERGED**
-- final evidence-bearing exact head: `c4b525a9083ff8a537b411789b8bbfbf39c04a7b`
-- final MUSICA CI: `34720643018` — **SUCCESS**
-- final M6-R3 real-browser evidence: `34720643011` — **SUCCESS**
-- final M6-R2 regression: `34720643012` — **SUCCESS**
-- final M6-R1 regression: `34720642999` — **SUCCESS**
-- final M5-R3 regression: `34720643007` — **SUCCESS**
-- final M5-R4 regression: `34720643001` — **SUCCESS**
-- Python 3.11 contracts/runtime job: `103625731654` — **SUCCESS**
-- Python 3.12 contracts/runtime + prior evidence chain job: `103625731656` — **SUCCESS**
-- M4-R3 real Chromium regression job: `103625731545` — **SUCCESS**
-- M5-R2 Windows FluidSynth regression job: `103625731661` — **SUCCESS**
-- final M6-R3 artifact: `musica-m6-r3-real-browser-note-e2e`
-- final artifact ID: `10305989929`
-- GitHub packaging digest: `sha256:2e44021ddd2a2803379f2223b045463d1a81c334afdb695d10df9b8fc5d914c0`
-- internal `manifest.json` SHA-256: `825c5d69f55a40ba77deefe1bdb3bba4974f0ed26d0cf1696aa11718dcff58ec`
-- 18/18 top-level manifest records independently rehashed with exact hash/size match
-- pre-durable and evidence-bearing `proof.json` objects: **semantically identical**
-- implementation merge/main: `327939e71bd63611f747bac147c4ba6591052b93`
-- durable evidence: `evidence/M6_R3_VALIDATION.md`
+- Issue `#65` — **COMPLETED**
+- PR `#66` — **MERGED**
+- implementation merge/main: `66637f7977782ad01e8060d3c4810095c7b44d19`
+- final evidence-bearing exact head: `6927a69a84589da985c5ce37ec4bd80749767ea7`
+- final MUSICA CI: `34790028892` — **SUCCESS**
+- final M6-R4 evidence: `34790028903` — **SUCCESS**
+- final M6-R3 regression: `34790028845` — **SUCCESS**
+- final M6-R2 regression: `34790028854` — **SUCCESS**
+- final M6-R1 regression: `34790028874` — **SUCCESS**
+- final M5-R3 regression: `34790028871` — **SUCCESS**
+- final M5-R4 regression: `34790028873` — **SUCCESS**
+- final M6-R4 artifact ID: `10328000726`
+- final GitHub packaging digest: `sha256:26cd14c67d50023ce2c81cd8257b47dda2a4770ee1e3cc503efd02cf526ecf18`
+- internal `manifest.json` SHA-256: `4fd4ae72d9b3a77ab2c5ec4ab973af05d753a7c22aca21c523bd5e9862415d2c`
+- manifest binding: **33/33 SHA-256 + byte-size matches**
+- strengthened pre-durable vs final extracted evidence tree: **34 files / 0 differences**
+- same-head evidence generation A/B: **byte-identical** via permanent `diff -qr` CI gate
 
-## M6-R3 validated authority invariant / M6-R3 검증 권한 불변식
+## M6-R4 validated authority invariant / M6-R4 검증 권한 불변식
 
 ```text
 Accepted exact-note Blueprint
-→ deterministic Studio note view
-→ real Chromium Browser Studio Inspect piano roll
-→ visible browser interaction / exact numeric input
-→ typed source-bound NoteEditCandidate
-→ M6-R1 source + stable-ID lock + constraint authority
+→ deterministic Music IR
+→ deterministic MUSICA-origin DAWproject export
+→ source-bound identity map + normalized baseline
+→ optional returned DAWproject
+→ inherited safe M5-R3 parse/normalize
+→ exact baseline comparison
+→ one uniquely provable M6 primitive only
+→ typed note-edit-candidate-v0
+→ existing M6 source/lock/constraint authority
 → READY_FOR_PREVIEW or BLOCKED
 → PREVIEW · NOT ACCEPTED
-→ explicit Accept / Discard
-→ existing M2 authority only
-→ accepted exact-note Blueprint revision
-→ restart/reopen persistence
+→ explicit Accept only
+→ existing M2 revision authority
 ```
 
-Forbidden / 금지:
+Forbidden:
 
 ```text
-DOM/canvas/browser-local state → accepted project
-Music IR mutation → accepted project
-blocked authority result → pending Preview
-browser edit gesture → implicit Accept
-stale candidate → silent rebase/accept
+DAW note order/index → stable MUSICA identity
+nearest-note heuristic → identity
+ambiguous correspondence → guessed candidate
+external state → accepted Blueprint
+Music IR mutation → accepted Blueprint
+interchange provenance → lock bypass
 ```
 
-Validated M6-R3 properties:
+Validated R4 properties:
 
-- real Chromium/Playwright Browser Studio execution;
-- exact source binding to project/revision/Blueprint SHA-256;
-- all six operations exercised through browser-accessible controls: `INSERT / DELETE / MOVE / RESIZE / REPITCH / SET_VELOCITY`;
-- valid operations produce non-canonical `READY_FOR_PREVIEW` state;
-- accepted ref remains unchanged before explicit Accept;
-- Discard preserves accepted state;
-- explicit Accept advances exactly once through existing M2 authority;
-- accepted REPITCH survives service restart and browser reopen;
-- stable-ID HARD lock is visibly `BLOCKED / HARD_LOCK_VIOLATION` with note/rule context and no pending Preview;
-- stale Browser source is visibly `BLOCKED / STALE_SOURCE` with no pending Preview or silent rebase;
-- legacy motif-only projects remain read-only for exact editing and fabricate no canonical notes;
-- browser console error count = `0` and page error count = `0` in canonical evidence;
-- browser and Music IR direct project mutation authority remain `false`.
+- exact project/revision/Blueprint/exact-timeline/Music-IR/export/baseline hash binding;
+- no DAW note array-index authority;
+- no nearest-note heuristic identity;
+- duplicate lowered signatures fail closed;
+- exact normalized exported baseline is authoritative comparison source;
+- one primitive only: `MOVE / RESIZE / REPITCH / SET_VELOCITY / DELETE / INSERT`;
+- transport, multi-note, multi-field, stale and ambiguous changes fail closed;
+- resulting proposal reuses the existing M6 candidate and authority engine;
+- HARD stable-note lock remains final authority;
+- explicit M2 Accept is required to advance accepted state;
+- canonical evidence generation is byte-reproducible.
 
-## M6-R3 defect closure / M6-R3 결함 종결
+## Validated capability stack / 검증 기능 스택
 
-The first real-browser gate exposed a latent Browser Studio integration defect: `app.js` requested `GET /v0/sessions/{id}/preview`, but the HTTP bridge had no read route, producing six browser-console `404` errors.
-
-M6-R3 did not suppress those errors. It implemented the missing read-only Preview-detail endpoint and permanent regression coverage:
-
-```text
-existing session + pending Preview → 200 descriptor/diff/detail
-existing session + no pending Preview → 200 explicit empty state
-unknown session → 404 fail-closed
-```
-
-Post-fix diagnostic evidence recorded zero HTTP errors and zero browser console errors; the temporary diagnostic harness was removed before the clean implementation head.
-
-## Validated capability stack / 검증된 기능 스택
-
-### Music authority core
-Typed Intent / Blueprint / Semantic Control / exact-note material / Music IR contracts, deterministic lowering, bounded semantic control, fail-closed locks/constraints, immutable accepted revisions, branches and audit chain.
+### Authority & project core
+Typed Intent/Blueprint, semantic controls, locks/constraints, immutable revisions/branches/audit, exact-note material and deterministic lowering.
 
 ### AI Director
-Provider-neutral typed proposal boundary with user-intent precedence and no direct accepted-state mutation. OpenAI adapter contract is validated offline; live provider execution remains **NOT VALIDATED**.
+Provider-neutral typed proposal boundary is validated offline. Live OpenAI execution is still **NOT VALIDATED**.
 
 ### Studio
-Local-first Browser Studio with `Direct → Shape → Inspect → Code`, explicit Preview/Accept/Discard, locks/diff/history/export, real-browser E2E, and a validated exact-note piano-roll path through the trusted M6 authority engine.
+Local-first Browser Studio with `Direct → Shape → Inspect → Code`, explicit Preview/Accept/Discard, real-browser E2E and exact-note piano-roll editing.
 
 ### Renderer / Interchange / Evaluation
-Reference renderer, bounded FluidSynth renderer, bounded DAWproject 1.0 interchange, and exact-source objective audio comparison. External interchange artifacts remain non-canonical candidate carriers/evidence.
+Reference and bounded higher-fidelity rendering, DAWproject bounded interchange, paired objective audio evaluation, and now bounded source-bound exact-note reconciliation.
 
 ### Precision editing
-M6-R1 validates exact-note core authority, M6-R2 validates Browser Studio integration, and M6-R3 validates the bounded real-browser six-operation journey, conflict UX and restart/reopen persistence.
+M6-R0→R4 establishes canonical exact-note authority from contract through runtime, Browser UI, real-browser E2E and narrowly bounded interchange return-path reconciliation.
 
 ## Current claim boundaries / 현재 주장 경계
 
-The repository does **not** yet validate or imply:
+The repository does **not** validate or imply:
 
 - successful live OpenAI API execution;
-- human-subject usability/perceptual evidence;
-- perceptual superiority or professional/mastering audio quality;
-- VST/AU/CLAP hosting;
-- successful real external DAW smoke or universal DAW compatibility;
-- full professional DAW piano-roll parity;
-- arbitrary polyphonic/every-instrument-part exact editing;
-- arbitrary tempo-map editing;
-- general quantize/humanize/batch transformations;
-- arbitrary DAW reverse mapping into accepted exact-note state;
-- arbitrary external note edits becoming canonical;
+- human-subject usability or preference evidence;
+- perceptual/mastering superiority;
+- full professional DAW parity;
+- compatibility with every DAW or a tested real external DAW;
+- arbitrary DAW reverse mapping;
+- non-MUSICA-origin project reconciliation;
+- heuristic note correspondence;
+- multi-note/batch interchange reconciliation;
+- arbitrary polyphonic/every-part exact editing;
+- arbitrary tempo maps;
+- automation/mixer/plugin/device canonical editing;
 - live MIDI recording;
 - waveform/destructive audio editing;
-- arbitrary automation/mixer fidelity;
-- cloud collaboration or desktop installer/signing.
+- cloud collaboration;
+- desktop installer/signing.
 
 ## Next phase / 다음 단계
 
-The exact next bounded mission is **M6-R4 — bounded interchange reconciliation for representable exact-note edits**.
+No pre-existing `M6-R5` or `M7` roadmap existed in the repository after M6-R4. The next phase is therefore deliberately opened as a **contract/design milestone**, not as an assumed runtime capability:
 
-정확한 다음 제한 mission은 **M6-R4 — 표현 가능한 exact-note 편집의 제한된 interchange reconciliation**입니다.
+> **M7-R0 — Canonical Automation & Continuous-Control Authority / 공식 Automation·연속 제어 권한 모델**
 
-R4 must reconcile the historically correct M5-R3 external-note `UNSUPPORTED_BLOCKING` boundary with the exact-note authority introduced by M6 without granting DAW/interchange state canonical authority:
+Reason: the product thesis explicitly places automation, synthesis, DSP and mix parameters inside Inspect-level professional control, while current validated authority covers semantic controls and exact notes but not a canonical editable continuous-control timeline.
 
-```text
-MUSICA accepted exact-note Blueprint
-→ deterministic M5-R3 bounded DAWproject export
-→ exact source/provenance + stable identity mapping
-→ bounded external note change
-→ parse + compare against exact exported source
-→ representability/identity/source preflight
-→ typed NoteEditCandidate primitives only
-→ M6-R1 authority
-→ READY_FOR_PREVIEW or BLOCKED
-→ PREVIEW · NOT ACCEPTED
-→ explicit Accept / Discard
-→ existing M2 authority only
-```
-
-R4 is **not** arbitrary DAW reverse mapping. Only changes whose source lineage, stable identity mapping, supported part/timing semantics and primitive M6 operation representation are provable may become a NoteEditCandidate. Unsupported, ambiguous, stale, lock-conflicting or provenance-broken changes must fail closed.
+M7-R0 must first decide what becomes canonical Blueprint authority versus derived Music IR/renderer state, stable parameter identity, time domain, interpolation, lock semantics, source binding, Preview/Accept and backward compatibility. It must not implement automation lanes before these authority questions are ratified.
 
 ## Resume authority / 재개 권위
 
-Before substantive work inspect in order / 실질 작업 전 순서대로 확인:
+Before substantive work inspect:
 
 1. `governance/SOURCE_OF_TRUTH.md`
 2. `docs/PRODUCT_THESIS.md`
-3. `docs/M6_PRECISION_EDITING_AUTHORITY.md`
-4. `docs/M6_ACCEPTANCE.md`
-5. `docs/M6_R1_RUNTIME.md`
-6. `docs/M5_R3_ACCEPTANCE.md`
-7. `docs/M5_R3_ROUNDTRIP_AUTHORITY.md`
-8. `evidence/M5_R3_VALIDATION.md`
-9. `schemas/exact-note-material-v0.schema.json`
-10. `schemas/note-edit-candidate-v0.schema.json`
-11. `schemas/note-edit-authority-result-v0.schema.json`
-12. `schemas/exact-note-lock-v0.schema.json`
-13. `schemas/studio-note-view-v0.schema.json`
-14. `src/musica/note_edit.py`
-15. M5-R3 DAWproject exporter/importer implementation
-16. `evidence/M6_R1_VALIDATION.md`
-17. `evidence/M6_R2_VALIDATION.md`
-18. `evidence/M6_R3_VALIDATION.md`
-19. this file / 본 파일
-20. `memory/NEXT_ACTION.md`
-21. relevant Issue/PR/exact-head CI evidence / 관련 Issue·PR·exact-head CI 근거
+3. `docs/design/MUSICA_DESIGN_PACKAGE_v0.1.md`
+4. `docs/M6_PRECISION_EDITING_AUTHORITY.md`
+5. `docs/M6_R4_ACCEPTANCE.md`
+6. `evidence/M6_R4_VALIDATION.md`
+7. `memory/CURRENT_STATE.md`
+8. `memory/NEXT_ACTION.md`
+9. relevant Issue/PR/exact-head evidence
 
-**Repository evidence remains authoritative over conversation or model memory. / 레포 근거는 대화·모델 기억보다 우선합니다.**
+**Repository evidence remains authoritative over conversation/model memory.**

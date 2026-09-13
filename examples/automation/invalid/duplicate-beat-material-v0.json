@@ -1,0 +1,36 @@
+{
+  "material_version": "0",
+  "mode": "explicit_automation",
+  "time_base": {
+    "unit": "quarter_note_beat",
+    "origin_beat": 0.0
+  },
+  "lanes": [
+    {
+      "lane_id": "A-MIX-GAIN",
+      "target": {
+        "parameter_id": "mix.gain",
+        "scope": "project",
+        "owner_id": null,
+        "unit": "normalized",
+        "minimum": 0.0,
+        "maximum": 1.0
+      },
+      "section_id": null,
+      "points": [
+        {
+          "point_id": "P-GAIN-001",
+          "beat": 0.0,
+          "value": 0.65,
+          "interpolation": "linear"
+        },
+        {
+          "point_id": "P-GAIN-002",
+          "beat": 0.0,
+          "value": 0.75,
+          "interpolation": "hold"
+        }
+      ]
+    }
+  ]
+}

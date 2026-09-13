@@ -1,0 +1,19 @@
+{
+  "result_version": "0",
+  "candidate_id": "AEC-M7R0-001",
+  "status": "BLOCKED",
+  "conflicts": [
+    {
+      "conflict_id": "C-M7R0-001",
+      "code": "HARD_LOCK_VIOLATION",
+      "lane_id": "B-SYNTH-CUTOFF",
+      "point_id": "P-CUTOFF-001",
+      "rule_id": "L-M7R0-CUTOFF",
+      "reason": "The accepted cutoff anchor is protected by a HARD exact lock."
+    }
+  ],
+  "preview_generation_allowed": false,
+  "explicit_accept_required": true,
+  "project_mutation_authorized": false,
+  "music_ir_mutation_authorized": false
+}

@@ -19,7 +19,7 @@ Final promotion is authorized only if the exact successor head containing this d
 - M6-R3 implementation merge: `327939e71bd63611f747bac147c4ba6591052b93`
 - M6-R3 state closure merge: `f0f1e1cc5fdcf1e65208147da3bbb4e67d4fac1f`
 - M6-R4 branch: `m6-r4-interchange-note-reconciliation`
-- pre-durable implementation/evidence head: `4a1250b4f0077ab94b9306b3285129b189be02c1`
+- strengthened pre-durable implementation/evidence head: `71a86dd5d98ee1d7040ca3dbe8a9b0d74cbdfe32`
 - acceptance contract: `docs/M6_R4_ACCEPTANCE.md`
 
 ## 3. Implemented bounded authority path / 구현된 제한 권한 경로
@@ -102,42 +102,74 @@ For update operations, exactly one normalized musical field of exactly one sourc
 
 Multi-note, multi-field, transport+note, ambiguous or unsupported changes fail closed.
 
-## 7. Pre-durable exact-head CI / pre-durable exact-head CI
+## 7. Evidence determinism strengthening / 근거 결정론 강화
+
+An earlier M6-R4 evidence runner produced semantically correct evidence but rewrote modified DAWproject fixtures with wall-clock ZIP member timestamps. Because returned artifact SHA-256 values feed candidate/operation provenance, otherwise identical evidence runs could differ byte-for-byte.
+
+This was treated as an evidence-quality defect rather than ignored.
+
+The strengthened evidence entrypoint now pins rewritten fixture ZIP metadata:
+
+```text
+member order = sorted
+ZIP timestamp = 1980-01-01 00:00:00
+compression = ZIP_STORED
+create_system = 3
+regular-file mode = 0644
+```
+
+The dedicated M6-R4 workflow now generates canonical evidence **twice independently on the same exact head** and requires:
+
+```text
+diff -qr artifacts/m6-r4-a artifacts/m6-r4-b
+```
+
+The byte-reproducibility step on run `34789857709` completed **SUCCESS**, proving zero file differences between the two generated evidence trees before artifact upload.
+
+This strengthening changes only canonical evidence-fixture serialization. It does not broaden production reconciliation authority or alter historical M5-R3 serialization/evidence.
+
+## 8. Strengthened pre-durable exact-head CI / 강화된 pre-durable exact-head CI
 
 Exact head:
 
-`4a1250b4f0077ab94b9306b3285129b189be02c1`
+`71a86dd5d98ee1d7040ca3dbe8a9b0d74cbdfe32`
 
 | Workflow / 워크플로 | Run | Result |
 |---|---:|---|
-| MUSICA CI | `34789619946` | **SUCCESS** |
-| M6-R4 Interchange Note Reconciliation | `34789619954` | **SUCCESS** |
-| M6-R3 Real-Browser Exact-Note Evidence | `34789619956` | **SUCCESS** |
-| M6-R2 Piano-Roll Evidence | `34789619959` | **SUCCESS** |
-| M6-R1 Exact-Note Edit Evidence | `34789619970` | **SUCCESS** |
-| M5-R3 DAWproject Evidence | `34789619952` | **SUCCESS** |
-| M5-R4 Paired Audio Evidence | `34789619955` | **SUCCESS** |
+| MUSICA CI | `34789857677` | **SUCCESS** |
+| M6-R4 Interchange Note Reconciliation | `34789857709` | **SUCCESS** |
+| M6-R3 Real-Browser Exact-Note Evidence | `34789857724` | **SUCCESS** |
+| M6-R2 Piano-Roll Evidence | `34789857657` | **SUCCESS** |
+| M6-R1 Exact-Note Edit Evidence | `34789857772` | **SUCCESS** |
+| M5-R3 DAWproject Evidence | `34789857778` | **SUCCESS** |
+| M5-R4 Paired Audio Evidence | `34789857659` | **SUCCESS** |
 
 MUSICA CI exact-head jobs:
 
-- Python 3.11 contracts/runtime: job `103811304006` — **SUCCESS**;
-- Python 3.12 contracts/runtime + canonical evidence regeneration: job `103811304122` — **SUCCESS**;
-- M4-R3 real Chromium browser E2E: job `103811304090` — **SUCCESS**;
-- M5-R2 Windows FluidSynth evidence: job `103811303906` — **SUCCESS**.
+- Python 3.11 contracts/runtime: job `103811961676` — **SUCCESS**;
+- Python 3.12 contracts/runtime + canonical evidence regeneration: job `103811961761` — **SUCCESS**;
+- M4-R3 real Chromium browser E2E: job `103811961743` — **SUCCESS**;
+- M5-R2 Windows FluidSynth evidence: job `103811961593` — **SUCCESS**.
 
-The dedicated M6-R4 workflow also passed the M5-R3 + M6-R1/R2 + M6-R4 targeted regression set, canonical evidence generation and artifact upload.
+Dedicated M6-R4 job `103811961581` passed:
 
-## 8. Pre-durable M6-R4 evidence artifact / pre-durable M6-R4 근거 artifact
+1. M5-R3 + M6-R1/R2 + M6-R4 targeted regressions;
+2. two independent canonical M6-R4 evidence generations;
+3. byte-for-byte evidence-tree reproducibility via `diff -qr`;
+4. canonical artifact upload.
 
-- workflow run: `34789619954`
-- head: `4a1250b4f0077ab94b9306b3285129b189be02c1`
+## 9. Strengthened pre-durable M6-R4 evidence artifact / 강화된 pre-durable M6-R4 근거 artifact
+
+- workflow run: `34789857709`
+- head: `71a86dd5d98ee1d7040ca3dbe8a9b0d74cbdfe32`
 - artifact name: `musica-m6-r4-interchange-note-reconciliation`
-- artifact ID: `10327324849`
-- GitHub packaging digest: `sha256:7caac08078b5473a266df80e4c93ab9925663d8c658988fc6b5a9a9cce272bb9`
-- independently downloaded ZIP SHA-256: `7caac08078b5473a266df80e4c93ab9925663d8c658988fc6b5a9a9cce272bb9`
-- internal `manifest.json` SHA-256: `224c6ef1d7a4477db09b5317e2fb89797f5060546e6c13407907c7a36b2a5c6d`
+- artifact ID: `10328395422`
+- GitHub packaging digest: `sha256:79729650a4cc23095dff8ff8bc6d70ab3ecbdf93255e211014d7358cedf7caa3`
+- independently downloaded ZIP SHA-256: `79729650a4cc23095dff8ff8bc6d70ab3ecbdf93255e211014d7358cedf7caa3`
+- internal `manifest.json` SHA-256: `4fd4ae72d9b3a77ab2c5ec4ab973af05d753a7c22aca21c523bd5e9862415d2c`
 - manifest-bound file count: `33`
 - independent manifest verification: **33/33 SHA-256 + byte-size matches**
+- same-head independent evidence generation comparison: **0 file differences**
 
 Source bindings recorded by `proof.json`:
 
@@ -149,7 +181,7 @@ Source bindings recorded by `proof.json`:
 - normalized baseline SHA-256: `544f9391ef4d5eacd5ad0ac9bbcdf9b0a504e5e2482425f7af37c2e3d6821c0f`
 - identity-map SHA-256: `45c6354a6fde4a064436cbad11e16219fb0c733eef8f9923e64fb626a3a7b86e`
 
-## 9. Six primitive positive proof / 6개 primitive 양성 증명
+## 10. Six primitive positive proof / 6개 primitive 양성 증명
 
 `proof.json` records:
 
@@ -172,7 +204,7 @@ Every primitive produced a normal M6 candidate and `READY_FOR_PREVIEW` authority
 
 Every candidate is bound to source project/revision/Blueprint identity, uses one typed M6 operation, has `preview_only=true`, and preserves `project_mutation_authorized=false` / `music_ir_mutation_authorized=false` until explicit acceptance.
 
-## 10. Explicit M2 acceptance proof / 명시적 M2 승인 증명
+## 11. Explicit M2 acceptance proof / 명시적 M2 승인 증명
 
 The evidence separately exercised a reconciled REPITCH through the existing M6 Preview and M2 commit boundary.
 
@@ -191,7 +223,7 @@ revision_count = 2
 
 This proves the external artifact itself does not advance accepted state; canonical state advances only after explicit acceptance through the existing M2 engine.
 
-## 11. Negative authority proof / 음성 권한 증명
+## 12. Negative authority proof / 음성 권한 증명
 
 ### HARD stable-note lock
 
@@ -206,8 +238,6 @@ preview_generation_allowed = false
 project_mutation_authorized = false
 music_ir_mutation_authorized = false
 ```
-
-This proves R4 does not bypass exact-note lock authority.
 
 ### Multi-field ambiguity
 
@@ -234,7 +264,7 @@ Targeted tests also cover:
 
 Inherited M5-R3 tests preserve malformed ZIP/XML/XSD/path/archive security failures.
 
-## 12. Claim boundary / 주장 경계
+## 13. Claim boundary / 주장 경계
 
 If the evidence-bearing successor head passes the required gates, M6-R4 supports only this bounded claim:
 
@@ -252,21 +282,22 @@ Not validated or implied:
 - arbitrary polyphonic/every-part exact editing;
 - tempo-map reconciliation;
 - automation/mixer/plugin/device round-trip;
-- external DAW state as canonical truth.
+- external DAW state as canonical truth;
+- externally supplied/persisted identity-bundle loading without an additional schema/self-rehash boundary.
 
-## 13. Final promotion gate / 최종 승격 gate
+## 14. Final promotion gate / 최종 승격 gate
 
-The exact successor head containing this document must pass all of:
+The exact successor head containing this strengthened durable record must pass all of:
 
 1. MUSICA CI;
-2. M6-R4 Interchange Note Reconciliation;
+2. M6-R4 Interchange Note Reconciliation, including same-head two-run byte-reproducibility proof;
 3. M6-R3 Real-Browser Exact-Note Evidence;
 4. M6-R2 Piano-Roll Evidence;
 5. M6-R1 Exact-Note Edit Evidence;
 6. M5-R3 DAWproject Evidence;
 7. M5-R4 Paired Audio Evidence.
 
-The successor M6-R4 artifact must then be independently downloaded and inspected for packaging digest, manifest hash, complete manifest hash/size binding and equivalent proof semantics.
+The successor M6-R4 artifact must then be independently downloaded and inspected. Because the only expected successor change is this durable Markdown record, the extracted successor evidence tree should remain byte-identical to the strengthened pre-durable evidence tree; GitHub's outer artifact packaging ZIP digest may independently vary and is verified separately.
 
 Only after those checks may PR #66 be merged with expected-head protection, Issue #65 be completed, and canonical state be promoted to `M6-R4 — VALIDATED — BOUNDED INTERCHANGE NOTE RECONCILIATION`.
 

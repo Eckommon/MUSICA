@@ -17,7 +17,7 @@
       "properties": {
         "lane_id": {"type": "string", "minLength": 1, "maxLength": 128},
         "point_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
-        "parameter_id": {"type": ["string", "null"], "minLength": 3, "maxLength": 160},
+        "parameter_id": {"type": ["string", "null"], "minLength": 3, "maxLength": 160, "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z][a-z0-9_-]*)+$"},
         "property": {"enum": ["lane", "point", "beat", "value", "interpolation", "parameter"]}
       }
     },
@@ -27,5 +27,21 @@
     "minimum": {"type": "number"},
     "maximum": {"type": "number"},
     "reason": {"type": "string", "minLength": 1, "maxLength": 1000}
-  }
+  },
+  "oneOf": [
+    {
+      "properties": {"mode": {"const": "exact"}},
+      "required": ["value"],
+      "not": {"anyOf": [{"required": ["minimum"]}, {"required": ["maximum"]}]}
+    },
+    {
+      "properties": {"mode": {"const": "range"}},
+      "required": ["minimum", "maximum"],
+      "not": {"required": ["value"]}
+    },
+    {
+      "properties": {"mode": {"const": "presence"}},
+      "not": {"anyOf": [{"required": ["value"]}, {"required": ["minimum"]}, {"required": ["maximum"]}]}
+    }
+  ]
 }

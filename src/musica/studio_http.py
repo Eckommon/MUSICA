@@ -1,8 +1,8 @@
-"""Localhost HTTP bridge and static Browser Studio for MUSICA M4/M6.
+"""Localhost HTTP bridge and static Browser Studio for MUSICA.
 
 The bridge serves only the validated Studio application JSON/media surface plus packaged
-same-origin HTML/CSS/JavaScript assets. M6-R2 adds a bounded exact-note projection and
-Preview route while preserving the loopback-only, no-upload, no-telemetry boundary.
+same-origin HTML/CSS/JavaScript assets. M6 adds bounded exact-note editing; M7-R2 adds a
+bounded automation projection/Preview surface while preserving loopback-only authority.
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from .studio import StudioApplication, StudioService, StudioServiceError
+from .studio_automation import StudioAutomationSurface
 from .studio_notes import StudioNoteSurface
 
 MAX_JSON_BODY_BYTES = 1_048_576
@@ -60,17 +61,17 @@ def _static_bytes(name: str) -> bytes:
 
 
 def _browser_asset_bytes(name: str) -> bytes:
-    """Return one same-origin Browser asset with bounded compatibility/policy overlays."""
+    """Return one same-origin Browser asset with bounded policy/editing overlays."""
 
     if name == "index.html":
-        # Modern HTML pattern validation uses UnicodeSets (`v`) semantics where '-'
-        # must be escaped inside a class. Preserve the exact accepted character set.
         return _static_bytes("index.html").replace(_PROJECT_NAME_PATTERN_OLD, _PROJECT_NAME_PATTERN_V)
     if name == "app.js":
         return (
             _static_bytes("create_policy.js")
             + b"\n"
             + _static_bytes("precision_editing.js")
+            + b"\n"
+            + _static_bytes("automation_editing.js")
             + b"\n"
             + _static_bytes("app.js")
         )
@@ -80,6 +81,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + b"\n"
             + _static_bytes("precision_editing.css")
             + b"\n"
+            + _static_bytes("automation_editing.css")
+            + b"\n"
             + _static_bytes("app.css")
         )
     return _static_bytes(name)
@@ -87,13 +90,13 @@ def _browser_asset_bytes(name: str) -> bytes:
 
 def make_handler(application: StudioApplication):
     note_surface = StudioNoteSurface(application.service)
+    automation_surface = StudioAutomationSurface(application.service)
 
     class StudioRequestHandler(BaseHTTPRequestHandler):
-        server_version = "MUSICAStudio/0.4"
+        server_version = "MUSICAStudio/0.5"
         protocol_version = "HTTP/1.1"
 
         def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
-            # Reusable local bridge remains quiet; product logging is a later decision.
             return
 
         def _send_bytes(
@@ -173,6 +176,8 @@ def make_handler(application: StudioApplication):
                             "local_first": True,
                             "browser_ui": True,
                             "exact_note_surface": True,
+                            "automation_surface": True,
+                            "audible_automation_validated": False,
                         },
                     )
                     return
@@ -205,11 +210,18 @@ def make_handler(application: StudioApplication):
                     method == "GET"
                     and len(parts) == 4
                     and parts[:2] == ["v0", "sessions"]
+                    and parts[3] == "automation"
+                ):
+                    data = automation_surface.automation_view(parts[2])
+                    self._send_json(HTTPStatus.OK, application._response("automation_view", data))
+                    return
+
+                if (
+                    method == "GET"
+                    and len(parts) == 4
+                    and parts[:2] == ["v0", "sessions"]
                     and parts[3] == "preview"
                 ):
-                    # This is a read model, not an authority operation. Browser refresh can race
-                    # with Accept/Discard, so an existing session with no pending Preview is a
-                    # normal 200 empty state. Unknown sessions still fail closed via _get_session.
                     session = application.service._get_session(parts[2])
                     pending = session.pending
                     data = {
@@ -235,12 +247,26 @@ def make_handler(application: StudioApplication):
                     self._send_json(HTTPStatus.OK, application._response("preview_note_edit", data))
                     return
 
+                if (
+                    method == "POST"
+                    and len(parts) == 5
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3:] == ["preview", "automation"]
+                ):
+                    body = self._read_json()
+                    candidate = body.get("candidate")
+                    if not isinstance(candidate, dict):
+                        raise StudioServiceError("invalid_request", "automation Preview requires candidate object")
+                    data = automation_surface.preview_automation_edit(parts[2], candidate=candidate)
+                    self._send_json(HTTPStatus.OK, application._response("preview_automation_edit", data))
+                    return
+
                 body = self._read_json() if method == "POST" else None
                 response = application.dispatch(method, clean_path, body)
                 self._send_json(HTTPStatus.OK, response)
             except StudioServiceError as exc:
                 self._send_json(_status_for_error(exc), {"ok": False, "error": exc.as_dict()})
-            except Exception as exc:  # final HTTP trust boundary
+            except Exception as exc:
                 safe = StudioServiceError("internal_error", f"unhandled Studio HTTP error: {type(exc).__name__}")
                 self._send_json(HTTPStatus.INTERNAL_SERVER_ERROR, {"ok": False, "error": safe.as_dict()})
 
@@ -259,11 +285,7 @@ def create_local_server(
     host: str = DEFAULT_HOST,
     port: int = 0,
 ) -> ThreadingHTTPServer:
-    """Create, but do not start, the local Studio server.
-
-    M4/M6 deliberately accept only loopback hosts. A future deployment mode must be a
-    separate security decision rather than an accidental consequence of this helper.
-    """
+    """Create, but do not start, the local Studio server."""
 
     if host not in {"127.0.0.1", "localhost", "::1"}:
         raise StudioServiceError("invalid_request", "MUSICA Studio HTTP server may bind only to loopback")

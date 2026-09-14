@@ -20,7 +20,7 @@ jobs:
       - name: Install MUSICA / MUSICA 설치
         run: python -m pip install -e '.[dev]'
       - name: Run M7-R0/R1 contract and runtime tests / M7-R0/R1 계약·런타임 테스트
-        run: pytest -q tests/test_m7_r0_automation_contract.py tests/test_m7_r1_automation_edit.py
+        run: pytest -q tests/test_m7_r0_automation_contracts.py tests/test_m7_r1_automation_edit.py
       - name: Generate M7-R1 evidence A / M7-R1 근거 A 생성
         run: python -m musica.m7_r1_demo --out artifacts/m7-r1-a
       - name: Generate M7-R1 evidence B / M7-R1 근거 B 생성

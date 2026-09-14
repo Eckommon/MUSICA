@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/studio-automation-view-v0.schema.json",
+  "title": "MUSICA Studio Automation View v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["view_version", "automation_editing_available", "project_id", "revision_id", "blueprint_sha256", "automation_material_sha256", "branch", "timing", "lanes", "automation_locks", "preview", "capabilities"],
+  "properties": {
+    "view_version": {"const": "0"},
+    "automation_editing_available": {"type": "boolean"},
+    "project_id": {"type": "string", "minLength": 1},
+    "revision_id": {"type": "string", "minLength": 1},
+    "blueprint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "automation_material_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "branch": {"type": "string", "minLength": 1},
+    "timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bpm", "total_beats", "time_unit"],
+      "properties": {
+        "bpm": {"type": "number", "exclusiveMinimum": 0},
+        "total_beats": {"type": "number", "exclusiveMinimum": 0},
+        "time_unit": {"const": "quarter_note_beat"}
+      }
+    },
+    "lanes": {"type": "array", "items": {"$ref": "#/$defs/lane"}},
+    "automation_locks": {"type": "array", "items": {"type": "object"}},
+    "preview": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["preview_id", "candidate_revision_id", "candidate_blueprint_sha256", "candidate_automation_material_sha256", "lanes", "material_diff", "changed_lane_ids", "changed_point_ids"],
+          "properties": {
+            "preview_id": {"type": "string", "minLength": 1},
+            "candidate_revision_id": {"type": "string", "minLength": 1},
+            "candidate_blueprint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "candidate_automation_material_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "lanes": {"type": "array", "items": {"$ref": "#/$defs/lane"}},
+            "material_diff": {"type": "array", "items": {"type": "object"}},
+            "changed_lane_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+            "changed_point_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+          }
+        }
+      ]
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_bound_candidates", "preview_only", "explicit_accept_required", "project_mutation_authorized", "music_ir_mutation_authorized", "audible_automation_validated", "operations"],
+      "properties": {
+        "source_bound_candidates": {"const": true},
+        "preview_only": {"const": true},
+        "explicit_accept_required": {"const": true},
+        "project_mutation_authorized": {"const": false},
+        "music_ir_mutation_authorized": {"const": false},
+        "audible_automation_validated": {"const": false},
+        "operations": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "INSERT_POINT"},
+            {"const": "DELETE_POINT"},
+            {"const": "MOVE_POINT"},
+            {"const": "SET_VALUE"},
+            {"const": "SET_INTERPOLATION"}
+          ],
+          "items": false,
+          "minItems": 5,
+          "maxItems": 5
+        }
+      }
+    }
+  },
+  "$defs": {
+    "point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["point_id", "beat", "value", "interpolation"],
+      "properties": {
+        "point_id": {"type": "string", "minLength": 1},
+        "beat": {"type": "number", "minimum": 0},
+        "value": {"type": "number"},
+        "interpolation": {"enum": ["hold", "linear"]}
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["parameter_id", "scope", "owner_id", "unit", "minimum", "maximum"],
+      "properties": {
+        "parameter_id": {"type": "string", "minLength": 1},
+        "scope": {"enum": ["project", "part"]},
+        "owner_id": {"type": ["string", "null"]},
+        "unit": {"enum": ["normalized", "decibel", "hertz", "semitone", "ratio"]},
+        "minimum": {"type": "number"},
+        "maximum": {"type": "number"}
+      }
+    },
+    "lane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lane_id", "target", "section_id", "points"],
+      "properties": {
+        "lane_id": {"type": "string", "minLength": 1},
+        "target": {"$ref": "#/$defs/target"},
+        "section_id": {"type": ["string", "null"]},
+        "points": {"type": "array", "items": {"$ref": "#/$defs/point"}}
+      }
+    }
+  }
+}

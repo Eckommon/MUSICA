@@ -1,0 +1,35 @@
+name: M7-R1 Automation Runtime Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  m7-r1-automation-runtime-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA / MUSICA 설치
+        run: python -m pip install -e '.[dev]'
+      - name: Run M7-R0/R1 contract and runtime tests / M7-R0/R1 계약·런타임 테스트
+        run: pytest -q tests/test_m7_r0_automation_contracts.py tests/test_m7_r1_automation_edit.py
+      - name: Generate M7-R1 evidence A / M7-R1 근거 A 생성
+        run: python -m musica.m7_r1_demo --out artifacts/m7-r1-a
+      - name: Generate M7-R1 evidence B / M7-R1 근거 B 생성
+        run: python -m musica.m7_r1_demo --out artifacts/m7-r1-b
+      - name: Prove byte-reproducible M7-R1 evidence / M7-R1 근거 byte 재현성 증명
+        run: diff -qr artifacts/m7-r1-a artifacts/m7-r1-b
+      - name: Upload M7-R1 evidence / M7-R1 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-m7-r1-automation-runtime-evidence
+          path: artifacts/m7-r1-a
+          if-no-files-found: error

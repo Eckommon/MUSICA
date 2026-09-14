@@ -281,6 +281,16 @@ def _validate_blueprint_invariants(blueprint: dict[str, Any]) -> None:
         part_ids=[str(value) for value in part_ids],
     )
 
+    # Local import avoids a module-import cycle: automation_contracts reuses the
+    # foundational ContractError/RevisionConflict/validate_contract definitions here.
+    from .automation_contracts import validate_blueprint_automation
+
+    validate_blueprint_automation(
+        blueprint,
+        section_ids=[str(value) for value in section_ids],
+        part_ids=[str(value) for value in part_ids],
+    )
+
 
 def validate_contract(instance: dict[str, Any], schema_name: str) -> None:
     """Validate one object against a MUSICA JSON Schema and v0 invariants."""
@@ -522,6 +532,10 @@ def validate_revision(parent: dict[str, Any], candidate: dict[str, Any]) -> list
                     reason=f"HARD exact-note lock changed value from {before!r} to {after!r}",
                 )
             )
+
+    from .automation_contracts import automation_revision_conflicts
+
+    conflicts.extend(automation_revision_conflicts(parent, candidate))
 
     for ordinal, constraint in enumerate(parent.get("constraints", []), start=1):
         conflict = _constraint_conflict(candidate, constraint, ordinal)

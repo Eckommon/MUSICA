@@ -185,7 +185,9 @@
         "rhythm": {"type": "object", "additionalProperties": true},
         "texture": {"type": "object", "additionalProperties": true},
         "sound_design": {"type": "object", "additionalProperties": true},
-        "mix_intent": {"type": "object", "additionalProperties": true}
+        "mix_intent": {"type": "object", "additionalProperties": true},
+        "automation": {"type": "object", "additionalProperties": true},
+        "automation_locks": {"type": "array", "items": {"type": "object", "additionalProperties": true}}
       }
     },
     "lock": {

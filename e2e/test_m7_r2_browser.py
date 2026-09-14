@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from musica.m7_r2_e2e import run_suite
+from musica.m7_r2_browser_driver import run_suite
 
 
 def test_m7_r2_real_browser_automation_e2e(tmp_path: Path) -> None:

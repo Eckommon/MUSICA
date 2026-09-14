@@ -22,7 +22,7 @@ jobs:
       - name: Install Chromium for Playwright / Playwright Chromium 설치
         run: python -m playwright install --with-deps chromium
       - name: Run M7-R0/R1/R2 automation regressions / M7 자동화 회귀 테스트
-        run: pytest -q tests/test_m7_r0_automation_contracts.py tests/test_m7_r1_automation_edit.py tests/test_m7_r2_studio_automation.py
+        run: pytest -q tests/test_m7_r0_automation_contracts.py tests/test_m7_r1_automation_edit.py tests/test_m7_r2_studio_automation.py tests/test_m7_r2_preview_isolation.py
       - name: Run M7-R2 real-browser automation E2E / M7-R2 실제 browser automation E2E 실행
         env:
           MUSICA_M7_R2_E2E_OUT: artifacts/m7-r2-real-browser-automation-e2e

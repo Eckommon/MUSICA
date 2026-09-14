@@ -132,11 +132,44 @@ def automation_locks_from_blueprint(blueprint: dict[str, Any]) -> list[dict[str,
     return value
 
 
-def validate_automation_lock(lock: dict[str, Any], material: dict[str, Any]) -> None:
-    """Validate a standalone automation lock against validated automation material."""
+def _validate_lock_shape(lock: dict[str, Any]) -> None:
+    """Validate lock schema and mode/property semantics without resolving a target."""
+
+    validate_contract(lock, "automation-lock-v0.schema.json")
+    selector = lock["selector"]
+    prop = str(selector["property"])
+    mode = str(lock["mode"])
+    if prop in {"point", "beat", "value", "interpolation"} and selector.get("point_id") is None:
+        raise ContractError(f"automation lock property {prop} requires point_id")
+    if prop == "lane" and mode != "presence":
+        raise ContractError("automation lane lock requires presence mode")
+    if prop == "point" and mode != "presence":
+        raise ContractError("automation point lock requires presence mode")
+    if mode == "presence" and prop not in {"lane", "point"}:
+        raise ContractError("automation presence lock supports only lane or point property")
+    if mode == "range" and prop not in {"beat", "value"}:
+        raise ContractError("automation range lock supports only beat or value property")
+    if mode == "range" and float(lock["minimum"]) > float(lock["maximum"]):
+        raise ContractError(f"automation range lock {lock['lock_id']} minimum exceeds maximum")
+    if prop == "parameter" and selector.get("parameter_id") is None:
+        raise ContractError("automation parameter lock requires parameter_id")
+
+
+def validate_automation_lock(
+    lock: dict[str, Any],
+    material: dict[str, Any],
+    *,
+    enforce_selected_value: bool = True,
+) -> None:
+    """Validate an automation lock against a material.
+
+    R0 standalone/root validation enforces the selected value. Child revisions may
+    structurally carry an inherited lock while `validate_revision` decides whether a
+    proposed edit violates that parent authority.
+    """
 
     validate_automation_material(material)
-    validate_contract(lock, "automation-lock-v0.schema.json")
+    _validate_lock_shape(lock)
 
     selector = lock["selector"]
     lane_id = str(selector["lane_id"])
@@ -155,17 +188,6 @@ def validate_automation_lock(lock: dict[str, Any], material: dict[str, Any]) -> 
                 f"automation lock {lock['lock_id']} references unknown point_id: {point_id_raw}"
             )
 
-    if prop in {"point", "beat", "value", "interpolation"} and point is None:
-        raise ContractError(f"automation lock property {prop} requires point_id")
-    if prop == "lane" and mode != "presence":
-        raise ContractError("automation lane lock requires presence mode")
-    if prop == "point" and mode != "presence":
-        raise ContractError("automation point lock requires presence mode")
-    if mode == "presence" and prop not in {"lane", "point"}:
-        raise ContractError("automation presence lock supports only lane or point property")
-    if mode == "range" and prop not in {"beat", "value"}:
-        raise ContractError("automation range lock supports only beat or value property")
-
     parameter_selector = selector.get("parameter_id")
     lane_parameter = str(lane["target"]["parameter_id"])
     if parameter_selector is not None and str(parameter_selector) != lane_parameter:
@@ -174,6 +196,9 @@ def validate_automation_lock(lock: dict[str, Any], material: dict[str, Any]) -> 
         )
     if prop == "parameter" and str(parameter_selector or "") != lane_parameter:
         raise ContractError("automation parameter lock requires matching parameter_id")
+
+    if not enforce_selected_value:
+        return
 
     if prop == "beat":
         actual: Any = point["beat"]
@@ -194,8 +219,6 @@ def validate_automation_lock(lock: dict[str, Any], material: dict[str, Any]) -> 
     if mode == "range":
         minimum = float(lock["minimum"])
         maximum = float(lock["maximum"])
-        if minimum > maximum:
-            raise ContractError(f"automation range lock {lock['lock_id']} minimum exceeds maximum")
         numeric_actual = float(actual)
         if numeric_actual < minimum or numeric_actual > maximum:
             raise ContractError(
@@ -249,8 +272,13 @@ def validate_blueprint_automation(
     if top_level_lock_ids.intersection(lock_ids):
         duplicate = sorted(top_level_lock_ids.intersection(lock_ids))[0]
         raise ContractError(f"automation lock_id collides with top-level lock_id: {duplicate}")
+
+    is_root_revision = blueprint["project"].get("parent_revision_id") is None
     for lock in locks:
-        validate_automation_lock(lock, actual)
+        if is_root_revision:
+            validate_automation_lock(lock, actual, enforce_selected_value=True)
+        else:
+            _validate_lock_shape(lock)
 
 
 def _selected_value(material: dict[str, Any], lock: dict[str, Any]) -> tuple[bool, Any]:
@@ -287,10 +315,32 @@ def automation_revision_conflicts(
     candidate_material = automation_material_from_blueprint(candidate)
     assert parent_material is not None and candidate_material is not None
     parent_locks = automation_locks_from_blueprint(parent)
-    candidate_lock_map = {
-        str(lock["lock_id"]): lock for lock in automation_locks_from_blueprint(candidate)
-    }
+    candidate_locks = automation_locks_from_blueprint(candidate)
+    parent_lock_map = {str(lock["lock_id"]): lock for lock in parent_locks}
+    candidate_lock_map = {str(lock["lock_id"]): lock for lock in candidate_locks}
     conflicts: list[RevisionConflict] = []
+
+    # New child locks must be fully valid against the child material. R1 itself does
+    # not create locks, but direct M2 commits may not persist an orphan/invalid lock.
+    new_ordinal = 0
+    for lock in candidate_locks:
+        lock_id = str(lock["lock_id"])
+        if lock_id in parent_lock_map:
+            continue
+        new_ordinal += 1
+        try:
+            validate_automation_lock(lock, candidate_material, enforce_selected_value=True)
+        except ContractError as exc:
+            conflicts.append(
+                RevisionConflict(
+                    conflict_id=f"C-AUTO-NEW-LOCK-{new_ordinal:03d}",
+                    rule_type="automation_lock",
+                    rule_id=lock_id,
+                    target=f"automation://{lock['selector']['lane_id']}/new-lock",
+                    status="BLOCKED",
+                    reason=str(exc),
+                )
+            )
 
     for ordinal, lock in enumerate(parent_locks, start=1):
         lock_id = str(lock["lock_id"])

@@ -1,17 +1,18 @@
 # M7 Automation & Continuous-Control Authority v0 / M7 자동화·연속제어 권한 v0
 
-**Status / 상태:** `PROPOSED — M7-R0 CONTRACT/DESIGN ONLY`  
-**Governing Issue / 지배 Issue:** `#68`
+**Status / 상태:** `RATIFIED — M7-R0 CONTRACT/DESIGN VALIDATED`  
+**Governing R0 Issue / 지배 R0 Issue:** `#68`  
+**R0 implementation PR / 구현 PR:** `#69`  
+**Durable evidence / 영속 근거:** `evidence/M7_R0_VALIDATION.md`  
+**Next bounded extension / 다음 제한 확장:** `M7-R1 — Bounded Canonical Automation Runtime & Blueprint Integration`
 
 ## 1. Purpose / 목적
 
 M7 defines how time-varying continuous musical decisions can become inspectable, lockable, editable, reproducible and programmable without allowing Browser points, Music IR control events, renderer state, plug-in state or DAW automation to become canonical by accident.
 
-M7은 시간에 따라 변하는 연속적 음악 결정을 검사·잠금·편집·재현·프로그래밍할 수 있게 하되 Browser point, Music IR control event, renderer/plug-in state, DAW automation이 우연히 canonical authority가 되는 것을 금지합니다.
+M7-R0 validates this authority/data model as **CONTRACT/DESIGN ONLY**. It does not itself implement accepted-project automation storage, runtime editing, rendering or external automation reconciliation.
 
-M7-R0 is **contract/design only**. It does not implement accepted-project mutation, Studio lanes, rendering, plug-in hosting, real-time MIDI/OSC control or DAW automation round-trip.
-
-## 2. Authority invariant / 권한 불변식
+## 2. Ratified authority invariant / 비준 권한 불변식
 
 ```text
 future accepted Blueprint automation material
@@ -39,25 +40,24 @@ DAW lane order/index → stable MUSICA identity
 external automation artifact → accepted state without separately validated reconciliation
 ```
 
-## 3. Canonical ownership decision / 공식 소유권 결정
+## 3. Canonical ownership / 공식 소유권
 
-The canonical creative representation is `automation-material-v0`, not execution events. R0 validates this contract as a standalone authority model. The exact Blueprint storage/migration path is intentionally **not implemented in R0**; R1 must add an explicit Blueprint integration path and prove backward compatibility before any accepted revision may contain or mutate this material.
+The ratified creative representation is `automation-material-v0`, not execution events.
 
-공식 창작 표현은 실행 event가 아니라 `automation-material-v0`입니다. R0는 이를 standalone authority contract로 검증합니다. 정확한 Blueprint 저장/migration 경로는 R0에서 구현하지 않으며, R1이 명시적으로 통합하고 하위 호환성을 증명해야 합니다.
+R0 intentionally validates this as a standalone authority contract. Accepted Blueprint storage/migration is **not part of the R0 claim**. M7-R1 must integrate the contract into project authority with explicit backward compatibility before accepted revisions may store or mutate automation material.
+
+A missing automation block means no accepted explicit automation. It must never trigger reverse inference from semantic curves, Music IR, renderer state or historical interchange artifacts.
 
 ## 4. Stable identities / 안정 ID
 
-### Lane identity
+### Lane
+Each lane owns stable `lane_id`. Array position, renderer lane order and DAW lane order are not identity.
 
-Each lane owns a stable `lane_id`. Lane identity is not array position and is not a renderer/DAW lane index.
+### Point
+Each point owns stable `point_id`. Moving a point changes beat, not identity.
 
-### Point identity
-
-Each point owns a stable `point_id`. Point identity is not beat position: moving a point changes `beat`, not `point_id`.
-
-### Parameter identity
-
-`parameter_id` is a backend-independent lowercase dotted namespace such as:
+### Parameter
+`parameter_id` is backend-independent lowercase dotted namespace, for example:
 
 ```text
 mix.gain
@@ -67,9 +67,9 @@ synth.cutoff
 synth.resonance
 ```
 
-These identifiers describe MUSICA creative parameters. They are **not** VST parameter IDs, MIDI CC numbers, DAW automation IDs or renderer-specific addresses. Backend mappings require later explicit adapter contracts/evidence.
+These are MUSICA creative parameter identities, not VST parameter IDs, MIDI CC numbers or DAW-specific addresses.
 
-## 5. Scope model / 범위 모델
+## 5. Scope / 범위
 
 M7-R0 v0 permits only:
 
@@ -77,68 +77,59 @@ M7-R0 v0 permits only:
 scope = project | part
 ```
 
-`track` is deliberately excluded because the currently validated Blueprint has canonical `part_id` identity while Music IR `track_id` is derived execution state.
+`track` is excluded because current canonical Blueprint owns `part_id`, while Music IR `track_id` is derived execution identity.
 
-- `project` scope requires `owner_id = null`;
-- `part` scope requires a stable canonical `part_id` once R1 integrates with Blueprint context.
+- project scope → `owner_id = null`;
+- part scope → stable canonical `part_id` once M7-R1 integrates Blueprint context.
 
-## 6. Time domain / 시간 영역
+## 6. Time / 시간
 
-Canonical time is:
+Canonical time:
 
 ```text
 unit = quarter_note_beat
 origin_beat = 0.0
 ```
 
-The material does not store renderer ticks, sample positions or wall-clock milliseconds as canonical identity.
+Renderer ticks, samples and wall-clock milliseconds are not canonical creative identity in v0.
 
-M7-R0 does not ratify arbitrary tempo-map automation. R1 must define the allowed Blueprint tempo assumptions when it integrates automation with accepted projects.
+Arbitrary tempo-map automation remains outside the ratified R0 claim.
 
 ## 7. Value domain / 값 영역
 
-Each lane declares:
-
-```text
-unit
-minimum
-maximum
-```
-
-Allowed v0 units:
+Every lane declares explicit unit/range:
 
 ```text
 normalized | decibel | hertz | semitone | ratio
+minimum < maximum
 ```
 
-The executable R0 contract validator requires `minimum < maximum` and every point value to remain inside the declared inclusive range.
-
-Units must remain explicit. A normalized value cannot be silently reinterpreted as dB/Hz or a renderer-native value.
+Every point must lie within inclusive lane range. Backend-specific clamping or hidden conversion cannot rescue an invalid canonical value.
 
 ## 8. Curve model / 곡선 모델
 
-R0 intentionally ratifies only the smallest deterministic interpolation vocabulary:
+The complete ratified R0 interpolation vocabulary is:
 
 ```text
 hold | linear
 ```
 
-A point's `interpolation` describes the segment leaving that point toward the next point. Curved/spline/bezier/exponential interpolation is not validated in R0 and must not be silently approximated into an accepted canonical curve.
+Spline/bezier/exponential curves are not validated and must not be silently approximated into accepted canonical material.
 
-Within one lane:
+Executable invariants include:
 
-- point IDs are unique;
-- beats are unique;
-- points use canonical order `(beat, point_id)`;
-- lane IDs are unique;
-- lane target signatures are unique;
-- lane list uses canonical order by `lane_id`.
-
-R0 also requires point IDs to be globally unique within one automation material so future conflict/lock reporting cannot become lane-order dependent.
+- unique lane IDs;
+- unique lane target signatures;
+- lane canonical order by `lane_id`;
+- globally unique point IDs within material;
+- unique beat per lane;
+- point canonical order `(beat, point_id)`;
+- valid declared range;
+- every point within range.
 
 ## 9. Primitive edit vocabulary / 기본 편집 어휘
 
-`automation-edit-candidate-v0` supports only:
+The exact ratified primitive set is:
 
 ```text
 INSERT_POINT
@@ -148,13 +139,19 @@ SET_VALUE
 SET_INTERPOLATION
 ```
 
-All operations are non-canonical proposals. Except `INSERT_POINT`, point operations require both stable `lane_id` and stable `point_id`.
+All are non-canonical proposals. Point-targeting operations require stable `lane_id + point_id`; INSERT targets a stable lane and introduces an explicit new stable point ID.
 
-R0 does not define lane creation/deletion, parameter reassignment, bulk quantization, curve simplification, humanization or arbitrary transform languages.
+Not ratified in R0:
+
+- lane create/delete;
+- parameter reassignment;
+- bulk quantization/humanization;
+- arbitrary free-form transforms;
+- curve simplification.
 
 ## 10. Source binding / 소스 결박
 
-Every future edit candidate must bind:
+Every runtime candidate must bind:
 
 ```text
 project_id
@@ -163,7 +160,7 @@ blueprint_sha256
 automation_material_sha256
 ```
 
-A stale or mismatched source must fail closed before Preview generation. R0 defines the typed result code `STALE_SOURCE`; runtime enforcement belongs to R1.
+Stale or mismatched source must fail closed before Preview generation. No silent rebase.
 
 ## 11. Lock model / 잠금 모델
 
@@ -174,79 +171,127 @@ HARD | SOFT
 exact | range | presence
 ```
 
-Lock selectors may protect a lane, point, beat, value, interpolation or parameter identity. Exact/range/presence modes are structurally disjoint in the schema:
+Modes are structurally disjoint:
 
-- `exact` requires `value`;
-- `range` requires `minimum` and `maximum`;
-- `presence` carries no value/range payload.
+- exact → `value`;
+- range → `minimum + maximum`;
+- presence → no exact/range payload.
 
-The executable R0 validator additionally checks lane/point references, parameter selector consistency and `minimum <= maximum` for range locks.
+The R0 executable checker validates stable lane/point reference integrity, matching parameter selectors, valid range order and selected-value consistency.
 
-A future HARD-lock violation must yield `BLOCKED / HARD_LOCK_VIOLATION` with no canonical mutation.
+A future HARD conflict must produce:
 
-## 12. Semantic-controls precedence / 의미 제어와의 우선순위
+```text
+BLOCKED / HARD_LOCK_VIOLATION
+preview_generation_allowed = false
+project_mutation_authorized = false
+music_ir_mutation_authorized = false
+```
 
-Existing semantic controls and future exact automation are different abstraction depths.
+## 12. Semantic-control precedence / 의미 제어 우선순위
 
-R0 establishes this rule:
+Once explicit automation is accepted by a later runtime milestone, it becomes a stronger exact creative commitment than a newly proposed high-level semantic transform over the same protected parameter/time scope.
 
-> **Accepted explicit automation, once introduced by a later runtime milestone, is a stronger exact creative commitment than a newly proposed semantic transform over the same parameter/time scope. A semantic proposal may not silently overwrite or regenerate locked explicit automation.**
-
-The actual semantic-to-automation conflict resolver is not implemented or validated in R0.
+A semantic proposal may not silently overwrite or regenerate accepted protected automation. R0 ratifies this precedence principle; the broad overlap resolver is not implemented in R0.
 
 ## 13. Derived lowering boundary / 파생 lowering 경계
 
-Future lowering may translate canonical automation into renderer/Music IR events, but derived events do not own identity and cannot be reverse-promoted without a separately proven source-bound reconciliation contract.
-
-Therefore:
+Future valid direction:
 
 ```text
 canonical lane/point/parameter IDs
 → deterministic adapter mapping
-→ execution events
+→ derived execution events
 ```
 
-is allowed in a later milestone, while:
+Forbidden reverse authority:
 
 ```text
 execution events
-→ guessed canonical lane/point IDs
+→ guessed canonical lane/point identity
 ```
 
-is forbidden.
+Renderer/Music IR events remain derived even after later automation runtime implementation.
 
-## 14. R0 executable validation / R0 실행형 검증
+## 14. Executable R0 validation / 실행형 R0 검증
 
-`src/musica/automation_contracts.py` is permitted in R0 only as an executable contract checker. It must not:
+`src/musica/automation_contracts.py` validates schema plus cross-field invariants only. It does not:
 
 - mutate Project bundles;
-- generate Preview state;
-- commit revisions;
+- create Preview;
+- commit M2 revisions;
 - lower to Music IR;
 - render audio;
-- communicate with plug-ins/DAWs.
+- communicate with DAWs or plug-ins.
 
-It validates schema plus cross-field invariants that JSON Schema does not express clearly.
+M7-R0 final evidence proves deterministic contract evidence generation and hash-binds the ratification path.
 
-## 15. Backward compatibility / 하위 호환성
+## 15. R0 validation evidence / R0 검증 근거
 
-Existing M0→M6 projects contain no canonical M7 automation material and remain valid. R0 does not migrate them or fabricate automation from semantic curves, Music IR, renderer output or historical DAW artifacts.
+Final evidence-bearing head:
 
-## 16. Explicit non-claims / 명시적 비주장
+`5b5aeb8c6bee3f8e2d48f41543b5bd5cd33e43ef`
 
-M7-R0 does **not** validate:
+Final successful gates:
 
-- runtime automation edit authority;
-- accepted Blueprint automation storage/migration;
+- MUSICA CI `34791538725`;
+- M7-R0 `34791538703`;
+- M6-R4 `34791538853`;
+- M6-R3 `34791538669`;
+- M6-R2 `34791538762`;
+- M6-R1 `34791538672`;
+- M5-R3 `34791538695`;
+- M5-R4 `34791538743`.
+
+Artifact:
+
+- ID `10328327862`;
+- packaging SHA-256 `1360f29d6568a75e7bcf740e605e37fd1f97df9715bdb7326133047afd2753a5`;
+- internal manifest SHA-256 `aab674c3953abcbca94d659da4d3627d65a682b4039510f6f6e255e08efee5`;
+- 2/2 internal manifest records verified;
+- 21 source/contract files hash-bound;
+- pre-durable and successor internal trees: 3 files / 0 differences.
+
+## 16. Backward compatibility / 하위 호환성
+
+Existing M0→M6 projects remain valid. R0 changes no accepted Blueprint storage contract and fabricates no canonical automation.
+
+M7-R1 must preserve this property while adding optional automation-capable accepted storage.
+
+## 17. Next bounded extension: M7-R1 / 다음 제한 확장
+
+M7-R1 may implement only the trusted-core runtime necessary to make the R0 contract operational in accepted project authority:
+
+```text
+backward-compatible optional Blueprint automation storage
+→ deterministic automation material hash
+→ source-bound AutomationEditCandidate
+→ stable identity/range/lock/stale checks
+→ READY_FOR_PREVIEW or BLOCKED
+→ non-canonical Preview
+→ explicit Accept / Discard
+→ existing M2 revision authority
+```
+
+M7-R1 must support only the five ratified point primitives and must revalidate the resulting full material.
+
+M7-R1 remains outside Browser UI, renderer automation, plug-in mapping and DAW automation reconciliation.
+
+## 18. Explicit non-claims / 명시적 비주장
+
+Neither M7-R0 nor this state record validates:
+
+- runtime automation editing (until R1 evidence exists);
+- accepted Blueprint automation storage/migration (until R1 evidence exists);
 - Browser automation lanes;
 - audible automation rendering;
-- VST/AU/CLAP parameter mapping or hosting;
+- Music IR automation execution;
+- VST/AU/CLAP mapping/hosting;
 - MIDI CC / OSC / real-time control;
-- DAW automation import/export round-trip;
+- DAW automation import/export/reconciliation;
 - arbitrary tempo-map automation;
-- bezier/spline/exponential curves;
-- mixer implementation;
-- synthesis/DSP runtime implementation;
-- human-subject usability or perceptual benefit.
+- spline/bezier/exponential curves;
+- mixer or synthesis/DSP runtime implementation;
+- human-subject usability/perceptual benefit.
 
-Repository evidence remains authoritative over conversation/model memory.
+**Repository evidence remains authoritative over conversation/model memory.**

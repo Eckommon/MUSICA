@@ -1,0 +1,15 @@
+{
+  "lock_version": "0",
+  "lock_id": "L-M7R0-CUTOFF",
+  "strength": "HARD",
+  "selector": {
+    "lane_id": "B-SYNTH-CUTOFF",
+    "point_id": "P-CUTOFF-001",
+    "parameter_id": "synth.cutoff",
+    "property": "value"
+  },
+  "mode": "exact",
+  "inheriting": true,
+  "value": 800.0,
+  "reason": "Preserve the accepted cutoff anchor exactly."
+}

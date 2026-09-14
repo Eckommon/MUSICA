@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/automation-edit-candidate-v0.schema.json",
+  "title": "MUSICA Automation Edit Candidate v0",
+  "description": "Non-canonical source-bound proposal for explicit Blueprint automation material.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["candidate_version", "candidate_id", "authority_target", "source", "actor", "reason", "operations", "preview_only"],
+  "properties": {
+    "candidate_version": {"const": "0"},
+    "candidate_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "authority_target": {"const": "blueprint_automation_material"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "revision_id", "blueprint_sha256", "automation_material_sha256"],
+      "properties": {
+        "project_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "revision_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "blueprint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "automation_material_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "actor_id"],
+      "properties": {
+        "kind": {"enum": ["user", "ai", "import", "system"]},
+        "actor_id": {"type": "string", "minLength": 1, "maxLength": 128}
+      }
+    },
+    "reason": {"type": "string", "minLength": 1, "maxLength": 1000},
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1024,
+      "items": {"$ref": "#/$defs/operation"}
+    },
+    "preview_only": {"const": true}
+  },
+  "$defs": {
+    "stableId": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+    "laneTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lane_id"],
+      "properties": {"lane_id": {"$ref": "#/$defs/stableId"}}
+    },
+    "pointTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lane_id", "point_id"],
+      "properties": {
+        "lane_id": {"$ref": "#/$defs/stableId"},
+        "point_id": {"$ref": "#/$defs/stableId"}
+      }
+    },
+    "pointValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["point_id", "beat", "value", "interpolation"],
+      "properties": {
+        "point_id": {"$ref": "#/$defs/stableId"},
+        "beat": {"type": "number", "minimum": 0, "maximum": 1000000},
+        "value": {"type": "number"},
+        "interpolation": {"enum": ["hold", "linear"]}
+      }
+    },
+    "operation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["operation_id", "op", "target", "point"],
+          "properties": {
+            "operation_id": {"$ref": "#/$defs/stableId"},
+            "op": {"const": "INSERT_POINT"},
+            "target": {"$ref": "#/$defs/laneTarget"},
+            "point": {"$ref": "#/$defs/pointValue"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["operation_id", "op", "target"],
+          "properties": {
+            "operation_id": {"$ref": "#/$defs/stableId"},
+            "op": {"const": "DELETE_POINT"},
+            "target": {"$ref": "#/$defs/pointTarget"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["operation_id", "op", "target", "beat"],
+          "properties": {
+            "operation_id": {"$ref": "#/$defs/stableId"},
+            "op": {"const": "MOVE_POINT"},
+            "target": {"$ref": "#/$defs/pointTarget"},
+            "beat": {"type": "number", "minimum": 0, "maximum": 1000000}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["operation_id", "op", "target", "value"],
+          "properties": {
+            "operation_id": {"$ref": "#/$defs/stableId"},
+            "op": {"const": "SET_VALUE"},
+            "target": {"$ref": "#/$defs/pointTarget"},
+            "value": {"type": "number"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["operation_id", "op", "target", "interpolation"],
+          "properties": {
+            "operation_id": {"$ref": "#/$defs/stableId"},
+            "op": {"const": "SET_INTERPOLATION"},
+            "target": {"$ref": "#/$defs/pointTarget"},
+            "interpolation": {"enum": ["hold", "linear"]}
+          }
+        }
+      ]
+    }
+  }
+}

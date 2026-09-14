@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/automation-lock-v0.schema.json",
+  "title": "MUSICA Automation Lock v0",
+  "description": "Stable-ID-aware lock targeting canonical automation material.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["lock_version", "lock_id", "strength", "selector", "mode", "inheriting", "reason"],
+  "properties": {
+    "lock_version": {"const": "0"},
+    "lock_id": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+    "strength": {"enum": ["HARD", "SOFT"]},
+    "selector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lane_id", "property"],
+      "properties": {
+        "lane_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "point_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+        "parameter_id": {"type": ["string", "null"], "minLength": 3, "maxLength": 160, "pattern": "^[a-z][a-z0-9_-]*(?:\\.[a-z][a-z0-9_-]*)+$"},
+        "property": {"enum": ["lane", "point", "beat", "value", "interpolation", "parameter"]}
+      }
+    },
+    "mode": {"enum": ["exact", "range", "presence"]},
+    "inheriting": {"type": "boolean"},
+    "value": {},
+    "minimum": {"type": "number"},
+    "maximum": {"type": "number"},
+    "reason": {"type": "string", "minLength": 1, "maxLength": 1000}
+  },
+  "oneOf": [
+    {
+      "properties": {"mode": {"const": "exact"}},
+      "required": ["value"],
+      "not": {"anyOf": [{"required": ["minimum"]}, {"required": ["maximum"]}]}
+    },
+    {
+      "properties": {"mode": {"const": "range"}},
+      "required": ["minimum", "maximum"],
+      "not": {"required": ["value"]}
+    },
+    {
+      "properties": {"mode": {"const": "presence"}},
+      "not": {"anyOf": [{"required": ["value"]}, {"required": ["minimum"]}, {"required": ["maximum"]}]}
+    }
+  ]
+}

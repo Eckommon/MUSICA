@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/automation-authority-result-v0.schema.json",
+  "title": "MUSICA Automation Authority Result v0",
+  "description": "Authority decision for a non-canonical automation edit candidate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["result_version", "candidate_id", "status", "conflicts", "preview_generation_allowed", "explicit_accept_required", "project_mutation_authorized", "music_ir_mutation_authorized"],
+  "properties": {
+    "result_version": {"const": "0"},
+    "candidate_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "status": {"enum": ["READY_FOR_PREVIEW", "BLOCKED"]},
+    "conflicts": {
+      "type": "array",
+      "maxItems": 1024,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["conflict_id", "code", "reason"],
+        "properties": {
+          "conflict_id": {"type": "string", "minLength": 1, "maxLength": 128},
+          "code": {"enum": ["STALE_SOURCE", "HARD_LOCK_VIOLATION", "CONSTRAINT_VIOLATION", "UNKNOWN_LANE", "UNKNOWN_POINT", "PARAMETER_MISMATCH", "INVALID_VALUE", "INVALID_TIME", "UNREPRESENTABLE_EDIT"]},
+          "lane_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+          "point_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+          "rule_id": {"type": ["string", "null"], "minLength": 1, "maxLength": 128},
+          "reason": {"type": "string", "minLength": 1, "maxLength": 1000}
+        }
+      }
+    },
+    "preview_generation_allowed": {"type": "boolean"},
+    "explicit_accept_required": {"const": true},
+    "project_mutation_authorized": {"const": false},
+    "music_ir_mutation_authorized": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "READY_FOR_PREVIEW"}}},
+      "then": {
+        "properties": {
+          "conflicts": {"maxItems": 0},
+          "preview_generation_allowed": {"const": true}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "BLOCKED"}}},
+      "then": {
+        "properties": {
+          "conflicts": {"minItems": 1},
+          "preview_generation_allowed": {"const": false}
+        }
+      }
+    }
+  ]
+}

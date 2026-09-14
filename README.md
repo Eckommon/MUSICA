@@ -4,13 +4,11 @@
 >
 > **MUSICA는 누구나 의도로 음악을 만들 수 있게 하되, 모든 음악적 결정을 검사하고, 잠그고, 편집하고, 재현하고, 프로그래밍할 수 있게 하는 시스템이다.**
 
-MUSICA is an **AI-native programmable music workstation**. The accepted Music Blueprint/project revision is creative authority; Music IR and renderer/interchange state are derived or non-canonical.
+MUSICA is an **AI-native programmable music workstation**. The accepted Music Blueprint/project revision is creative authority; Music IR, Browser state, renderer/plugin state and interchange/DAW state are derived or non-canonical.
 
 ## Current canonical status / 현재 공식 상태
 
-**M0 → M7-R0 are validated within their explicitly bounded repository claims.**
-
-M6 completed the first exact-note precision-editing tranche. M7-R0 now ratifies the contract/design authority model for explicit continuous automation without claiming runtime integration.
+**M0 → M7-R1 are validated within their explicitly bounded repository claims.**
 
 ```text
 M6-R0  exact-note authority/data model                 VALIDATED — DESIGN
@@ -19,59 +17,64 @@ M6-R2  Browser Studio piano roll                       VALIDATED — BOUNDED
 M6-R3  real Chromium exact-note E2E/conflict UX        VALIDATED — BOUNDED
 M6-R4  source-bound DAWproject note reconciliation     VALIDATED — BOUNDED
 M7-R0  automation authority/data model                 VALIDATED — CONTRACT/DESIGN ONLY
+M7-R1  canonical automation trusted-core runtime       VALIDATED — BOUNDED CORE RUNTIME
 ```
 
-### M7-R0 ratified boundary
+### M7-R1 validated boundary
 
-M7-R0 defines stable backend-independent automation identity and fail-closed proposal contracts:
+M7-R1 integrates the R0 automation contract into accepted Blueprint/project authority without granting derived state authority:
 
 ```text
-future accepted Blueprint automation material
-→ trusted deterministic lowering
-→ derived Music IR / renderer control events
-
-source-bound AutomationEditCandidate
-→ stable lane / point / parameter identity
-→ lock + constraint authority
+accepted Blueprint
+→ optional canonical materials.automation
+→ source-bound AutomationEditCandidate
+→ stable lane/point identity + time/range + inherited lock authority
 → READY_FOR_PREVIEW or BLOCKED
 → PREVIEW · NOT ACCEPTED
-→ explicit Accept only
-→ M2 revision authority
+→ explicit M2 Accept only
+→ immutable accepted revision
 ```
 
-Ratified v0 decisions:
+Validated properties include:
 
-- stable `lane_id` + `point_id` + dotted `parameter_id`;
-- canonical scope `project | part`; derived `track_id` is excluded;
-- quarter-note-beat time domain;
-- explicit `normalized | decibel | hertz | semitone | ratio` units;
-- `hold | linear` interpolation only;
-- primitive proposals: `INSERT_POINT / DELETE_POINT / MOVE_POINT / SET_VALUE / SET_INTERPOLATION`;
-- candidates remain source-bound and `preview_only=true`;
-- Browser, Music IR, renderer/plugin and DAW state never gain direct canonical mutation authority.
+- legacy Blueprints remain valid and do not acquire fabricated automation;
+- deterministic empty automation material/hash for legacy source binding;
+- exactly five primitives: `INSERT_POINT / DELETE_POINT / MOVE_POINT / SET_VALUE / SET_INTERPOLATION`;
+- stable lane/point identity independent of array order;
+- stale source, unknown identity, duplicate point ID/beat, out-of-range value and unsupported interpolation fail closed;
+- inherited HARD exact/presence automation locks block conflicting edits;
+- direct M2 commit cannot bypass inherited HARD automation authority;
+- Preview has no Project or Music IR mutation authority;
+- explicit M2 Accept advances exactly one accepted revision.
 
-Durable evidence: `evidence/M7_R0_VALIDATION.md`.
+Durable evidence: `evidence/M7_R1_VALIDATION.md`.
 
 ## Exact next bounded milestone / 정확한 다음 마일스톤
 
-> **M7-R1 — Bounded Canonical Automation Runtime & Blueprint Integration**
+> **M7-R2 — Browser Studio Automation Lane / Inspect Surface**
 
-R1 must implement the smallest safe runtime bridge from the ratified standalone R0 contracts into accepted Blueprint/project authority. It may add:
+R2 may expose the already-validated M7-R1 authority through Browser Studio Inspect only. The Browser must remain a proposal surface, not canonical state.
 
-- backward-compatible Blueprint storage/integration for explicit automation material;
-- deterministic canonical material hashing and source binding;
-- the five ratified automation point primitives;
-- stale-source, identity, range and HARD-lock enforcement;
-- non-canonical Preview plus explicit M2 Accept/Discard;
-- durable tests/evidence for the trusted core path.
+Required bounded path:
 
-R1 must **not** yet claim Browser automation lanes, audible automation rendering, plug-in/device mapping, DAW automation round-trip, real-time MIDI/OSC or human-subject evidence.
+```text
+accepted M7-R1 automation material
+→ Browser Inspect projection
+→ stable lane/point DOM mapping
+→ user point edit gesture
+→ typed AutomationEditCandidate
+→ existing M7-R1 authority
+→ READY_FOR_PREVIEW or BLOCKED
+→ Preview / Accept / Discard
+```
+
+R2 must not yet claim automation-to-audio lowering/rendering, plug-in/device mapping, DAW automation reconciliation, real-time MIDI/OSC or arbitrary tempo maps.
 
 ## One state, four depths / 하나의 상태, 네 가지 깊이
 
 - **Direct** — natural-language creation/refinement and audition
 - **Shape** — semantic axes, sections, structure and locks
-- **Inspect** — exact notes and, after later M7 runtime/UI validation, explicit automation
+- **Inspect** — exact notes plus bounded explicit automation editing after M7-R2 validation
 - **Code** — validated JSON, API/CLI, programmable transforms and evidence
 
 These remain views over one canonical project state, not separate products.
@@ -98,8 +101,6 @@ Music IR — derived execution state
 Renderer / Interchange / Evaluation adapters
 ```
 
-**AI output, Browser state, Music IR mutation, renderer output and external interchange/DAW state are not accepted project state.**
-
 ## Validated milestone stack / 검증 마일스톤
 
 | Milestone | Status | Evidence |
@@ -112,42 +113,43 @@ Renderer / Interchange / Evaluation adapters
 | M5 Rendering / Interchange / Evaluation | **VALIDATED — BOUNDED** | `evidence/M5_R1_VALIDATION.md` → `M5_R4_VALIDATION.md` |
 | M6 Exact-Note Precision Editing R0→R4 | **VALIDATED — BOUNDED** | `evidence/M6_R0_VALIDATION.md` → `M6_R4_VALIDATION.md` |
 | M7-R0 Automation Authority & Canonical Model | **VALIDATED — CONTRACT/DESIGN ONLY** | `evidence/M7_R0_VALIDATION.md` |
-| M7-R1 Canonical Automation Runtime & Blueprint Integration | **NOT IMPLEMENTED — NEXT** | `memory/NEXT_ACTION.md` |
-| Live OpenAI provider execution | **NOT VALIDATED** | separate live-provider evidence required |
-| Human-subject usability/perceptual evidence | **NOT VALIDATED** | separate study required |
+| M7-R1 Canonical Automation Runtime & Blueprint Integration | **VALIDATED — BOUNDED CORE RUNTIME** | `evidence/M7_R1_VALIDATION.md` |
+| M7-R2 Browser Studio Automation Lane / Inspect Surface | **NOT IMPLEMENTED — NEXT** | `memory/NEXT_ACTION.md` |
 
-## M7-R0 final evidence / M7-R0 최종 근거
+## M7-R1 final evidence / M7-R1 최종 근거
 
-- Issue `#68` — **COMPLETED**
-- PR `#69` — **MERGED**
-- implementation merge/main: `672ce33ee8b8fe05717ad1a5a0c416714de88d2d`
-- final evidence-bearing head: `5b5aeb8c6bee3f8e2d48f41543b5bd5cd33e43ef`
-- final M7-R0 workflow: `34791538703` — **SUCCESS**
-- final MUSICA CI: `34791538725` — **SUCCESS**
-- final artifact ID: `10328327862`
-- packaging SHA-256: `1360f29d6568a75e7bcf740e605e37fd1f97df9715bdb7326133047afd2753a5`
-- internal manifest SHA-256: `aab674c3953abcbca94d659da4d3627d65a682b4039510f6f6e255e08efee5`
-- manifest: **2/2 exact hash + size**
-- source/contract hash bindings: **21**
-- pre-durable vs successor internal evidence: **3 files / 0 differences**
+- Issue `#71` — **COMPLETED**
+- PR `#72` — **MERGED**
+- implementation merge/main: `877ed9b7e7f90101ffcdb6891bd75631807053e2`
+- final evidence-bearing exact head: `abe1f9c92751e0cdde935b34f4a17f1e1fc20548`
+- M7-R1 workflow `34795684053` — **SUCCESS**
+- MUSICA CI `34795683991` — **SUCCESS**
+- M7-R0 regression `34795684183` — **SUCCESS**
+- M6-R4 `34795684200` — **SUCCESS**
+- M6-R3 `34795683988` — **SUCCESS**
+- M6-R2 `34795683981` — **SUCCESS**
+- M6-R1 `34795684023` — **SUCCESS**
+- M5-R3 `34795684054` — **SUCCESS**
+- M5-R4 `34795683984` — **SUCCESS**
+- final artifact ID `10330005742`
+- packaging SHA-256 `178d86faf11bfd859b84fc0c60363a493f9ffa8530dab27567ccd0b2e03ea638`
+- internal manifest SHA-256 `b21dfd8e6b7c61ceee8b5613f8c65bb4857209a050cffe92eb8cabe33232ed5e`
+- pre-durable vs successor evidence tree: **15 files / 0 differences**
 
 ## Current non-claims / 현재 비주장
 
 MUSICA does not yet validate:
 
-- runtime canonical automation editing or Blueprint integration;
-- Browser automation lanes;
-- audible automation rendering;
-- arbitrary plug-in/mixer/device automation;
-- VST/AU/CLAP hosting;
-- DAW automation reconciliation;
-- real-time MIDI/OSC control;
+- Browser automation-lane UI or real-browser automation editing;
+- automation lowering into Music IR or audible renderer control;
+- arbitrary plug-in/mixer/device automation or VST/AU/CLAP hosting;
+- DAW automation import/export/reconciliation;
+- real-time MIDI/OSC automation;
 - arbitrary tempo-map automation;
+- lane creation/deletion or parameter reassignment in automation runtime;
 - live OpenAI API execution;
-- human preference/usability or perceptual superiority;
-- arbitrary external DAW compatibility;
-- waveform/destructive audio editing;
-- cloud collaboration or installer/signing.
+- human-subject usability/preference or perceptual superiority;
+- waveform/destructive audio editing, cloud collaboration or installer/signing.
 
 ## Repository as source of truth / Repo 공식 근거
 
@@ -159,20 +161,6 @@ accepted repository tests/artifacts/evidence
 > model memory/inference
 ```
 
-Before substantive M7-R1 work read:
-
-1. `governance/SOURCE_OF_TRUTH.md`
-2. `docs/PRODUCT_THESIS.md`
-3. `docs/M7_AUTOMATION_AUTHORITY.md`
-4. `docs/M7_ACCEPTANCE.md`
-5. `docs/M7_R0_DECISIONS.md`
-6. `evidence/M7_R0_VALIDATION.md`
-7. `schemas/automation-material-v0.schema.json`
-8. `schemas/automation-edit-candidate-v0.schema.json`
-9. `schemas/automation-authority-result-v0.schema.json`
-10. `schemas/automation-lock-v0.schema.json`
-11. `src/musica/automation_contracts.py`
-12. `memory/CURRENT_STATE.md`
-13. `memory/NEXT_ACTION.md`
+Before substantive M7-R2 work read `governance/SOURCE_OF_TRUTH.md`, `docs/PRODUCT_THESIS.md`, `docs/M7_AUTOMATION_AUTHORITY.md`, `evidence/M7_R0_VALIDATION.md`, `evidence/M7_R1_VALIDATION.md`, M7 schemas/runtime, Browser Studio precedent, `memory/CURRENT_STATE.md`, and `memory/NEXT_ACTION.md`.
 
 **Repository evidence remains authoritative over conversation/model memory.**

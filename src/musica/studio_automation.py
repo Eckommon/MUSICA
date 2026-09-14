@@ -126,6 +126,11 @@ class StudioAutomationSurface:
     ) -> dict[str, Any]:
         session = self.service._get_session(session_id)
         try:
+            if session.pending is not None:
+                raise StudioServiceError(
+                    "conflict",
+                    "accept or discard the pending Studio preview before automation editing",
+                )
             parent_revision_id = session.project.head_revision_id()
             parent = session.project.read_revision(parent_revision_id)
             revision_id = self.service._revision_id(parent_revision_id, "automation_edit", candidate)

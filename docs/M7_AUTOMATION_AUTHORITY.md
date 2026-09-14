@@ -1,19 +1,21 @@
 # M7 Automation & Continuous-Control Authority v0 / M7 자동화·연속제어 권한 v0
 
-**Status:** `RATIFIED — M7-R0 CONTRACT + M7-R1 BOUNDED CORE RUNTIME VALIDATED`  
+**Status:** `RATIFIED — M7-R0 CONTRACT + M7-R1 CORE RUNTIME + M7-R2 BROWSER SURFACE VALIDATED`  
 **R0 Issue/PR:** `#68 / #69`  
 **R1 Issue/PR:** `#71 / #72`  
-**Durable evidence:** `evidence/M7_R0_VALIDATION.md`, `evidence/M7_R1_VALIDATION.md`  
-**Next bounded extension:** `M7-R2 — Browser Studio Automation Lane / Inspect Surface`
+**R2 Issue/PR:** `#74 / #75`  
+**Durable evidence:** `evidence/M7_R0_VALIDATION.md`, `evidence/M7_R1_VALIDATION.md`, `evidence/M7_R2_VALIDATION.md`  
+**Next bounded extension:** `M7-R3 — Deterministic Automation Lowering & Derived Execution Boundary`
 
 ## 1. Authority invariant
 
 ```text
 accepted Blueprint automation material
-→ trusted deterministic lowering in a later milestone
-→ derived Music IR / renderer automation events
+→ trusted deterministic lowering
+→ derived execution state
+→ renderer/interchange adapters in later bounded milestones
 
-user / AI / bounded proposal
+user / AI / bounded Browser proposal
 → source-bound AutomationEditCandidate
 → stable lane / point / parameter identity
 → lock + invariant authority
@@ -26,18 +28,19 @@ user / AI / bounded proposal
 Forbidden authority remains:
 
 ```text
-Music IR control event → fabricated canonical automation
-renderer / plug-in state → accepted Blueprint
+derived execution event → fabricated canonical automation
+Music IR / renderer / plug-in state → accepted Blueprint
 Browser DOM/canvas coordinate → canonical identity
 DAW lane/index → stable MUSICA identity
-AI curve → implicit acceptance
+AI-generated curve → implicit acceptance
+backend address / MIDI CC → canonical parameter identity
 ```
 
 ## 2. Canonical representation
 
-`automation-material-v0` is the canonical explicit continuous-control representation. M7-R1 integrates it backward-compatibly as optional `materials.automation` in accepted Blueprint authority. `materials.automation_locks` carries optional stable-ID automation locks.
+`automation-material-v0` is the canonical explicit continuous-control representation. It lives optionally under accepted Blueprint `materials.automation`; `materials.automation_locks` carries optional stable-ID automation locks.
 
-A legacy Blueprint with no automation remains valid and unchanged. Missing automation means **no accepted explicit automation**. For source binding only, M7-R1 defines one deterministic canonical empty material; it is not written into the legacy Blueprint and is not inferred from semantics, Music IR, renderer or interchange state.
+A legacy Blueprint with no automation remains valid and unchanged. Missing automation means **no accepted explicit automation**. A deterministic empty material may be used for source binding only; it is not written into legacy Blueprint authority and is not inferred from semantic controls, Music IR, renderer or interchange state.
 
 ## 3. Ratified identity, scope and domains
 
@@ -48,10 +51,10 @@ A legacy Blueprint with no automation remains valid and unchanged. Missing autom
 - canonical time: `quarter_note_beat`, origin `0.0`;
 - units: `normalized | decibel | hertz | semitone | ratio`;
 - interpolation: `hold | linear` only;
-- fixed-tempo project bound in M7-R1;
+- fixed-tempo project bound through R2;
 - derived `track_id`, renderer addresses, MIDI CCs and plug-in IDs are not canonical identity.
 
-## 4. M7-R1 runtime vocabulary
+## 4. Trusted automation edit vocabulary
 
 Exactly five stable-ID point primitives are validated:
 
@@ -63,9 +66,9 @@ SET_VALUE
 SET_INTERPOLATION
 ```
 
-R1 does not implement lane create/delete or parameter reassignment.
+Lane create/delete and parameter reassignment remain out of scope.
 
-Each candidate binds:
+Every candidate binds:
 
 ```text
 project_id
@@ -74,19 +77,22 @@ blueprint_sha256
 automation_material_sha256
 ```
 
-Stale source fails closed. The resulting complete material is revalidated for stable IDs, canonical order, unique beats/target signatures, declared range, project time bound and Blueprint ownership.
+Stale source fails closed. Complete resulting material is revalidated for stable IDs, canonical order, unique beats/target signatures, declared range, project time bound and Blueprint ownership.
 
 ## 5. Preview / Accept authority
 
-`src/musica/automation_edit.py` implements the bounded trusted-core path. A valid candidate creates a non-canonical `AutomationEditPreview`; it cannot mutate Project refs or Music IR. Only `accept_automation_edit_preview()` may pass a READY candidate to the existing M2 `commit_revision()` authority.
+`src/musica/automation_edit.py` implements the bounded trusted-core path. A valid candidate creates a non-canonical automation Preview and cannot mutate Project refs or Music IR directly. Only explicit existing M2 acceptance may advance canonical project authority.
 
 Validated invariant:
 
 ```text
 Preview construction → accepted ref unchanged
 explicit Accept → exactly one immutable M2 revision advance
-blocked candidate → no candidate Blueprint / no accepted mutation
+Discard → accepted ref unchanged
+blocked candidate → no pending automation Preview / no accepted mutation
 ```
+
+M7-R2 additionally blocks automation Preview installation when another Studio Preview is already pending, preventing cross-surface displacement.
 
 ## 6. Automation lock authority
 
@@ -97,87 +103,121 @@ HARD | SOFT
 exact | range | presence
 ```
 
-M7-R1 validates stable lane/point/parameter references. Root revisions require lock declarations to be self-consistent with their selected values. Child revisions carry inherited lock structure, while parent→candidate authority in `validate_revision()` determines violations.
+Inherited HARD locks cannot be removed, semantically changed, or violated. Direct M2 `commit_revision()` does not bypass automation authority because revision validation includes inherited automation conflicts.
 
-This separation is intentional: a child HARD-lock conflict must remain a typed `automation_lock` authority conflict rather than being collapsed into a generic structural validation error.
+R2 proves HARD exact and HARD presence violations through real Browser controls. Conflict code and lock context remain visible while no pending Preview or accepted ref mutation occurs.
 
-Inherited HARD locks cannot be removed, semantically changed, or violated. Directly calling M2 `project.commit_revision()` does not bypass automation authority because `validate_revision()` includes `automation_revision_conflicts()`.
+## 7. M7-R2 Browser authority
 
-## 7. Semantic-control coexistence
-
-Accepted explicit automation is a stronger exact creative commitment than a later high-level semantic proposal over the same protected scope. M7-R1 does not implement a broad semantic-to-automation overlap resolver, but it does not fabricate or silently regenerate canonical automation from semantic curves.
-
-A future semantic overlap resolver must preserve this precedence and fail closed where necessary.
-
-## 8. Derived lowering boundary
-
-M7-R1 deliberately stops before renderer execution:
+Browser Studio Inspect is now validated as a non-canonical projection/proposal surface:
 
 ```text
-accepted canonical automation
-≠ Music IR automation execution
-≠ renderer parameter automation
-≠ plug-in automation
+accepted materials.automation
+→ source-bound Inspect projection
+→ stable lane_id / point_id DOM data
+→ keyboard/table/form editing
+→ automation-edit-candidate-v0
+→ existing R1 authority
+→ READY_FOR_PREVIEW or BLOCKED
+→ Preview / explicit Accept / Discard
 ```
 
-Future lowering may deterministically map canonical automation into derived execution events. Reverse promotion from derived events remains forbidden unless a separate source-bound reconciliation milestone proves it.
+Browser geometry remains presentation only. Point-table keyboard selection is deliberately part of the evidence path so authority does not depend on pointer hit-testing or pixel coordinates.
 
-## 9. M7-R1 final evidence
+Legacy projects show `NO CANONICAL AUTOMATION`; they do not reverse-infer automation from semantics, audio, Music IR or renderer state.
+
+## 8. M7-R2 final evidence
 
 Implementation merge/main:
 
-`877ed9b7e7f90101ffcdb6891bd75631807053e2`
+`b5f73ac8ebf83b0bfdcca277924af9b7c0fcc263`
 
-Final evidence-bearing head:
+Pre-durable exact head:
 
-`abe1f9c92751e0cdde935b34f4a17f1e1fc20548`
+`5396d38dad12247d8c55a40d677738fc51357569`
 
-Final successful gates:
+Final evidence-bearing successor head:
 
-- M7-R1 `34795684053`;
-- M7-R0 `34795684183`;
-- MUSICA CI `34795683991`;
-- M6-R4 `34795684200`;
-- M6-R3 `34795683988`;
-- M6-R2 `34795683981`;
-- M6-R1 `34795684023`;
-- M5-R3 `34795684054`;
-- M5-R4 `34795683984`.
+`90b6d3eec6621cd2d666c544863d1c8e28fd145f`
 
-Final M7-R1 artifact:
+Successor successful gates:
 
-- artifact ID `10330005742`;
-- packaging SHA-256 `178d86faf11bfd859b84fc0c60363a493f9ffa8530dab27567ccd0b2e03ea638`;
-- internal manifest SHA-256 `b21dfd8e6b7c61ceee8b5613f8c65bb4857209a050cffe92eb8cabe33232ed5e`;
-- pre-durable vs successor extracted evidence: **15 files / 0 differences**;
-- pre-durable manifest: **14/14 exact SHA-256 + byte-size matches**.
+- M7-R2 `34798196898`;
+- MUSICA CI `34798196910`;
+- M7-R1 `34798196888`;
+- M7-R0 `34798196884`;
+- M6-R4 `34798196893`;
+- M6-R3 `34798196887`;
+- M6-R2 `34798196909`;
+- M6-R1 `34798196960`;
+- M5-R3 `34798196949`;
+- M5-R4 `34798196938`.
 
-The machine proof establishes legacy no-fabrication, deterministic source hashing, all five primitives, Preview non-authority, explicit M2 acceptance, stale-source blocking, HARD exact/presence lock blocking, direct-M2 bypass prevention and project integrity `PASS`.
+Successor M7-R2 artifact:
 
-## 10. Next bounded extension — M7-R2
+- artifact ID `10330402763`;
+- packaging SHA-256 `dd192e04c12ce9d8f7e474717ac365acc0d2fb00ba2b8d9e5e4ea4cbe9d67ef2`;
+- internal manifest SHA-256 `c3a4026394408b266943d3f9aca15393112780cf13114efd8f8a56b3e520f133`;
+- manifest: **19/19 exact SHA-256 + byte-size matches**;
+- pre-durable vs successor `proof.json`: **identical**.
 
-M7-R2 may expose the existing R1 authority in Browser Studio Inspect:
+The real-Chromium proof covers all five point primitives, Preview non-authority, Discard, explicit Accept, restart/reopen persistence, HARD exact/presence conflicts, stale source, legacy no-fabrication, stable Browser identity mapping and zero Browser console/page errors.
+
+## 9. Derived lowering boundary discovered after R2
+
+Existing `music-ir-v0` `controlEvent` is explicitly MIDI-like:
 
 ```text
-accepted automation material
-→ Browser projection with stable lane/point mapping
-→ bounded point gesture/edit form
-→ typed AutomationEditCandidate
-→ existing R1 Preview authority
-→ Preview / Accept / Discard
+type = control
+controller = 0..127
+value = 0..127
 ```
 
-Browser state must remain a projection/proposal surface. R2 must not implement or claim automation-to-audio lowering, plug-in/device mapping, DAW automation reconciliation or real-time MIDI/OSC.
+Existing compiler uses CC11/74/71 for semantic preview controls, and the local WAV renderer interprets those CCs directly. Therefore a canonical automation `parameter_id` such as a backend-independent mix/filter parameter **must not be silently equated with a MIDI CC number**.
+
+R3 must introduce and validate a deterministic backend-independent **derived automation execution contract** or equivalent typed layer before renderer-specific mapping.
+
+Required one-way authority:
+
+```text
+accepted automation-material-v0
+→ deterministic derived automation execution
+→ later backend mapping
+```
+
+Forbidden:
+
+```text
+MIDI CC / plug-in address / renderer event
+→ canonical parameter_id
+```
+
+## 10. Next bounded extension — M7-R3
+
+R3 must prove:
+
+1. accepted source binding to revision/Blueprint/material hash;
+2. deterministic lane/point ordering and provenance retention;
+3. quarter-note-beat → deterministic execution time/tick representation;
+4. `hold` and `linear` semantics represented explicitly without renderer-dependent guesswork;
+5. backend-independent `parameter_id` preserved in the derived layer;
+6. unsupported parameter/unit/scope combinations fail closed or are explicitly marked unsupported;
+7. no canonical mutation from lowering;
+8. no reverse authority from derived execution;
+9. legacy/no-automation input produces explicit empty derived automation, not fabricated controls;
+10. same input yields byte-identical machine evidence where timestamps/random IDs are absent.
+
+R3 does **not** need to prove audible output differences.
 
 ## 11. Explicit non-claims
 
-M7-R0/R1 do **not** validate:
+M7-R0→R2 do **not** validate:
 
-- Browser automation-lane UI or real-browser automation editing;
-- Music IR/renderer automation execution or audible automation;
-- VST/AU/CLAP mapping/hosting;
+- backend-independent canonical-automation lowering contract;
+- audible automation rendering;
+- arbitrary VST/AU/CLAP mapping/hosting;
 - external DAW automation import/export/reconciliation;
-- MIDI CC / OSC / real-time control;
+- MIDI CC / OSC / real-time control as canonical automation authority;
 - lane create/delete or parameter reassignment;
 - arbitrary tempo maps;
 - spline/bezier/exponential curves;

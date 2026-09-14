@@ -2,253 +2,299 @@
 
 ## Exact resume point / 정확한 재개점
 
-**M7-R2 — BROWSER STUDIO AUTOMATION LANE / INSPECT SURFACE**
+**M7-R3 — DETERMINISTIC AUTOMATION LOWERING & DERIVED EXECUTION BOUNDARY**
 
-M7-R1 is `VALIDATED — BOUNDED CORE RUNTIME`. The exact next mission is to expose the already-validated canonical automation authority through Browser Studio Inspect while keeping Browser state non-canonical.
+M7-R2 is `VALIDATED — BOUNDED REAL-BROWSER SURFACE`. The next mission is to make accepted canonical automation executable **without collapsing backend-independent canonical parameter identity into MIDI CC, renderer or plug-in addresses**.
 
 ## Canonical starting point / 공식 시작점
 
-- M7-R1 Issue `#71` — **COMPLETED**
-- M7-R1 PR `#72` — **MERGED**
-- implementation merge/main: `877ed9b7e7f90101ffcdb6891bd75631807053e2`
-- final evidence-bearing head: `abe1f9c92751e0cdde935b34f4a17f1e1fc20548`
-- M7-R1 workflow `34795684053` — **SUCCESS**
-- MUSICA CI `34795683991` — **SUCCESS**
-- M7-R0 `34795684183` — **SUCCESS**
-- M6-R4 `34795684200` — **SUCCESS**
-- M6-R3 `34795683988` — **SUCCESS**
-- M6-R2 `34795683981` — **SUCCESS**
-- M6-R1 `34795684023` — **SUCCESS**
-- M5-R3 `34795684054` — **SUCCESS**
-- M5-R4 `34795683984` — **SUCCESS**
-- final M7-R1 artifact ID `10330005742`
-- packaging SHA-256 `178d86faf11bfd859b84fc0c60363a493f9ffa8530dab27567ccd0b2e03ea638`
-- internal manifest SHA-256 `b21dfd8e6b7c61ceee8b5613f8c65bb4857209a050cffe92eb8cabe33232ed5e`
-- pre-durable vs successor evidence: **15 files / 0 differences**
-- durable evidence: `evidence/M7_R1_VALIDATION.md`
+- M7-R2 Issue `#74` — **COMPLETED**
+- M7-R2 PR `#75` — **MERGED**
+- implementation merge/main: `b5f73ac8ebf83b0bfdcca277924af9b7c0fcc263`
+- final evidence-bearing successor head: `90b6d3eec6621cd2d666c544863d1c8e28fd145f`
+- successor M7-R2 workflow `34798196898` — **SUCCESS**
+- successor MUSICA CI `34798196910` — **SUCCESS**
+- successor regressions M7-R1/R0, M6-R4/R3/R2/R1, M5-R3/R4 — **ALL SUCCESS**
+- successor artifact ID `10330402763`
+- packaging SHA-256 `dd192e04c12ce9d8f7e474717ac365acc0d2fb00ba2b8d9e5e4ea4cbe9d67ef2`
+- internal manifest SHA-256 `c3a4026394408b266943d3f9aca15393112780cf13114efd8f8a56b3e520f133`
+- manifest integrity: **19/19 exact**
+- pre-durable vs successor `proof.json`: **identical**
+- durable evidence: `evidence/M7_R2_VALIDATION.md`
 
-## R1 authority R2 must reuse / R2가 재사용해야 할 R1 권한
+## Architecture fact R3 must respect / R3가 지켜야 할 구조 사실
+
+Current `music-ir-v0` control events are MIDI-like:
 
 ```text
-canonical storage     = optional materials.automation
-stable identity       = lane_id + point_id + parameter_id
-canonical time        = quarter_note_beat
-interpolation         = hold | linear
-runtime primitives    = INSERT_POINT / DELETE_POINT / MOVE_POINT / SET_VALUE / SET_INTERPOLATION
-candidate source      = project_id + revision_id + Blueprint SHA + automation-material SHA
-candidate authority   = preview_only / non-canonical
-result states         = READY_FOR_PREVIEW | BLOCKED
-acceptance             = explicit existing M2 commit only
+controlEvent = { type, tick, controller: 0..127, value: 0..127 }
 ```
 
-Browser code must not duplicate or weaken this authority.
+Current compiler uses CC11 / CC74 / CC71 for semantic preview controls. The local WAV renderer interprets those CCs directly for expression / brightness / warmth.
 
-## Required M7-R2 implementation / 필수 구현
-
-### 1. Inspect projection
-
-Add a bounded Automation section/lane surface to Browser Studio Inspect.
-
-Required properties:
-
-- projection originates from the accepted Blueprint's `materials.automation` only;
-- legacy/no-automation project shows an explicit empty/no-automation state rather than inventing a lane;
-- visible lane rows bind stable `lane_id`;
-- visible control points bind stable `point_id`;
-- labels show backend-independent `parameter_id`, scope/unit and explicit value/time;
-- DOM ordering or canvas coordinate is never identity.
-
-### 2. Bounded edit surface
-
-R2 may expose exactly the R1 five point primitives through Browser controls:
+Canonical automation instead uses:
 
 ```text
-INSERT_POINT
-DELETE_POINT
-MOVE_POINT
-SET_VALUE
-SET_INTERPOLATION
+lane_id
+point_id
+parameter_id          # backend-independent dotted identity
+scope                 # project | part
+unit                  # normalized | decibel | hertz | semitone | ratio
+beat
+value
+interpolation         # hold | linear
 ```
 
-No lane create/delete, parameter reassignment, arbitrary spline editing, plug-in automation browser or free-form transform language.
-
-### 3. Candidate construction
-
-Every Browser edit must construct the same `automation-edit-candidate-v0` contract used by R1. Client-side code may gather input, but authority belongs to the server/runtime boundary.
-
-At minimum bind:
+Therefore this is forbidden:
 
 ```text
-accepted project_id
-accepted revision_id
-accepted Blueprint SHA-256
-accepted automation material SHA-256
-stable lane_id / point_id
+canonical parameter_id == arbitrary MIDI CC / plug-in address
 ```
 
-No client-generated array position may be substituted for stable identity.
+A typed derived execution layer must sit between canonical authority and backend-specific rendering.
 
-### 4. Preview / Accept / Discard
+## Required M7-R3 design / 필수 설계
 
-Required UX state machine:
+### 1. Derived execution contract
+
+Introduce a versioned contract, recommended working name:
 
 ```text
-accepted automation projection
-→ edit gesture/form
-→ typed candidate
-→ server R1 authority
-→ BLOCKED or READY_FOR_PREVIEW
+automation-execution-v0
 ```
 
-For READY:
+It is **derived, non-canonical, deterministic** and must bind the accepted source exactly.
+
+Required top-level provenance at minimum:
 
 ```text
-Preview clearly marked NOT ACCEPTED
-→ accepted project remains unchanged
-→ explicit Accept advances via existing M2 authority
-→ Discard restores accepted projection with no revision
+execution_version
+source.project_id
+source.revision_id
+source.blueprint_sha256
+source.automation_material_sha256
+lowering.compiler_id
+lowering.compiler_version
+lowering.policy_id
+lanes[]
+unsupported[]
 ```
 
-For BLOCKED:
+### 2. Preserve canonical identity
 
-- no candidate Blueprint accepted;
-- no hidden local acceptance;
-- conflict code/reason shown;
-- HARD lock conflict visually distinguishable;
-- stale-source response forces refresh/reprojection rather than silent rebase.
-
-### 5. Stable coordinate mapping
-
-Browser visualization may map beat/value to pixels, but conversion must be explicit and reversible within the supported bounded UI.
-
-Required invariant:
+Every derived lane/event must preserve enough provenance to trace back to:
 
 ```text
-DOM/canvas x,y
-→ presentation only
-stable lane_id + point_id + typed beat/value
-→ candidate identity/data
+lane_id
+parameter_id
+scope
+part_id? / section_id?
+point_id or source point pair
+unit
 ```
 
-Dragging a point changes beat/value, never point ID.
+Backend-specific address is **not** canonical identity and should not be required in R3.
 
-### 6. Accessibility and non-canvas fallback
+### 3. Time model
 
-Do not make the only editing path dependent on pointer geometry. Provide inspectable form/table controls for stable lane/point values so keyboard-driven editing and deterministic browser tests can use the same authority.
+Canonical time is `quarter_note_beat`. R3 may derive integer tick time using the repository's current PPQ only if the conversion is explicit and deterministic.
 
-### 7. Browser/service API boundary
-
-Prefer reusing existing Browser Studio service/Preview patterns from M4/M6. Do not create a parallel project store or client-only accepted state.
-
-Potential minimal service operations:
+Required proof:
 
 ```text
-GET accepted automation projection
-POST automation preview candidate
-POST explicit accept existing preview/revision
-POST discard/local preview clear
+beat 0.0 → tick 0
+beat N → deterministic round/quantization rule
+same source → same derived ticks
 ```
 
-Exact routes should follow existing Studio conventions after code inspection.
+No arbitrary tempo map support is added. Fixed-tempo bound remains.
 
-### 8. Negative UX paths
+### 4. Interpolation semantics
 
-At minimum surface and test:
+R3 must represent both:
 
-- stale source;
-- unknown lane/point;
-- duplicate point ID;
-- occupied beat;
-- value outside declared range;
-- HARD exact lock conflict;
-- HARD presence lock deletion conflict;
-- malformed/unsupported interpolation;
-- legacy project with no automation lane.
+```text
+hold
+linear
+```
 
-### 9. No hidden renderer authority
+without pretending that all renderers can execute them identically.
 
-R2 must not claim that moving an automation point audibly changes rendered output. Until a later lowering milestone proves it, Browser R2 edits only canonical project automation material.
+Recommended design:
+
+- retain source points exactly;
+- derive explicit segments between stable source points;
+- segment references stable source `point_id` endpoints;
+- `hold` and `linear` remain typed execution semantics;
+- do not densify to arbitrary sampled MIDI values unless a separate renderer adapter requests it.
+
+This prevents resolution/sampling policy from becoming hidden authority.
+
+### 5. Supported vs unsupported parameter mapping
+
+R3 should define an explicit registry or policy for which canonical parameter domains are understood by the derived layer. The derived layer may carry a generic parameter unchanged even when no renderer mapping exists.
+
+If a lane cannot be lowered safely, report typed unsupported status rather than guessing.
+
+At minimum distinguish:
+
+```text
+DERIVED_GENERIC       # valid canonical lane represented in execution contract
+UNSUPPORTED_SCOPE
+UNSUPPORTED_UNIT
+UNSUPPORTED_PARAMETER
+INVALID_SOURCE
+```
+
+Exact vocabulary may be refined after implementation inspection, but all failures must be deterministic and machine-readable.
+
+### 6. Legacy/no-automation behavior
+
+For accepted Blueprint with no canonical automation:
+
+```text
+lowering result = valid empty derived automation execution
+```
+
+No semantic/Music-IR/renderer reverse inference is allowed.
+
+### 7. Determinism
+
+The same accepted source must produce byte-identical derived execution JSON where no timestamp/random identifier is present.
+
+Recommended evidence:
+
+```text
+run A execution.json
+run B execution.json
+SHA-256(A) == SHA-256(B)
+```
+
+### 8. Authority boundary
+
+R3 lowering must be a pure derived operation:
+
+```text
+accepted Blueprint → execution
+```
+
+It must not:
+
+- create a new accepted revision;
+- mutate automation material;
+- create Browser Preview;
+- back-propagate Music IR / renderer changes;
+- infer canonical automation from existing semantic CC events.
+
+## Required implementation direction / 구현 방향
+
+Prefer a new isolated module such as:
+
+```text
+src/musica/automation_lowering.py
+```
+
+Do not modify the current semantic `controlEvent` path until the R3 derived contract is validated. This keeps existing M0→M7-R2 renderer behavior regression-stable.
+
+Likely new assets:
+
+```text
+schemas/automation-execution-v0.schema.json
+src/musica/automation_lowering.py
+tests/test_m7_r3_automation_lowering.py
+src/musica/m7_r3_demo.py
+.github/workflows/m7-r3-automation-lowering-evidence.yml
+```
+
+Naming may change only if repository inspection reveals a better existing pattern.
 
 ## Required tests / 필수 테스트
 
 At minimum prove:
 
-1. existing Browser Studio still opens legacy project;
-2. no-automation legacy project shows explicit empty automation state;
-3. automation-capable project projects stable lane/point IDs;
-4. parameter/scope/unit/time/value/interpolation are inspectable;
-5. each five primitive Browser interaction constructs a correct typed candidate;
-6. point drag preserves `point_id`;
-7. Browser array/DOM order cannot change target identity;
-8. valid edit gives Preview but accepted ref stays unchanged;
-9. explicit Accept advances one M2 revision;
-10. Discard leaves accepted ref unchanged;
-11. HARD exact/presence conflicts are visible and non-previewable;
-12. stale source is visible and not silently rebased;
-13. range/time/identity errors are visible fail-closed states;
-14. refresh after Accept shows accepted updated automation;
-15. existing exact-note piano-roll behavior remains green;
-16. M7-R1/R0 tests remain green;
-17. Python 3.11/3.12 full suite remains green;
-18. M6-R4/R3/R2/R1 and M5-R3/R4 regressions remain green.
+1. legacy/no-automation → valid empty derived execution;
+2. automation-capable accepted Blueprint → source-bound derived execution;
+3. source Blueprint/material hashes are exact;
+4. stable lane/parameter/point provenance is retained;
+5. deterministic beat→tick mapping;
+6. hold segment semantics preserved;
+7. linear segment semantics preserved;
+8. lane/point array reordering cannot change canonical identity/output ordering rules;
+9. invalid/missing source identity fails closed;
+10. unsupported unit/scope/parameter status is explicit, not guessed;
+11. lowering causes no accepted project mutation;
+12. lowering causes no canonical automation mutation;
+13. derived execution cannot be promoted back into Blueprint authority;
+14. same source produces byte-identical canonical execution JSON;
+15. existing compiler output is unchanged for legacy and exact-note fixtures unless explicitly tested otherwise;
+16. M7-R2/R1/R0 remain green;
+17. M6-R4/R3/R2/R1 and M5-R3/R4 remain green;
+18. Python 3.11/3.12 full suite remains green.
 
 ## Evidence target / 공식 근거 목표
 
-R2 dedicated evidence should capture machine-readable Browser/service proof and, if consistent with M6-R3 precedent, a real Chromium evidence artifact proving actual DOM interaction rather than only service-unit tests.
-
-Target evidence:
+Dedicated deterministic artifact should include at minimum:
 
 ```text
-accepted source IDs/hashes
-Browser projection snapshot
-stable DOM identity mapping
-five candidate constructions
-READY Preview screenshot/state
-BLOCKED HARD lock state
-stale-source state
-accepted ref before/after Preview
-explicit Accept revision
-Discard proof
-real-browser execution metadata
-manifest/hash bindings
+source-blueprint.json or source hashes
+source-automation-material.json
+execution-a.json
+execution-b.json
+execution-determinism.json
+legacy-empty-execution.json
+hold-linear-proof.json
+unsupported-proof.json
+authority-boundary-proof.json
+manifest.json
 ```
+
+Evidence must bind exact-head workflow execution and artifact hashes.
 
 ## Scope control / 범위 통제
 
-Do **not** add or claim in M7-R2:
+Do **not** add or claim in M7-R3:
 
-- automation lowering into Music IR;
 - audible automation rendering;
-- plug-in/device parameter mapping or VST/AU/CLAP hosting;
-- external DAW automation reconciliation;
+- arbitrary MIDI CC mapping as canonical semantics;
+- plug-in/device mapping or VST/AU/CLAP hosting;
+- external DAW automation import/export/reconciliation;
 - MIDI CC / OSC / real-time control;
 - lane creation/deletion or parameter reassignment;
 - arbitrary tempo maps;
 - spline/bezier/exponential interpolation;
+- Browser UI expansion beyond R2;
 - human-subject/perceptual superiority.
 
-## Maximum intended R2 claim / 성공 시 최대 주장
+## Maximum intended R3 claim / 성공 시 최대 주장
 
-> **Browser Studio Inspect can project and edit the already-validated canonical automation material through stable lane/point identities and the existing source-bound M7-R1 Preview/Accept authority, while Browser presentation state remains non-canonical.**
+> **MUSICA can deterministically lower accepted canonical automation into a source-bound, backend-independent, non-authoritative derived execution representation that preserves stable parameter/lane/point provenance and explicit hold/linear semantics without silently equating canonical parameters with MIDI CC or renderer-specific addresses.**
+
+## Expected successor after R3 / R3 이후 예상 후속
+
+Only after R3 validation should the project consider a bounded renderer milestone such as:
+
+> **M7-R4 — Renderer Automation Mapping & Audible Evidence**
+
+R4 would choose one explicit renderer/backend mapping policy and prove audible application without expanding canonical authority.
 
 ## Execution discipline / 실행 규율
 
 ```text
-M7-R1 state closure
-→ create M7-R2 Issue
-→ fresh implementation branch from canonical closure main
-→ inspect M4/M6 Browser service + real-browser evidence precedent
-→ bounded automation Inspect projection/editing
-→ service/browser tests
-→ dedicated real-browser evidence
+M7-R2 state closure
+→ create M7-R3 Issue
+→ fresh branch from closure main
+→ ratify derived execution contract
+→ deterministic lowering implementation
+→ unit/contract/determinism tests
+→ dedicated evidence workflow
 → PR
 → exact-head full regressions
 → artifact inspection
-→ durable M7_R2 validation
+→ durable M7_R3 validation
 → successor rerun
 → expected-head merge
 → Issue completed
-→ state-only closure to next bounded mission
+→ state-only closure to renderer mapping milestone
 ```
 
 **Repository evidence remains authoritative over conversation/model memory.**

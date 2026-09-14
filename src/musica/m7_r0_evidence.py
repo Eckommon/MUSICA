@@ -21,12 +21,18 @@ INVALID = ROOT / "examples" / "automation" / "invalid"
 CONTRACT_PATHS = [
     ROOT / "docs" / "M7_AUTOMATION_AUTHORITY.md",
     ROOT / "docs" / "M7_ACCEPTANCE.md",
+    ROOT / "docs" / "M7_R0_DECISIONS.md",
+    ROOT / "docs" / "M7_R0_SCOPE.md",
+    ROOT / "docs" / "M7_R0_TRACEABILITY.md",
+    ROOT / "evidence" / "M7_R0_PRECHECK.md",
     SCHEMA_DIR / "automation-material-v0.schema.json",
     SCHEMA_DIR / "automation-edit-candidate-v0.schema.json",
     SCHEMA_DIR / "automation-authority-result-v0.schema.json",
     SCHEMA_DIR / "automation-lock-v0.schema.json",
     ROOT / "src" / "musica" / "automation_contracts.py",
+    ROOT / "src" / "musica" / "m7_r0_evidence.py",
     ROOT / "tests" / "test_m7_r0_automation_contracts.py",
+    ROOT / ".github" / "workflows" / "m7-r0-automation-contract-evidence.yml",
 ]
 
 

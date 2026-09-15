@@ -2,299 +2,295 @@
 
 ## Exact resume point / 정확한 재개점
 
-**M7-R3 — DETERMINISTIC AUTOMATION LOWERING & DERIVED EXECUTION BOUNDARY**
+**M7-R4 — REFERENCE RENDERER AUTOMATION MAPPING & AUDIBLE EVIDENCE**
 
-M7-R2 is `VALIDATED — BOUNDED REAL-BROWSER SURFACE`. The next mission is to make accepted canonical automation executable **without collapsing backend-independent canonical parameter identity into MIDI CC, renderer or plug-in addresses**.
+M7-R3 is `VALIDATED — BOUNDED DERIVED EXECUTION`. The next mission is to prove one explicit canonical automation parameter can be applied audibly by one explicit renderer policy **without granting renderer state canonical authority or silently reusing MIDI CC semantics**.
 
 ## Canonical starting point / 공식 시작점
 
-- M7-R2 Issue `#74` — **COMPLETED**
-- M7-R2 PR `#75` — **MERGED**
-- implementation merge/main: `b5f73ac8ebf83b0bfdcca277924af9b7c0fcc263`
-- final evidence-bearing successor head: `90b6d3eec6621cd2d666c544863d1c8e28fd145f`
-- successor M7-R2 workflow `34798196898` — **SUCCESS**
-- successor MUSICA CI `34798196910` — **SUCCESS**
-- successor regressions M7-R1/R0, M6-R4/R3/R2/R1, M5-R3/R4 — **ALL SUCCESS**
-- successor artifact ID `10330402763`
-- packaging SHA-256 `dd192e04c12ce9d8f7e474717ac365acc0d2fb00ba2b8d9e5e4ea4cbe9d67ef2`
-- internal manifest SHA-256 `c3a4026394408b266943d3f9aca15393112780cf13114efd8f8a56b3e520f133`
-- manifest integrity: **19/19 exact**
-- pre-durable vs successor `proof.json`: **identical**
-- durable evidence: `evidence/M7_R2_VALIDATION.md`
+- M7-R3 Issue `#77` — **COMPLETED**
+- M7-R3 PR `#78` — **MERGED**
+- implementation merge/main: `f4dbbf78c1556815228ef1446192a1308707eec9`
+- pre-durable exact head: `09eaa538128a302f82374764becf1ddfc87eafda`
+- final evidence-bearing successor head: `43d4568362cc26c23e9747da2a15b29c0cf4fe4d`
+- successor M7-R3 workflow `34822272947` — **SUCCESS**
+- successor MUSICA CI `34822272980` — **SUCCESS**
+- successor M7-R2/R1/R0, M6-R4/R3/R2/R1, M5-R3/R4 — **ALL SUCCESS**
+- successor artifact ID `10338193487`
+- packaging SHA-256 `48b157aefb9bd6067aa7a2d4b187693294a2b7417869c35a4daa56bea5d1f61c`
+- internal manifest SHA-256 `864135b90e650496e89d1e6f9b293e709f2fd187a3ddb639e155136c028207db`
+- derived execution SHA-256 `2874fc72e78fd817a53ad2c20348cf56403af53fa24fdfc57f7f2aa1ac2444c7`
+- manifest integrity: **10/10 exact**
+- pre-durable vs successor extracted evidence: **11 files / 0 differences**
+- durable evidence: `evidence/M7_R3_VALIDATION.md`
 
-## Architecture fact R3 must respect / R3가 지켜야 할 구조 사실
+## Architecture facts R4 must respect / R4가 지켜야 할 구조 사실
 
-Current `music-ir-v0` control events are MIDI-like:
+### Canonical automation remains backend-independent
 
-```text
-controlEvent = { type, tick, controller: 0..127, value: 0..127 }
-```
-
-Current compiler uses CC11 / CC74 / CC71 for semantic preview controls. The local WAV renderer interprets those CCs directly for expression / brightness / warmth.
-
-Canonical automation instead uses:
+Canonical automation identity is:
 
 ```text
+parameter_id
+scope
+owner_id
+unit
 lane_id
 point_id
-parameter_id          # backend-independent dotted identity
-scope                 # project | part
-unit                  # normalized | decibel | hertz | semitone | ratio
 beat
 value
-interpolation         # hold | linear
+interpolation
 ```
+
+R3 derived execution adds deterministic ticks/segments but deliberately records:
+
+```text
+backend_mapping.status = UNMAPPED
+renderer_mapping_authorized = false
+audible_automation_validated = false
+```
+
+R4 must not mutate R3 execution to pretend the renderer mapping was canonical all along.
+
+### Existing semantic CC path is unrelated authority
+
+Current Music IR semantic controls use CC11 / CC74 / CC71 and the current reference WAV renderer interprets those values. They are existing preview semantics, not canonical M7 automation mapping authority.
 
 Therefore this is forbidden:
 
 ```text
-canonical parameter_id == arbitrary MIDI CC / plug-in address
+mix.gain == CC11 merely because CC11 already changes expression
 ```
 
-A typed derived execution layer must sit between canonical authority and backend-specific rendering.
+R4 must create an explicit renderer-specific mapping layer instead.
 
-## Required M7-R3 design / 필수 설계
+## Bounded mapping selected for R4 / R4 제한 매핑
 
-### 1. Derived execution contract
-
-Introduce a versioned contract, recommended working name:
+Exactly one canonical parameter family is eligible:
 
 ```text
-automation-execution-v0
+parameter_id = mix.gain
+scope        = project
+owner_id     = null
+unit         = normalized
+minimum      = 0.0
+maximum      = 1.0
+renderer_id  = musica-reference-local
 ```
 
-It is **derived, non-canonical, deterministic** and must bind the accepted source exactly.
+No `synth.cutoff`, part-scope automation, decibel/hertz/semitone/ratio mapping or arbitrary parameter registry expansion is required for R4.
 
-Required top-level provenance at minimum:
+## Required R4 design / 필수 설계
+
+### 1. Renderer-specific derived plan
+
+Introduce a versioned non-canonical renderer plan, recommended working name:
 
 ```text
-execution_version
+automation-render-plan-v0
+```
+
+The plan must bind at minimum:
+
+```text
+plan_version
+classification = derived_noncanonical
+source.music_ir_sha256
+source.automation_execution_sha256
 source.project_id
 source.revision_id
-source.blueprint_sha256
-source.automation_material_sha256
-lowering.compiler_id
-lowering.compiler_version
-lowering.policy_id
-lanes[]
-unsupported[]
+renderer.renderer_id
+renderer.renderer_version
+mapping.policy_id
+mapped_lanes[]
+unmapped_lanes[]
+authority.*
 ```
 
-### 2. Preserve canonical identity
+The plan is generated from already-validated Music IR + already-validated R3 execution. It may not accept arbitrary free-form mappings supplied by Browser or renderer state.
 
-Every derived lane/event must preserve enough provenance to trace back to:
+### 2. Exact cross-source validation
+
+Before mapping, fail closed unless:
 
 ```text
-lane_id
-parameter_id
-scope
-part_id? / section_id?
-point_id or source point pair
-unit
+music_ir.source_blueprint_revision == execution.source.revision_id
+music_ir.timing.ppq == execution.lowering.ppq
+execution.classification == derived_noncanonical
 ```
 
-Backend-specific address is **not** canonical identity and should not be required in R3.
+Bind exact SHA-256 of both supplied objects. Recompute rather than trust caller strings.
 
-### 3. Time model
+### 3. Mapping registry
 
-Canonical time is `quarter_note_beat`. R3 may derive integer tick time using the repository's current PPQ only if the conversion is explicit and deterministic.
-
-Required proof:
+R4 registry contains one rule only:
 
 ```text
-beat 0.0 → tick 0
-beat N → deterministic round/quantization rule
-same source → same derived ticks
+mix.gain / project / normalized
+→ reference renderer post-synthesis gain envelope
 ```
 
-No arbitrary tempo map support is added. Fixed-tempo bound remains.
+Every other R3 lane must be carried as typed `UNMAPPED` / `UNSUPPORTED_BY_REFERENCE_RENDERER` and must never be guessed into MIDI CC or another DSP control.
 
-### 4. Interpolation semantics
+### 4. Gain-envelope semantics
 
-R3 must represent both:
+Use R3 point/segment semantics directly.
+
+Recommended deterministic policy:
 
 ```text
-hold
-linear
+before first point: first point value
+hold segment: start value until end point tick
+linear segment: linear interpolation start→end over exact tick interval
+after last point: last point value
 ```
 
-without pretending that all renderers can execute them identically.
+The envelope should be evaluated against renderer sample time using the exact fixed tempo and PPQ already present in Music IR.
 
-Recommended design:
+### 5. Additive renderer path
 
-- retain source points exactly;
-- derive explicit segments between stable source points;
-- segment references stable source `point_id` endpoints;
-- `hold` and `linear` remain typed execution semantics;
-- do not densify to arbitrary sampled MIDI values unless a separate renderer adapter requests it.
+Preserve existing `render_wav()` / `wav_bytes()` unchanged.
 
-This prevents resolution/sampling policy from becoming hidden authority.
-
-### 5. Supported vs unsupported parameter mapping
-
-R3 should define an explicit registry or policy for which canonical parameter domains are understood by the derived layer. The derived layer may carry a generic parameter unchanged even when no renderer mapping exists.
-
-If a lane cannot be lowered safely, report typed unsupported status rather than guessing.
-
-At minimum distinguish:
+Prefer a new additive module or function, for example:
 
 ```text
-DERIVED_GENERIC       # valid canonical lane represented in execution contract
-UNSUPPORTED_SCOPE
-UNSUPPORTED_UNIT
-UNSUPPORTED_PARAMETER
-INVALID_SOURCE
+src/musica/automation_renderer.py
 ```
 
-Exact vocabulary may be refined after implementation inspection, but all failures must be deterministic and machine-readable.
+or an explicit automation-aware renderer adapter path.
 
-### 6. Legacy/no-automation behavior
+The new path should synthesize the same reference mix and apply the mapped gain envelope as a deterministic post-synthesis multiplier. It must not change MIDI bytes or semantic CC interpretation.
 
-For accepted Blueprint with no canonical automation:
+### 6. Normalization boundary
+
+Avoid a design where final peak normalization erases the audible gain proof. The automation-aware path should make the order explicit and testable.
+
+Recommended policy:
 
 ```text
-lowering result = valid empty derived automation execution
+existing deterministic synthesis/mix
+→ existing safety normalization if needed
+→ R4 mix.gain envelope
+→ final PCM clipping guard only
 ```
 
-No semantic/Music-IR/renderer reverse inference is allowed.
+Do not renormalize after automation gain, because that could erase the mapped amplitude relationship.
 
-### 7. Determinism
+### 7. Objective audio evidence
 
-The same accepted source must produce byte-identical derived execution JSON where no timestamp/random identifier is present.
+Do not claim perceptual quality. Prove machine-observable behavior:
 
-Recommended evidence:
+- baseline/no-automation WAV SHA-256;
+- automated WAV SHA-256;
+- repeated automated render byte identity;
+- PCM sample difference count > 0 for non-unity automation;
+- whole-file RMS/peak comparison;
+- bounded segment/window RMS comparisons aligned to hold/linear envelope phases;
+- envelope samples at deterministic probe ticks/samples;
+- WAV container/QA remains valid.
 
-```text
-run A execution.json
-run B execution.json
-SHA-256(A) == SHA-256(B)
-```
-
-### 8. Authority boundary
-
-R3 lowering must be a pure derived operation:
-
-```text
-accepted Blueprint → execution
-```
-
-It must not:
-
-- create a new accepted revision;
-- mutate automation material;
-- create Browser Preview;
-- back-propagate Music IR / renderer changes;
-- infer canonical automation from existing semantic CC events.
-
-## Required implementation direction / 구현 방향
-
-Prefer a new isolated module such as:
-
-```text
-src/musica/automation_lowering.py
-```
-
-Do not modify the current semantic `controlEvent` path until the R3 derived contract is validated. This keeps existing M0→M7-R2 renderer behavior regression-stable.
-
-Likely new assets:
-
-```text
-schemas/automation-execution-v0.schema.json
-src/musica/automation_lowering.py
-tests/test_m7_r3_automation_lowering.py
-src/musica/m7_r3_demo.py
-.github/workflows/m7-r3-automation-lowering-evidence.yml
-```
-
-Naming may change only if repository inspection reveals a better existing pattern.
+Use an evidence fixture whose gain curve makes the expected direction unambiguous and avoids silence-only windows.
 
 ## Required tests / 필수 테스트
 
 At minimum prove:
 
-1. legacy/no-automation → valid empty derived execution;
-2. automation-capable accepted Blueprint → source-bound derived execution;
-3. source Blueprint/material hashes are exact;
-4. stable lane/parameter/point provenance is retained;
-5. deterministic beat→tick mapping;
-6. hold segment semantics preserved;
-7. linear segment semantics preserved;
-8. lane/point array reordering cannot change canonical identity/output ordering rules;
-9. invalid/missing source identity fails closed;
-10. unsupported unit/scope/parameter status is explicit, not guessed;
-11. lowering causes no accepted project mutation;
-12. lowering causes no canonical automation mutation;
-13. derived execution cannot be promoted back into Blueprint authority;
-14. same source produces byte-identical canonical execution JSON;
-15. existing compiler output is unchanged for legacy and exact-note fixtures unless explicitly tested otherwise;
-16. M7-R2/R1/R0 remain green;
-17. M6-R4/R3/R2/R1 and M5-R3/R4 remain green;
-18. Python 3.11/3.12 full suite remains green.
+1. exact Music IR hash binding;
+2. exact R3 execution hash binding;
+3. revision and PPQ cross-binding;
+4. only `mix.gain/project/normalized` maps;
+5. `synth.cutoff` remains typed unmapped;
+6. wrong scope fails mapping eligibility;
+7. wrong unit fails mapping eligibility;
+8. forged/tampered execution fails validation/hash binding;
+9. `hold` envelope values are exact at boundary probes;
+10. `linear` envelope interpolation is deterministic;
+11. before-first and after-last policies are deterministic;
+12. automation-aware WAV differs from baseline for non-unity curve;
+13. repeated automation-aware WAV is byte-identical;
+14. measurable RMS/peak windows move in expected direction;
+15. source Music IR object remains unchanged;
+16. source R3 execution object remains unchanged;
+17. legacy/no-automation produces no mapped lane and baseline-equivalent audio;
+18. existing `render_wav()` output remains unchanged;
+19. existing MIDI bytes remain unchanged;
+20. no Project/Blueprint mutation or reverse promotion authority;
+21. R3/R2/R1/R0 remain green;
+22. M6-R4/R3/R2/R1 and M5-R3/R4 remain green;
+23. Python 3.11/3.12 full suite remains green.
+
+## Expected implementation direction / 예상 구현 방향
+
+Likely bounded package:
+
+```text
+schemas/automation-render-plan-v0.schema.json
+src/musica/automation_renderer.py
+tests/test_m7_r4_automation_renderer.py
+src/musica/m7_r4_demo.py
+.github/workflows/m7-r4-audible-automation-evidence.yml
+```
+
+Exact naming may change only when repository inspection reveals a better existing contract pattern.
 
 ## Evidence target / 공식 근거 목표
 
 Dedicated deterministic artifact should include at minimum:
 
 ```text
-source-blueprint.json or source hashes
-source-automation-material.json
-execution-a.json
-execution-b.json
-execution-determinism.json
-legacy-empty-execution.json
-hold-linear-proof.json
-unsupported-proof.json
+source-blueprint.json or bound source hashes
+music-ir.json
+automation-execution.json
+automation-render-plan.json
+envelope-proof.json
+baseline.wav
+automated-a.wav
+automated-b.wav
+audio-difference-proof.json
 authority-boundary-proof.json
 manifest.json
 ```
 
-Evidence must bind exact-head workflow execution and artifact hashes.
+The dedicated workflow should render twice and require byte-identical automated WAV/evidence where intended.
 
 ## Scope control / 범위 통제
 
-Do **not** add or claim in M7-R3:
+Do **not** add or claim in M7-R4:
 
-- audible automation rendering;
-- arbitrary MIDI CC mapping as canonical semantics;
+- canonical MIDI CC mapping for automation;
+- `synth.cutoff` or arbitrary parameter mappings;
+- arbitrary part-scope automation mapping;
 - plug-in/device mapping or VST/AU/CLAP hosting;
 - external DAW automation import/export/reconciliation;
-- MIDI CC / OSC / real-time control;
+- MIDI/OSC real-time control;
 - lane creation/deletion or parameter reassignment;
 - arbitrary tempo maps;
 - spline/bezier/exponential interpolation;
-- Browser UI expansion beyond R2;
-- human-subject/perceptual superiority.
+- Browser UI expansion;
+- mastering quality or human/perceptual superiority.
 
-## Maximum intended R3 claim / 성공 시 최대 주장
+## Maximum intended R4 claim / 성공 시 최대 주장
 
-> **MUSICA can deterministically lower accepted canonical automation into a source-bound, backend-independent, non-authoritative derived execution representation that preserves stable parameter/lane/point provenance and explicit hold/linear semantics without silently equating canonical parameters with MIDI CC or renderer-specific addresses.**
-
-## Expected successor after R3 / R3 이후 예상 후속
-
-Only after R3 validation should the project consider a bounded renderer milestone such as:
-
-> **M7-R4 — Renderer Automation Mapping & Audible Evidence**
-
-R4 would choose one explicit renderer/backend mapping policy and prove audible application without expanding canonical authority.
+> **MUSICA can take validated source-bound automation execution for canonical `mix.gain` and, through one explicit reference-renderer mapping policy, deterministically produce audibly different WAV output whose gain-envelope effect is objectively measurable and byte-reproducible, without changing canonical authority or reusing MIDI CC as implicit automation semantics.**
 
 ## Execution discipline / 실행 규율
 
 ```text
-M7-R2 state closure
-→ create M7-R3 Issue
+M7-R3 state closure
+→ create M7-R4 Issue
 → fresh branch from closure main
-→ ratify derived execution contract
-→ deterministic lowering implementation
-→ unit/contract/determinism tests
-→ dedicated evidence workflow
+→ ratify renderer-plan contract
+→ bounded mix.gain mapping implementation
+→ deterministic envelope/audio tests
+→ dedicated audible evidence workflow
 → PR
 → exact-head full regressions
 → artifact inspection
-→ durable M7_R3 validation
+→ durable M7_R4 validation
 → successor rerun
 → expected-head merge
 → Issue completed
-→ state-only closure to renderer mapping milestone
+→ state-only closure
 ```
 
 **Repository evidence remains authoritative over conversation/model memory.**

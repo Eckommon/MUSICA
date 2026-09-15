@@ -2,9 +2,9 @@
 
 ## Project phase / 프로젝트 단계
 
-**M7-R3 — DETERMINISTIC AUTOMATION LOWERING & DERIVED EXECUTION BOUNDARY: VALIDATED — BOUNDED DERIVED EXECUTION**
+**M7-R4 — REFERENCE RENDERER AUTOMATION MAPPING & AUDIBLE EVIDENCE: VALIDATED — BOUNDED AUDIBLE EXECUTION**
 
-M0→M7-R3 are validated only within their durable repository claims. Accepted Music Blueprint remains canonical creative authority. Browser, Music IR, automation execution, renderer/plugin and external DAW state remain derived or non-authoritative.
+M0→M7-R4 are validated only within their durable repository claims. Accepted Music Blueprint remains canonical creative authority. Browser, Music IR, automation execution, renderer/plugin and external DAW state remain derived or non-authoritative.
 
 ## Canonical proposition / 공식 핵심 명제
 
@@ -25,60 +25,52 @@ M0→M7-R3 are validated only within their durable repository claims. Accepted M
 | M7-R1 Canonical Automation Runtime & Blueprint Integration | **VALIDATED — BOUNDED CORE RUNTIME** | `evidence/M7_R1_VALIDATION.md` |
 | M7-R2 Browser Studio Automation Lane / Inspect Surface | **VALIDATED — BOUNDED REAL-BROWSER SURFACE** | `evidence/M7_R2_VALIDATION.md` |
 | M7-R3 Deterministic Automation Lowering & Derived Execution Boundary | **VALIDATED — BOUNDED DERIVED EXECUTION** | `evidence/M7_R3_VALIDATION.md` |
-| M7-R4 Reference Renderer Automation Mapping & Audible Evidence | **NOT IMPLEMENTED — NEXT** | `memory/NEXT_ACTION.md` |
+| M7-R4 Reference Renderer Automation Mapping & Audible Evidence | **VALIDATED — BOUNDED AUDIBLE EXECUTION** | `evidence/M7_R4_VALIDATION.md` |
+| M7-R5 Studio Automation Audition & Accepted Artifact Persistence | **NOT IMPLEMENTED — NEXT** | `memory/NEXT_ACTION.md` |
 
-## M7-R3 final evidence / M7-R3 최종 근거
+## M7-R4 final evidence / M7-R4 최종 근거
 
-- Issue `#77` — **COMPLETED**
-- PR `#78` — **MERGED**
-- implementation merge/main: `f4dbbf78c1556815228ef1446192a1308707eec9`
-- pre-durable exact head: `09eaa538128a302f82374764becf1ddfc87eafda`
-- final evidence-bearing successor head: `43d4568362cc26c23e9747da2a15b29c0cf4fe4d`
-- successor M7-R3 `34822272947` — **SUCCESS**
-- successor MUSICA CI `34822272980` — **SUCCESS**
-- successor M7-R2 `34822272949` — **SUCCESS**
-- successor M7-R1 `34822272975` — **SUCCESS**
-- successor M7-R0 `34822272967` — **SUCCESS**
-- successor M6-R4 `34822272955` — **SUCCESS**
-- successor M6-R3 `34822272953` — **SUCCESS**
-- successor M6-R2 `34822272968` — **SUCCESS**
-- successor M6-R1 `34822272956` — **SUCCESS**
-- successor M5-R3 `34822273054` — **SUCCESS**
-- successor M5-R4 `34822272987` — **SUCCESS**
-- successor artifact ID `10338193487`
-- packaging SHA-256 `48b157aefb9bd6067aa7a2d4b187693294a2b7417869c35a4daa56bea5d1f61c`
-- internal manifest SHA-256 `864135b90e650496e89d1e6f9b293e709f2fd187a3ddb639e155136c028207db`
-- derived execution SHA-256 `2874fc72e78fd817a53ad2c20348cf56403af53fa24fdfc57f7f2aa1ac2444c7`
-- manifest records: **10/10 exact hash + size matches**
-- pre-durable vs successor extracted evidence: **11 files / 0 differences**
+- Issue `#80` — **COMPLETED**
+- PR `#81` — **MERGED**
+- implementation merge/main: `6f862dea15eea394f3e29ad7c91ef3e8b2cd767a`
+- pre-durable exact head: `0166eb193f3df1269f3f8260753faed99de97e2d`
+- final evidence-bearing successor head: `cae504d4582eb234b6bcb121fa4b96370c08069f`
+- successor regression set: **12/12 SUCCESS**
+- M7-R4 workflow `35002276837` — **SUCCESS**
+- MUSICA CI `35002276941` — **SUCCESS**
+- artifact ID `10410595918`
+- packaging SHA-256 `ab47508dbdd8e7f8b14ada2dad792d0b5ea07339fe09cc744e23a6f05efcf585`
+- internal manifest SHA-256 `532b225c9a40db44565fd617d5b5481049efcd9b337c022e6ab0b9af2a8110a4`
+- render-plan SHA-256 `3821d05b18b55b81836bfcd271134bac3245fd3324bacb401647329d43049296`
+- baseline WAV `efb3dfecd8b72545563a24617eaafaeea8ea22738103fa7703cb7efcfa0429c3`
+- automated WAV `3137a946772c80286e9ba57df3081e3574be6cd4489d036359857ab75a2248a0`
+- PCM differences: **146,461 samples**
+- RMS ratios: linear `0.707450205`, hold `0.820013328`, after-last `0.750111392`
+- pre-durable vs successor artifact: **14 files / 0 differences**
 
-## M7-R3 validated authority invariant
+## M7-R4 validated authority invariant
 
 ```text
-accepted optional materials.automation
-→ exact source hashes
-→ deterministic automation-execution-v0
-→ stable lane/parameter/point provenance
-→ deterministic PPQ 480 tick representation
-→ typed hold / linear segments
-→ backend mapping remains UNMAPPED
+accepted automation
+→ R3 automation-execution-v0
+→ exact Music IR/execution hash binding
+→ automation-render-plan-v0
+→ only mix.gain/project/normalized maps
+→ deterministic hold/linear reference-WAV gain
+→ objective audible evidence
 ```
 
-Validated R3 properties:
+Validated R4 properties:
 
-- no automation is fabricated for legacy projects;
-- source binding includes project/revision/Blueprint/material hashes;
-- `lane_id`, `point_id`, `parameter_id` remain source authority identities;
-- execution state is explicitly derived/non-canonical;
-- Decimal `ROUND_HALF_UP` beat→tick policy is explicit;
-- source beat/value/interpolation survive lowering;
-- distinct source beats collapsing to one tick fail closed;
-- backend mapping remains typed `UNMAPPED`;
-- backend-address/MIDI-CC injection is schema-rejected;
-- source Blueprint and automation material remain unchanged;
-- existing Music IR compiler output remains byte-identical before/after lowering;
-- no Project/Blueprint/reverse/renderer authority is granted;
-- `audible_automation_validated=false` remains explicit.
+- `automation-render-plan-v0` is derived/non-canonical;
+- only `mix.gain/project/normalized` maps in the current reference renderer;
+- unsupported parameter domains remain typed unmapped;
+- canonical `mix.gain` is not MIDI CC11;
+- renderer/audio output cannot mutate or reverse-promote canonical state;
+- automation-aware A/B render is byte-identical;
+- automated output differs measurably from baseline;
+- source Blueprint, Music IR and R3 execution remain unchanged;
+- existing MIDI and baseline reference render paths remain regression-stable.
 
 ## Current capability stack / 현재 기능 스택
 
@@ -86,39 +78,60 @@ Validated R3 properties:
 Typed Intent/Blueprint, semantic controls, locks/constraints, immutable revisions/branches/audit, exact-note material and accepted explicit automation material.
 
 ### Precision editing
-M6 exact-note editing and M7-R1/R2 automation point editing share source-bound Preview/Accept authority patterns.
+M6 exact-note editing and M7-R1/R2 automation point editing use source-bound Preview/Accept authority patterns.
 
 ### Studio
-Browser Studio Direct → Shape → Inspect → Code, exact-note piano roll and bounded canonical automation Inspect editing are validated.
+Browser Studio Direct → Shape → Inspect → Code, exact-note piano roll and bounded automation Inspect/edit surface are validated. Studio audio Preview, however, still uses the legacy render cache path and is not yet integrated with R4 audible automation.
 
 ### Derived execution
-R3 can deterministically lower accepted canonical automation to `automation-execution-v0` without guessing backend addresses.
+R3 deterministically lowers accepted canonical automation to `automation-execution-v0` without guessing backend addresses.
 
-### Renderer / interchange
-Existing bounded rendering, DAWproject interchange/evaluation and exact-note reconciliation remain validated. Canonical automation is **not yet validated as audible renderer control**.
+### Renderer
+R4 can map exactly one canonical automation family — `mix.gain/project/normalized` — through an explicit reference-renderer plan to byte-reproducible audible WAV output.
 
-## Current architecture finding for R4
+### Interchange
+Existing bounded DAWproject interchange/evaluation and exact-note reconciliation remain validated. Automation interchange remains unvalidated.
 
-Current semantic Music IR controls are MIDI-like and the reference WAV renderer interprets CC11/74/71. Canonical automation must not inherit those meanings implicitly.
+## Current architecture finding for R5
 
-The safest next step is a renderer-specific derived plan that consumes both exact Music IR and exact R3 execution hashes, maps only one explicit canonical parameter domain, and leaves all others unmapped.
-
-Chosen bounded R4 mapping:
+`StudioService._render_to_cache()` currently executes:
 
 ```text
-parameter_id = mix.gain
-scope        = project
-unit         = normalized
-renderer     = musica-reference-local
+compile_blueprint
+→ render_midi
+→ render_wav
 ```
 
-Recommended renderer semantics: evaluate R3 `hold|linear` segments as a deterministic gain envelope and apply it as a post-synthesis reference-WAV multiplier through a new additive automation-aware render path. Existing `render_wav()` and MIDI semantics remain unchanged.
+`StudioAutomationSurface.preview_automation_edit()` installs its validated candidate through `StudioService._install_preview()`, which calls this same cache renderer. Thus a Browser automation Preview can be valid and accepted while its Studio Preview WAV still ignores R4 audible automation.
+
+The correct next mission is therefore **product integration**, not mapping expansion.
+
+## Next phase / 다음 단계
+
+> **M7-R5 — Studio Automation Audition & Accepted Artifact Persistence**
+
+Required path:
+
+```text
+validated Studio candidate Blueprint
+→ compile Music IR
+→ R3 automation execution
+→ R4 render plan / bounded mix.gain mapping
+→ automation-aware Studio Preview WAV
+→ explicit Accept or Discard
+
+Accept → exact Preview WAV bound to accepted revision artifact
+Discard → pending Preview/media removed, accepted state unchanged
+Reopen → accepted revision artifact served unchanged
+```
+
+R5 must keep MIDI bytes stable, keep unsupported lanes unmapped, preserve Preview-not-authority semantics and prove artifact persistence across reopen.
 
 ## Current claim boundaries / 현재 주장 경계
 
 The repository does **not** yet validate:
 
-- audible renderer execution of canonical automation;
+- Studio Preview/Accept/reopen integration of audible automation;
 - arbitrary canonical parameter → renderer/MIDI/plugin mapping;
 - plug-in/device mapping or VST/AU/CLAP hosting;
 - external DAW automation reconciliation;
@@ -129,39 +142,19 @@ The repository does **not** yet validate:
 - human-subject usability/preference or perceptual superiority;
 - waveform/destructive audio editing, cloud collaboration or desktop signing.
 
-## Next phase / 다음 단계
-
-> **M7-R4 — Reference Renderer Automation Mapping & Audible Evidence**
-
-Required path:
-
-```text
-validated Music IR
-+
-validated R3 automation execution
-→ exact hash-bound reference-render plan
-→ explicit mix.gain mapping only
-→ deterministic hold/linear gain envelope
-→ automation-aware reference WAV
-→ byte reproducibility + objective audio-difference evidence
-```
-
-No arbitrary mapping expansion is allowed in R4. Unsupported lane domains remain typed unsupported/unmapped rather than guessed.
-
 ## Resume authority / 재개 권위
 
-Before R4 substantive work inspect:
+Before R5 substantive work inspect:
 
 1. `governance/SOURCE_OF_TRUTH.md`
 2. `docs/PRODUCT_THESIS.md`
 3. `docs/M7_AUTOMATION_AUTHORITY.md`
-4. `evidence/M7_R3_VALIDATION.md`
-5. `schemas/automation-execution-v0.schema.json`
+4. `evidence/M7_R4_VALIDATION.md`
+5. `src/musica/automation_renderer.py`
 6. `src/musica/automation_lowering.py`
-7. `src/musica/compiler.py`
-8. `src/musica/render.py`
-9. `src/musica/renderer.py`
-10. `memory/CURRENT_STATE.md`
-11. `memory/NEXT_ACTION.md`
+7. `src/musica/studio.py`
+8. `src/musica/studio_automation.py`
+9. `memory/CURRENT_STATE.md`
+10. `memory/NEXT_ACTION.md`
 
 **Repository evidence remains authoritative over conversation/model memory.**

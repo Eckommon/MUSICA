@@ -83,12 +83,12 @@ class StudioAutomationSurface:
             )
 
         accepted_head_before = session.project.head_revision_id()
-        baseline_wav = pending.wav_path.read_bytes()
-        preview_midi = pending.midi_path.read_bytes()
-        baseline_wav_sha256 = hashlib.sha256(baseline_wav).hexdigest()
-        preview_midi_sha256 = hashlib.sha256(preview_midi).hexdigest()
-
         try:
+            baseline_wav = pending.wav_path.read_bytes()
+            preview_midi = pending.midi_path.read_bytes()
+            baseline_wav_sha256 = hashlib.sha256(baseline_wav).hexdigest()
+            preview_midi_sha256 = hashlib.sha256(preview_midi).hexdigest()
+
             music_ir = compile_blueprint(candidate_blueprint)
             execution = lower_automation_execution(candidate_blueprint)
             plan = build_automation_render_plan(music_ir, execution)

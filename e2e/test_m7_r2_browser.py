@@ -7,6 +7,13 @@ from musica.m7_r2_browser_driver import run_suite
 
 
 def test_m7_r2_real_browser_automation_e2e(tmp_path: Path) -> None:
+    from playwright.sync_api import expect
+
+    # M7-R5 makes automation Preview include deterministic local audio rendering.
+    # Playwright assertion timeouts are separate from Browser action timeouts, so
+    # keep the real-browser evidence tolerant of shared-runner render latency.
+    expect.set_options(timeout=30_000)
+
     configured = os.environ.get("MUSICA_M7_R2_E2E_OUT")
     out = Path(configured) if configured else tmp_path / "m7-r2-real-browser-automation-e2e"
     manifest = run_suite(out)

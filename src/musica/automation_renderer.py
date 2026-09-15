@@ -247,10 +247,52 @@ def _apply_gain_plan_to_wav(
     tick_per_sample = (
         Decimal(str(bpm)) * Decimal(int(ppq)) / (Decimal(int(sample_rate)) * Decimal(60))
     )
+
+    # Compile invariant plan values once. The previous implementation rebuilt these
+    # Decimal constants and rescanned all segments for every sample. Positions are
+    # monotonic, so the active segment can advance only forward while preserving the
+    # exact same Decimal interpolation and ROUND_HALF_UP PCM semantics.
+    lane = plan["mapped_lanes"][0]
+    points = lane["points"]
+    first_tick = Decimal(int(points[0]["tick"]))
+    first_value = Decimal(str(points[0]["value"]))
+    last_value = Decimal(str(points[-1]["value"]))
+    segments = [
+        (
+            Decimal(int(segment["start_tick"])),
+            Decimal(int(segment["end_tick"])),
+            Decimal(str(segment["start_value"])),
+            Decimal(str(segment["end_value"])),
+            str(segment["interpolation"]),
+        )
+        for segment in lane["segments"]
+    ]
+    segment_index = 0
+
     pcm = bytearray()
     for index, packed in enumerate(struct.iter_unpack("<h", frames)):
         sample = int(packed[0])
-        gain = _gain_at_tick_unvalidated(plan, Decimal(index) * tick_per_sample)
+        position = Decimal(index) * tick_per_sample
+        if position <= first_tick:
+            gain = first_value
+        else:
+            while (
+                segment_index < len(segments)
+                and position >= segments[segment_index][1]
+            ):
+                segment_index += 1
+            if segment_index >= len(segments):
+                gain = last_value
+            else:
+                start_tick, end_tick, start_value, end_value, interpolation = segments[
+                    segment_index
+                ]
+                if interpolation == "hold":
+                    gain = start_value
+                else:
+                    ratio = (position - start_tick) / (end_tick - start_tick)
+                    gain = start_value + (end_value - start_value) * ratio
+
         scaled = (Decimal(sample) * gain).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
         value = max(-32768, min(32767, int(scaled)))
         pcm.extend(struct.pack("<h", value))

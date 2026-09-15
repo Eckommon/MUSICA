@@ -1,13 +1,16 @@
-"""MUSICA M7-R2 Browser Studio automation integration surface.
+"""MUSICA Browser Studio automation integration surface.
 
-This adapter projects accepted M7-R1 automation into Browser Studio and routes Browser
-proposals through the existing trusted M7-R1 authority. Browser/DOM state never becomes
-project authority.
+R2 established Browser automation inspect/edit authority. M7-R5 extends only the
+installed automation Preview audio path: after the existing trusted Preview is created,
+its pending WAV is replaced through the already validated R3 lowering and R4 bounded
+reference-renderer ``mix.gain`` path. Browser/renderer state remains non-canonical and
+explicit M2 Accept remains the only authority that advances project state.
 """
 
 from __future__ import annotations
 
 import copy
+import hashlib
 from typing import Any
 
 from .automation_contracts import (
@@ -19,8 +22,16 @@ from .automation_edit import (
     blueprint_sha256,
     build_automation_edit_preview,
 )
+from .automation_lowering import lower_automation_execution
+from .automation_renderer import (
+    automation_render_plan_sha256,
+    build_automation_render_plan,
+    render_automation_wav,
+)
+from .compiler import compile_blueprint
 from .contracts import validate_contract
 from .diff import structured_diff
+from .render import DEFAULT_SAMPLE_RATE
 from .studio import StudioService, StudioServiceError
 
 AUTOMATION_OPERATIONS = [
@@ -39,16 +50,84 @@ def _capabilities() -> dict[str, Any]:
         "explicit_accept_required": True,
         "project_mutation_authorized": False,
         "music_ir_mutation_authorized": False,
+        # Preserve the ratified R2 view contract. R5 evidence is exposed separately
+        # as studio_audition on an installed automation Preview.
         "audible_automation_validated": False,
         "operations": list(AUTOMATION_OPERATIONS),
     }
 
 
 class StudioAutomationSurface:
-    """Project accepted automation and install only validated M7-R1 Previews."""
+    """Project accepted automation and install only trusted automation Previews."""
 
     def __init__(self, service: StudioService) -> None:
         self.service = service
+
+    def _install_audible_preview(
+        self,
+        session: Any,
+        candidate_blueprint: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Replace only the pending automation Preview WAV through the R3→R4 path.
+
+        The existing Studio Preview installation is deliberately retained for MIDI,
+        cache ownership and authority semantics. Any failure clears the non-canonical
+        pending Preview and leaves the accepted project ref unchanged.
+        """
+
+        pending = session.pending
+        if pending is None or pending.descriptor.get("kind") != "automation_edit":
+            raise StudioServiceError(
+                "integrity_error",
+                "audible automation installation requires one pending automation Preview",
+            )
+
+        accepted_head_before = session.project.head_revision_id()
+        baseline_wav = pending.wav_path.read_bytes()
+        preview_midi = pending.midi_path.read_bytes()
+        baseline_wav_sha256 = hashlib.sha256(baseline_wav).hexdigest()
+        preview_midi_sha256 = hashlib.sha256(preview_midi).hexdigest()
+
+        try:
+            music_ir = compile_blueprint(candidate_blueprint)
+            execution = lower_automation_execution(candidate_blueprint)
+            plan = build_automation_render_plan(music_ir, execution)
+            render_automation_wav(
+                music_ir,
+                execution,
+                pending.wav_path,
+                duration_seconds=float(candidate_blueprint["project"]["duration_seconds"]),
+                sample_rate=DEFAULT_SAMPLE_RATE,
+            )
+            accepted_head_after = session.project.head_revision_id()
+            if accepted_head_after != accepted_head_before:
+                raise StudioServiceError(
+                    "integrity_error",
+                    "audible automation Preview rendering changed the canonical project ref",
+                )
+
+            preview_wav_sha256 = hashlib.sha256(pending.wav_path.read_bytes()).hexdigest()
+            proof = {
+                "audition_version": "0",
+                "candidate_revision_id": str(candidate_blueprint["project"]["revision_id"]),
+                "path": "m7-r3-to-m7-r4-reference-renderer",
+                "automation_applied": bool(plan["mapped_lanes"]),
+                "output_differs_from_baseline": preview_wav_sha256 != baseline_wav_sha256,
+                "mapped_lane_ids": [str(lane["lane_id"]) for lane in plan["mapped_lanes"]],
+                "unmapped_lane_ids": [str(lane["lane_id"]) for lane in plan["unmapped_lanes"]],
+                "render_plan_sha256": automation_render_plan_sha256(plan),
+                "baseline_wav_sha256": baseline_wav_sha256,
+                "preview_wav_sha256": preview_wav_sha256,
+                "preview_midi_sha256": preview_midi_sha256,
+                "project_ref_unchanged": True,
+                "canonical": False,
+                "reverse_promotion_authorized": False,
+            }
+            pending.detail["studio_audition"] = copy.deepcopy(proof)
+            return proof
+        except Exception:
+            self.service._clear_pending(session)
+            raise
 
     def automation_view(self, session_id: str) -> dict[str, Any]:
         session = self.service._get_session(session_id)
@@ -162,6 +241,9 @@ class StudioAutomationSurface:
                     "audible_automation_validated": False,
                 },
             )
+            audition = self._install_audible_preview(session, resolved.blueprint)
+            installed["detail"]["studio_audition"] = copy.deepcopy(audition)
+            installed["studio_audition"] = copy.deepcopy(audition)
             installed["preview_installed"] = True
             installed["authority_result"] = copy.deepcopy(resolved.authority_result)
             installed["automation_edit"] = automation_detail

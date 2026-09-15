@@ -2,291 +2,228 @@
 
 ## Exact resume point / 정확한 재개점
 
-**M7-R4 — REFERENCE RENDERER AUTOMATION MAPPING & AUDIBLE EVIDENCE**
+**M7-R5 — STUDIO AUTOMATION AUDITION & ACCEPTED ARTIFACT PERSISTENCE**
 
-M7-R3 is `VALIDATED — BOUNDED DERIVED EXECUTION`. The next mission is to prove one explicit canonical automation parameter can be applied audibly by one explicit renderer policy **without granting renderer state canonical authority or silently reusing MIDI CC semantics**.
+M7-R4 is `VALIDATED — BOUNDED AUDIBLE EXECUTION`. The next mission is to connect that validated audible automation path to the actual Studio Preview/Accept/reopen lifecycle **without expanding canonical parameter coverage and without changing M2 authority**.
 
 ## Canonical starting point / 공식 시작점
 
-- M7-R3 Issue `#77` — **COMPLETED**
-- M7-R3 PR `#78` — **MERGED**
-- implementation merge/main: `f4dbbf78c1556815228ef1446192a1308707eec9`
-- pre-durable exact head: `09eaa538128a302f82374764becf1ddfc87eafda`
-- final evidence-bearing successor head: `43d4568362cc26c23e9747da2a15b29c0cf4fe4d`
-- successor M7-R3 workflow `34822272947` — **SUCCESS**
-- successor MUSICA CI `34822272980` — **SUCCESS**
-- successor M7-R2/R1/R0, M6-R4/R3/R2/R1, M5-R3/R4 — **ALL SUCCESS**
-- successor artifact ID `10338193487`
-- packaging SHA-256 `48b157aefb9bd6067aa7a2d4b187693294a2b7417869c35a4daa56bea5d1f61c`
-- internal manifest SHA-256 `864135b90e650496e89d1e6f9b293e709f2fd187a3ddb639e155136c028207db`
-- derived execution SHA-256 `2874fc72e78fd817a53ad2c20348cf56403af53fa24fdfc57f7f2aa1ac2444c7`
-- manifest integrity: **10/10 exact**
-- pre-durable vs successor extracted evidence: **11 files / 0 differences**
-- durable evidence: `evidence/M7_R3_VALIDATION.md`
+- M7-R4 Issue `#80` — **COMPLETED**
+- M7-R4 PR `#81` — **MERGED**
+- implementation merge/main: `6f862dea15eea394f3e29ad7c91ef3e8b2cd767a`
+- pre-durable exact head: `0166eb193f3df1269f3f8260753faed99de97e2d`
+- final evidence-bearing successor head: `cae504d4582eb234b6bcb121fa4b96370c08069f`
+- successor regression set: **12/12 SUCCESS**
+- successor artifact ID: `10410595918`
+- internal manifest SHA-256: `532b225c9a40db44565fd617d5b5481049efcd9b337c022e6ab0b9af2a8110a4`
+- render-plan SHA-256: `3821d05b18b55b81836bfcd271134bac3245fd3324bacb401647329d43049296`
+- automated WAV SHA-256: `3137a946772c80286e9ba57df3081e3574be6cd4489d036359857ab75a2248a0`
+- durable evidence: `evidence/M7_R4_VALIDATION.md`
 
-## Architecture facts R4 must respect / R4가 지켜야 할 구조 사실
+## Architecture fact R5 must close / R5가 닫아야 할 구조 사실
 
-### Canonical automation remains backend-independent
-
-Canonical automation identity is:
+Current `StudioService._render_to_cache()` still renders all Studio Preview/initial/fallback audio through:
 
 ```text
-parameter_id
-scope
-owner_id
-unit
-lane_id
-point_id
-beat
-value
-interpolation
+compile_blueprint
+→ render_midi
+→ render_wav
 ```
 
-R3 derived execution adds deterministic ticks/segments but deliberately records:
+Current `StudioAutomationSurface.preview_automation_edit()` builds a trusted R1 automation Preview, then calls `StudioService._install_preview()`. `_install_preview()` delegates to `_render_to_cache()`. Therefore the Browser automation Preview can contain a valid `mix.gain` curve while the actual Studio Preview WAV does not yet consume R3 lowering or the R4 automation renderer.
+
+Current `accept_preview()` binds the exact pending MIDI/WAV paths to the accepted revision. This is useful: once the Preview WAV is correctly automation-aware, existing M2 acceptance can persist that exact audible artifact without inventing new authority.
+
+## Bounded R5 mission / 제한 미션
+
+R5 implements one product integration path only:
 
 ```text
-backend_mapping.status = UNMAPPED
-renderer_mapping_authorized = false
-audible_automation_validated = false
+validated candidate Blueprint
+→ compile_blueprint(candidate)
+→ lower canonical automation through R3
+→ build R4 automation-render-plan-v0
+→ if eligible mix.gain is mapped:
+     render automation-aware WAV
+  else:
+     preserve baseline WAV behavior
+→ install Studio Preview
+→ explicit Accept or Discard
 ```
 
-R4 must not mutate R3 execution to pretend the renderer mapping was canonical all along.
+MIDI remains on the existing path.
 
-### Existing semantic CC path is unrelated authority
+## Required implementation direction / 필수 구현 방향
 
-Current Music IR semantic controls use CC11 / CC74 / CC71 and the current reference WAV renderer interprets those values. They are existing preview semantics, not canonical M7 automation mapping authority.
+### 1. Centralize Studio cache render decision
 
-Therefore this is forbidden:
+Modify the internal Studio render-cache boundary rather than duplicating rendering logic in Browser code.
+
+Recommended shape:
 
 ```text
-mix.gain == CC11 merely because CC11 already changes expression
+StudioService._render_to_cache(...)
+  compile Music IR
+  render existing MIDI
+  derive R3 automation execution from the same Blueprint
+  build R4 reference render plan
+  select WAV path:
+    eligible mapped mix.gain → automation-aware WAV
+    no canonical automation / no mapped lane → existing baseline WAV
 ```
 
-R4 must create an explicit renderer-specific mapping layer instead.
+The exact helper name may vary after implementation inspection, but the decision belongs in the trusted Studio service, not DOM/JavaScript.
 
-## Bounded mapping selected for R4 / R4 제한 매핑
+### 2. Preserve legacy byte compatibility
 
-Exactly one canonical parameter family is eligible:
+For a Blueprint with no explicit canonical automation, Studio WAV bytes must remain byte-identical to the existing `render_wav()` path.
+
+Unsupported lanes alone must not silently change audio. In particular `synth.cutoff` remains unmapped under the current R4 policy.
+
+### 3. Preview authority remains unchanged
+
+Before and after creating an audible Preview:
 
 ```text
-parameter_id = mix.gain
-scope        = project
-owner_id     = null
-unit         = normalized
-minimum      = 0.0
-maximum      = 1.0
-renderer_id  = musica-reference-local
+accepted branch head is unchanged
+Preview artifact is non-canonical
 ```
 
-No `synth.cutoff`, part-scope automation, decibel/hertz/semitone/ratio mapping or arbitrary parameter registry expansion is required for R4.
+Audio availability does not imply acceptance.
 
-## Required R4 design / 필수 설계
+### 4. Discard semantics
 
-### 1. Renderer-specific derived plan
+Discard must prove:
 
-Introduce a versioned non-canonical renderer plan, recommended working name:
+- pending Preview state removed;
+- Preview cache media removed;
+- accepted branch head unchanged;
+- accepted artifact manifest unchanged;
+- subsequent accepted media resolves to accepted revision media, not discarded Preview bytes.
 
-```text
-automation-render-plan-v0
-```
+### 5. Accept semantics
 
-The plan must bind at minimum:
+Accept must prove:
 
-```text
-plan_version
-classification = derived_noncanonical
-source.music_ir_sha256
-source.automation_execution_sha256
-source.project_id
-source.revision_id
-renderer.renderer_id
-renderer.renderer_version
-mapping.policy_id
-mapped_lanes[]
-unmapped_lanes[]
-authority.*
-```
+- exactly one new immutable revision is committed;
+- the exact pending automation-aware WAV is bound to that revision;
+- the accepted artifact WAV bytes equal the Preview WAV bytes;
+- canonical authority comes from the accepted Blueprint revision, not from the audio artifact;
+- MIDI remains the existing deterministic MIDI for that candidate.
 
-The plan is generated from already-validated Music IR + already-validated R3 execution. It may not accept arbitrary free-form mappings supplied by Browser or renderer state.
+### 6. Reopen / persistence semantics
 
-### 2. Exact cross-source validation
+After closing and reopening the project/session:
 
-Before mapping, fail closed unless:
+- accepted head is the accepted automation revision;
+- `media_bytes(..., "audio")` returns the accepted artifact bytes;
+- returned WAV equals the previously accepted Preview WAV;
+- no re-render/reverse-inference is required when the artifact already exists.
 
-```text
-music_ir.source_blueprint_revision == execution.source.revision_id
-music_ir.timing.ppq == execution.lowering.ppq
-execution.classification == derived_noncanonical
-```
+### 7. Browser / Studio capability truthfulness
 
-Bind exact SHA-256 of both supplied objects. Recompute rather than trust caller strings.
-
-### 3. Mapping registry
-
-R4 registry contains one rule only:
-
-```text
-mix.gain / project / normalized
-→ reference renderer post-synthesis gain envelope
-```
-
-Every other R3 lane must be carried as typed `UNMAPPED` / `UNSUPPORTED_BY_REFERENCE_RENDERER` and must never be guessed into MIDI CC or another DSP control.
-
-### 4. Gain-envelope semantics
-
-Use R3 point/segment semantics directly.
-
-Recommended deterministic policy:
-
-```text
-before first point: first point value
-hold segment: start value until end point tick
-linear segment: linear interpolation start→end over exact tick interval
-after last point: last point value
-```
-
-The envelope should be evaluated against renderer sample time using the exact fixed tempo and PPQ already present in Music IR.
-
-### 5. Additive renderer path
-
-Preserve existing `render_wav()` / `wav_bytes()` unchanged.
-
-Prefer a new additive module or function, for example:
-
-```text
-src/musica/automation_renderer.py
-```
-
-or an explicit automation-aware renderer adapter path.
-
-The new path should synthesize the same reference mix and apply the mapped gain envelope as a deterministic post-synthesis multiplier. It must not change MIDI bytes or semantic CC interpretation.
-
-### 6. Normalization boundary
-
-Avoid a design where final peak normalization erases the audible gain proof. The automation-aware path should make the order explicit and testable.
-
-Recommended policy:
-
-```text
-existing deterministic synthesis/mix
-→ existing safety normalization if needed
-→ R4 mix.gain envelope
-→ final PCM clipping guard only
-```
-
-Do not renormalize after automation gain, because that could erase the mapped amplitude relationship.
-
-### 7. Objective audio evidence
-
-Do not claim perceptual quality. Prove machine-observable behavior:
-
-- baseline/no-automation WAV SHA-256;
-- automated WAV SHA-256;
-- repeated automated render byte identity;
-- PCM sample difference count > 0 for non-unity automation;
-- whole-file RMS/peak comparison;
-- bounded segment/window RMS comparisons aligned to hold/linear envelope phases;
-- envelope samples at deterministic probe ticks/samples;
-- WAV container/QA remains valid.
-
-Use an evidence fixture whose gain curve makes the expected direction unambiguous and avoids silence-only windows.
+If R5 exposes an audible automation capability flag, update it only after the Studio lifecycle is actually validated. Existing R2 capability fields that say `audible_automation_validated=false` must not be changed speculatively before evidence.
 
 ## Required tests / 필수 테스트
 
 At minimum prove:
 
-1. exact Music IR hash binding;
-2. exact R3 execution hash binding;
-3. revision and PPQ cross-binding;
-4. only `mix.gain/project/normalized` maps;
-5. `synth.cutoff` remains typed unmapped;
-6. wrong scope fails mapping eligibility;
-7. wrong unit fails mapping eligibility;
-8. forged/tampered execution fails validation/hash binding;
-9. `hold` envelope values are exact at boundary probes;
-10. `linear` envelope interpolation is deterministic;
-11. before-first and after-last policies are deterministic;
-12. automation-aware WAV differs from baseline for non-unity curve;
-13. repeated automation-aware WAV is byte-identical;
-14. measurable RMS/peak windows move in expected direction;
-15. source Music IR object remains unchanged;
-16. source R3 execution object remains unchanged;
-17. legacy/no-automation produces no mapped lane and baseline-equivalent audio;
-18. existing `render_wav()` output remains unchanged;
-19. existing MIDI bytes remain unchanged;
-20. no Project/Blueprint mutation or reverse promotion authority;
-21. R3/R2/R1/R0 remain green;
-22. M6-R4/R3/R2/R1 and M5-R3/R4 remain green;
-23. Python 3.11/3.12 full suite remains green.
+1. Studio automation Preview with eligible `mix.gain` produces a WAV different from the same candidate's baseline `render_wav()`;
+2. Preview WAV is deterministic across repeated equivalent sessions/operations where IDs are controlled;
+3. Preview MIDI remains equal to the existing MIDI path;
+4. accepted branch head does not change during Preview;
+5. R4 mapped lane remains exactly `mix.gain/project/normalized`;
+6. `synth.cutoff` remains unmapped and does not gain implicit audible control;
+7. no-automation Studio render remains baseline-byte-identical;
+8. unsupported-only automation remains baseline-equivalent or explicitly non-mapped according to current R4 policy;
+9. Discard removes pending media and leaves accepted state/artifacts unchanged;
+10. Accept advances exactly one revision;
+11. accepted WAV bytes equal pending Preview WAV bytes;
+12. accepted artifact manifest contains the correct WAV/MIDI hashes;
+13. close/reopen serves the same accepted WAV bytes;
+14. stale Preview conflict remains fail-closed;
+15. cross-surface pending Preview isolation remains fail-closed;
+16. source Blueprint/automation identities remain stable;
+17. audio/renderer state cannot mutate or reverse-promote canonical automation;
+18. R4/R3/R2/R1/R0 remain green;
+19. M6-R4/R3/R2/R1 and M5-R3/R4 remain green;
+20. Python 3.11/3.12 full suite remains green.
 
-## Expected implementation direction / 예상 구현 방향
+## Expected implementation package / 예상 구현 패키지
 
-Likely bounded package:
+Likely bounded changes:
 
 ```text
-schemas/automation-render-plan-v0.schema.json
-src/musica/automation_renderer.py
-tests/test_m7_r4_automation_renderer.py
-src/musica/m7_r4_demo.py
-.github/workflows/m7-r4-audible-automation-evidence.yml
+src/musica/studio.py
+src/musica/studio_automation.py        # only if truthful capability/detail plumbing is needed
+tests/test_m7_r5_studio_audible_automation.py
+src/musica/m7_r5_demo.py
+.github/workflows/m7-r5-studio-audible-automation-evidence.yml
 ```
 
-Exact naming may change only when repository inspection reveals a better existing contract pattern.
+Avoid modifying `render.py`, `renderer.py` or `compiler.py` unless repository evidence proves integration is impossible without it. Prefer reusing the already validated R3/R4 modules.
 
 ## Evidence target / 공식 근거 목표
 
-Dedicated deterministic artifact should include at minimum:
+Dedicated evidence should include at minimum:
 
 ```text
-source-blueprint.json or bound source hashes
-music-ir.json
+accepted-before.json
+candidate-blueprint.json
 automation-execution.json
 automation-render-plan.json
-envelope-proof.json
-baseline.wav
-automated-a.wav
-automated-b.wav
-audio-difference-proof.json
+preview-descriptor.json
+preview-audio-proof.json
+preview.wav
+preview.mid
+discard-proof.json
+accept-proof.json
+accepted-artifact-manifest.json
+reopen-proof.json
 authority-boundary-proof.json
 manifest.json
 ```
 
-The dedicated workflow should render twice and require byte-identical automated WAV/evidence where intended.
+A strong fixture should exercise:
+
+- eligible `mix.gain` audible Preview;
+- an unsupported `synth.cutoff` lane remaining unmapped;
+- Discard on one Preview;
+- a second equivalent Preview followed by Accept;
+- reopen/persistence verification.
 
 ## Scope control / 범위 통제
 
-Do **not** add or claim in M7-R4:
+Do **not** add or claim in M7-R5:
 
+- a second canonical parameter mapping family;
 - canonical MIDI CC mapping for automation;
-- `synth.cutoff` or arbitrary parameter mappings;
-- arbitrary part-scope automation mapping;
-- plug-in/device mapping or VST/AU/CLAP hosting;
+- arbitrary part-scope renderer automation;
+- plug-in/device/VST/AU/CLAP hosting;
 - external DAW automation import/export/reconciliation;
 - MIDI/OSC real-time control;
 - lane creation/deletion or parameter reassignment;
 - arbitrary tempo maps;
 - spline/bezier/exponential interpolation;
-- Browser UI expansion;
 - mastering quality or human/perceptual superiority.
 
-## Maximum intended R4 claim / 성공 시 최대 주장
+## Maximum intended R5 claim / 성공 시 최대 주장
 
-> **MUSICA can take validated source-bound automation execution for canonical `mix.gain` and, through one explicit reference-renderer mapping policy, deterministically produce audibly different WAV output whose gain-envelope effect is objectively measurable and byte-reproducible, without changing canonical authority or reusing MIDI CC as implicit automation semantics.**
+> **MUSICA Studio can audition a validated canonical `mix.gain` automation edit through the already validated R3→R4 derived execution path, keep that audition non-canonical until explicit Accept, discard it without changing accepted state, and on Accept persist the exact audible Preview artifact with the accepted immutable revision so the same audio is served after reopening.**
 
 ## Execution discipline / 실행 규율
 
 ```text
-M7-R3 state closure
-→ create M7-R4 Issue
+M7-R4 state-only closure
+→ create M7-R5 Issue
 → fresh branch from closure main
-→ ratify renderer-plan contract
-→ bounded mix.gain mapping implementation
-→ deterministic envelope/audio tests
-→ dedicated audible evidence workflow
+→ bounded Studio render-cache integration
+→ Preview/Discard/Accept/reopen tests
+→ dedicated evidence workflow
 → PR
 → exact-head full regressions
 → artifact inspection
-→ durable M7_R4 validation
+→ durable M7_R5 validation
 → successor rerun
 → expected-head merge
 → Issue completed

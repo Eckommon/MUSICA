@@ -1,0 +1,53 @@
+name: M7-R6 Truthful Audition Inspection Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  m7-r6-truthful-audition-inspection-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA + browser evidence dependencies / MUSICA + browser 근거 의존성 설치
+        run: python -m pip install -e '.[dev,e2e]'
+      - name: Install Chromium for Playwright / Playwright Chromium 설치
+        run: python -m playwright install --with-deps chromium
+      - name: Run bounded Studio automation regressions / 제한된 Studio 자동화 회귀 테스트
+        run: >-
+          pytest -q
+          tests/test_m4_studio.py
+          tests/test_m7_r0_automation_contracts.py
+          tests/test_m7_r1_automation_edit.py
+          tests/test_m7_r2_studio_automation.py
+          tests/test_m7_r2_preview_isolation.py
+          tests/test_m7_r3_automation_lowering.py
+          tests/test_m7_r4_automation_renderer.py
+          tests/test_m7_r5_studio_audition.py
+          tests/test_m7_r6_studio_audition_inspection.py
+      - name: Run M7-R6 real-browser audition lifecycle / M7-R6 실제 browser audition lifecycle 실행
+        env:
+          MUSICA_M7_R6_E2E_OUT: artifacts/m7-r6-real-browser-audition-e2e
+        run: pytest -q e2e/test_m7_r6_browser.py
+      - name: Generate deterministic M7-R6 evidence A / 결정적 M7-R6 근거 A 생성
+        run: python -m musica.m7_r6_demo --out artifacts/m7-r6-a
+      - name: Generate deterministic M7-R6 evidence B / 결정적 M7-R6 근거 B 생성
+        run: python -m musica.m7_r6_demo --out artifacts/m7-r6-b
+      - name: Prove byte-reproducible deterministic M7-R6 evidence / 결정적 M7-R6 근거 byte 재현성 증명
+        run: diff -qr artifacts/m7-r6-a artifacts/m7-r6-b
+      - name: Upload M7-R6 truthful audition inspection evidence / M7-R6 truthful audition inspection 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-m7-r6-truthful-audition-inspection-evidence
+          path: |
+            artifacts/m7-r6-a
+            artifacts/m7-r6-real-browser-audition-e2e
+          if-no-files-found: error

@@ -29,10 +29,14 @@ jobs:
           tests/test_m5_r4_audio_compare.py
           tests/test_m7_r6_studio_audition_inspection.py
           tests/test_post_m7_revision_compare.py
-      - name: Run real-Chromium accepted revision Compare / 실제 Chromium accepted revision Compare 실행
+          tests/test_post_m7_revision_compare_provenance.py
+      - name: Run real-Chromium Compare and browser-local human choice / 실제 Chromium Compare 및 Browser-local 사용자 선택 실행
         env:
           MUSICA_POST_M7_COMPARE_E2E_OUT: artifacts/post-m7-revision-compare-browser
-        run: pytest -q e2e/test_post_m7_revision_compare_browser.py
+        run: >-
+          pytest -q
+          e2e/test_post_m7_revision_compare_browser.py
+          e2e/test_post_m7_revision_compare_choice_browser.py
       - name: Generate deterministic Compare evidence A / 결정적 Compare 근거 A 생성
         run: python -m musica.post_m7_revision_compare_demo --out artifacts/post-m7-revision-compare-a
       - name: Generate deterministic Compare evidence B / 결정적 Compare 근거 B 생성

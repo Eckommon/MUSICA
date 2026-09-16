@@ -1,0 +1,39 @@
+name: ATCM-R0 Native Audio Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  atcm-r0-native-audio-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA / MUSICA 설치
+        run: python -m pip install -e '.[dev]'
+      - name: Run ATCM-R0 regressions / ATCM-R0 회귀 테스트
+        run: pytest -q tests/test_atcm_r0_audio_assets.py tests/test_m2_project.py tests/test_contracts.py
+      - name: Generate ATCM-R0 evidence A / ATCM-R0 근거 A 생성
+        env:
+          MUSICA_ATCM_R0_EVIDENCE_OUT: artifacts/atcm-r0-native-audio-evidence-a
+        run: python -m musica.atcm_r0_evidence
+      - name: Generate ATCM-R0 evidence B / ATCM-R0 근거 B 생성
+        env:
+          MUSICA_ATCM_R0_EVIDENCE_OUT: artifacts/atcm-r0-native-audio-evidence-b
+        run: python -m musica.atcm_r0_evidence
+      - name: Prove byte-reproducible ATCM-R0 evidence / ATCM-R0 근거 byte 재현성 증명
+        run: diff -qr artifacts/atcm-r0-native-audio-evidence-a artifacts/atcm-r0-native-audio-evidence-b
+      - name: Upload ATCM-R0 evidence / ATCM-R0 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-atcm-r0-native-audio-evidence
+          path: artifacts/atcm-r0-native-audio-evidence-a
+          if-no-files-found: error

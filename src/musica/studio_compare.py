@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import json
 from pathlib import Path
 from typing import Any
 
@@ -32,7 +33,40 @@ class StudioRevisionCompareSurface:
     def __init__(self, service: StudioService) -> None:
         self.service = service
 
-    def _media_item(self, path: Path, *, source: str, media_type: str) -> dict[str, Any]:
+    def _bound_artifact_provenance(
+        self,
+        project: Any,
+        revision_id: str,
+        path: Path,
+    ) -> tuple[str, str]:
+        manifest_path = project.root / "artifacts" / revision_id / "manifest.json"
+        if not manifest_path.is_file():
+            raise StudioServiceError("integrity_error", "bound artifact lacks immutable manifest")
+        manifest_bytes = manifest_path.read_bytes()
+        try:
+            manifest = json.loads(manifest_bytes.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise StudioServiceError("integrity_error", "bound artifact manifest is unreadable") from exc
+        validate_contract(manifest, "artifact-manifest-v0.schema.json")
+        if str(manifest["revision_id"]) != revision_id:
+            raise StudioServiceError("integrity_error", "bound artifact manifest revision identity differs")
+        record = next((item for item in manifest["artifacts"] if item["name"] == path.name), None)
+        if record is None:
+            raise StudioServiceError("integrity_error", "bound artifact file is absent from immutable manifest")
+        data = path.read_bytes()
+        if record["sha256"] != _sha256_bytes(data) or int(record["size_bytes"]) != len(data):
+            raise StudioServiceError("integrity_error", "bound artifact bytes differ from immutable manifest")
+        return path.name, _sha256_bytes(manifest_bytes)
+
+    def _media_item(
+        self,
+        path: Path,
+        *,
+        source: str,
+        media_type: str,
+        artifact_name: str | None,
+        artifact_manifest_sha256: str | None,
+    ) -> dict[str, Any]:
         if not path.is_file():
             raise StudioServiceError("integrity_error", "accepted revision media is unavailable")
         data = path.read_bytes()
@@ -42,6 +76,8 @@ class StudioRevisionCompareSurface:
             "sha256": _sha256_bytes(data),
             "size_bytes": len(data),
             "media_type": media_type,
+            "artifact_name": artifact_name,
+            "artifact_manifest_sha256": artifact_manifest_sha256,
         }
 
     def _revision_media(
@@ -68,16 +104,37 @@ class StudioRevisionCompareSurface:
         if wav_path is None or midi_path is None:
             raise StudioServiceError("integrity_error", "accepted revision media resolution failed")
 
+        wav_name: str | None = None
+        wav_manifest_sha: str | None = None
+        midi_name: str | None = None
+        midi_manifest_sha: str | None = None
+        if bound_wav is not None:
+            wav_name, wav_manifest_sha = self._bound_artifact_provenance(
+                session.project,
+                revision_id,
+                bound_wav,
+            )
+        if bound_midi is not None:
+            midi_name, midi_manifest_sha = self._bound_artifact_provenance(
+                session.project,
+                revision_id,
+                bound_midi,
+            )
+
         media = {
             "wav": self._media_item(
                 wav_path,
                 source="bound_artifact" if bound_wav is not None else "deterministic_fallback",
                 media_type="audio/wav",
+                artifact_name=wav_name,
+                artifact_manifest_sha256=wav_manifest_sha,
             ),
             "midi": self._media_item(
                 midi_path,
                 source="bound_artifact" if bound_midi is not None else "deterministic_fallback",
                 media_type="audio/midi",
+                artifact_name=midi_name,
+                artifact_manifest_sha256=midi_manifest_sha,
             ),
         }
         return media, {"audio": wav_path, "midi": midi_path}

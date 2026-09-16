@@ -104,6 +104,7 @@ def run_evidence(out_dir: str | Path) -> dict[str, Any]:
         first_pending = first_inspection["pending_audition"]
         if first_pending is None:
             raise RuntimeError("M7-R6 evidence expected pending audible Preview")
+        first_preview_head = project.head_revision_id()
         preview_wav = service.media_bytes("r6-evidence-session", "audio")
         preview_midi = service.media_bytes("r6-evidence-session", "midi")
         (root / "preview.wav").write_bytes(preview_wav)
@@ -159,7 +160,7 @@ def run_evidence(out_dir: str | Path) -> dict[str, Any]:
         "initial_media_truthfully_fallback": accepted_initial["accepted_media"]["wav"]["source"] == "fallback_render" and accepted_initial["accepted_media"]["midi"]["source"] == "fallback_render",
         "preview_noncanonical": first_pending["canonical"] is False,
         "preview_reverse_promotion_disabled": first_pending["reverse_promotion_authorized"] is False,
-        "preview_project_ref_unchanged": first_pending["project_ref_unchanged"] is True and project.head_revision_id() == accepted_revision,
+        "preview_project_ref_unchanged": first_pending["project_ref_unchanged"] is True and first_preview_head == root_revision,
         "preview_hashes_match_exact_media": first_pending["preview_wav_sha256"] == _sha(preview_wav) and first_pending["preview_midi_sha256"] == _sha(preview_midi),
         "pending_keeps_accepted_media_identity": first_inspection["accepted_media"] == accepted_initial["accepted_media"],
         "discard_removes_pending_audition": discarded["pending_audition"] is None,

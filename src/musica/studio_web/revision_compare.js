@@ -10,6 +10,7 @@
     sessionId: null,
     history: [],
     view: null,
+    userChoice: null,
     refreshSerial: 0,
     compareSerial: 0,
     refreshInFlight: false,
@@ -69,17 +70,27 @@
             <div id="revisionCompareMetaB" class="mono muted small">—</div>
           </section>
         </div>
+        <div class="revision-compare-decision" aria-label="Local-only user revision choice">
+          <div><strong>Your decision / 사용자 선택</strong><div class="muted small">This choice is Browser-local only. It does not Accept, checkout, move HEAD, or become MUSICA's creative verdict.</div></div>
+          <div class="revision-compare-decision-actions">
+            <button id="revisionCompareChooseA" class="secondary" type="button" aria-pressed="false">Choose A · local only</button>
+            <button id="revisionCompareChooseB" class="secondary" type="button" aria-pressed="false">Choose B · local only</button>
+          </div>
+          <span id="revisionCompareChoice" class="status-pill neutral">NO USER CHOICE</span>
+        </div>
         <div class="revision-compare-diff-heading">
           <strong>Structured Blueprint diff · A_TO_B</strong>
           <span id="revisionCompareDiffCount" class="status-pill neutral">0 changes</span>
         </div>
         <ol id="revisionCompareDiff" class="revision-compare-diff"></ol>
-        <p class="muted small revision-compare-authority">Comparison, audition, and media retrieval are non-canonical. HEAD remains unchanged. Selection here never performs Accept or checkout.</p>
+        <p class="muted small revision-compare-authority">Comparison, audition, media retrieval, and the local user choice are non-canonical. HEAD remains unchanged. Nothing here performs Accept or checkout.</p>
       </div>`;
     if (anchor) anchor.insertAdjacentElement("afterend", card);
     else panel.appendChild(card);
 
     el("revisionCompareRun").addEventListener("click", () => runCompare(false));
+    el("revisionCompareChooseA").addEventListener("click", () => setUserChoice("A"));
+    el("revisionCompareChooseB").addEventListener("click", () => setUserChoice("B"));
   }
 
   function status(message, kind = "info") {
@@ -156,6 +167,11 @@
     });
   }
 
+  function artifactLabel(media) {
+    if (media.source !== "bound_artifact") return "derived fallback · no artifact manifest";
+    return `${media.artifact_name} · manifest ${shortHash(media.artifact_manifest_sha256)}`;
+  }
+
   function setSide(sideKey, side) {
     const suffix = sideKey.toUpperCase();
     const revisionId = String(side.revision_id);
@@ -168,7 +184,33 @@
     midi.download = `${revisionId}.mid`;
     const wav = side.media.wav;
     const midiMeta = side.media.midi;
-    el(`revisionCompareMeta${suffix}`).textContent = `Blueprint ${shortHash(side.blueprint_sha256)} · record ${shortHash(side.revision_record_sha256)} · WAV ${wav.source}:${shortHash(wav.sha256)} · MIDI ${midiMeta.source}:${shortHash(midiMeta.sha256)}`;
+    el(`revisionCompareMeta${suffix}`).textContent = `Blueprint ${shortHash(side.blueprint_sha256)} · record ${shortHash(side.revision_record_sha256)} · WAV ${wav.source}:${shortHash(wav.sha256)} [${artifactLabel(wav)}] · MIDI ${midiMeta.source}:${shortHash(midiMeta.sha256)} [${artifactLabel(midiMeta)}]`;
+  }
+
+  function renderChoice() {
+    const choice = compareState.userChoice;
+    const target = el("revisionCompareChoice");
+    const buttonA = el("revisionCompareChooseA");
+    const buttonB = el("revisionCompareChooseB");
+    if (!target || !buttonA || !buttonB) return;
+    buttonA.setAttribute("aria-pressed", String(choice === "A"));
+    buttonB.setAttribute("aria-pressed", String(choice === "B"));
+    if (!choice || !compareState.view) {
+      target.textContent = "NO USER CHOICE";
+      target.className = "status-pill neutral";
+      return;
+    }
+    const revision = choice === "A" ? compareState.view.revision_a.revision_id : compareState.view.revision_b.revision_id;
+    target.textContent = `USER CHOICE · ${choice} · LOCAL ONLY · ${revision}`;
+    target.className = "status-pill preview";
+  }
+
+  function setUserChoice(choice) {
+    if (!compareState.view || !["A", "B"].includes(choice)) return;
+    compareState.userChoice = choice;
+    renderChoice();
+    const revision = choice === "A" ? compareState.view.revision_a.revision_id : compareState.view.revision_b.revision_id;
+    status(`User chose ${choice} (${revision}) locally. Canonical HEAD was not changed.`, "success");
   }
 
   function renderCompare() {
@@ -176,11 +218,15 @@
     const root = el("revisionCompareResult");
     if (!root) return;
     root.hidden = !view;
-    if (!view) return;
+    if (!view) {
+      renderChoice();
+      return;
+    }
 
     setSide("a", view.revision_a);
     setSide("b", view.revision_b);
     renderDiff(view.diff || []);
+    renderChoice();
     el("revisionCompareDiffCount").textContent = `${(view.diff || []).length} change${(view.diff || []).length === 1 ? "" : "s"}`;
     el("revisionCompareHead").textContent = `${view.current_branch} · HEAD ${view.current_head_revision_id} · head_unchanged=${String(view.head_unchanged)}`;
     const badge = el("revisionCompareBadge");
@@ -195,6 +241,7 @@
       compareState.sessionId = null;
       compareState.history = [];
       compareState.view = null;
+      compareState.userChoice = null;
       renderHistory();
       renderCompare();
       return;
@@ -211,13 +258,17 @@
       const changedSession = compareState.sessionId !== sessionId;
       compareState.sessionId = sessionId;
       compareState.history = Array.isArray(data.revisions) ? data.revisions : [];
-      if (changedSession) compareState.view = null;
+      if (changedSession) {
+        compareState.view = null;
+        compareState.userChoice = null;
+      }
       renderHistory();
       renderCompare();
     } catch (error) {
       if (serial === compareState.refreshSerial) {
         compareState.history = [];
         compareState.view = null;
+        compareState.userChoice = null;
         renderHistory();
         renderCompare();
       }
@@ -243,11 +294,13 @@
       const view = await fetchJson(path);
       if (serial !== compareState.compareSerial || hostState.sessionId !== sessionId) return;
       compareState.view = view;
+      compareState.userChoice = null;
       renderCompare();
       status(`Compared ${view.revision_a.revision_id} → ${view.revision_b.revision_id} without moving HEAD.`, "success");
     } catch (error) {
       if (serial === compareState.compareSerial) {
         compareState.view = null;
+        compareState.userChoice = null;
         renderCompare();
         status(error.message || String(error), "error");
       }
@@ -287,6 +340,7 @@
     return result;
   };
   host.refreshRevisionCompare = refreshHistory;
+  host.revisionCompareState = compareState;
 
   inject();
   queueRefresh();

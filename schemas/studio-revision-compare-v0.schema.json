@@ -55,10 +55,24 @@
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
     },
+    "nullableSha256": {
+      "oneOf": [
+        {"$ref": "#/$defs/sha256"},
+        {"type": "null"}
+      ]
+    },
     "mediaItem": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["available", "source", "sha256", "size_bytes", "media_type"],
+      "required": [
+        "available",
+        "source",
+        "sha256",
+        "size_bytes",
+        "media_type",
+        "artifact_name",
+        "artifact_manifest_sha256"
+      ],
       "properties": {
         "available": {"const": true},
         "source": {
@@ -70,7 +84,14 @@
         "media_type": {
           "type": "string",
           "enum": ["audio/wav", "audio/midi"]
-        }
+        },
+        "artifact_name": {
+          "oneOf": [
+            {"type": "string", "minLength": 1},
+            {"type": "null"}
+          ]
+        },
+        "artifact_manifest_sha256": {"$ref": "#/$defs/nullableSha256"}
       }
     },
     "revisionSide": {

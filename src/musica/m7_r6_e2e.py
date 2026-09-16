@@ -66,6 +66,17 @@ def _session(page) -> dict[str, Any]:
     return value
 
 
+def _automation_view(page) -> dict[str, Any]:
+    value = page.evaluate(
+        """() => window.MUSICA_AUTOMATION && window.MUSICA_AUTOMATION.state
+          ? JSON.parse(JSON.stringify(window.MUSICA_AUTOMATION.state.view))
+          : null"""
+    )
+    if not isinstance(value, dict):
+        raise RuntimeError("M7-R6 historical Browser automation view is unavailable")
+    return value
+
+
 def _audition(page) -> dict[str, Any]:
     value = page.evaluate(
         """() => window.MUSICA_AUTOMATION && window.MUSICA_AUTOMATION.state
@@ -113,11 +124,11 @@ def _open_project(page, base: str, expect, slug: str) -> dict[str, Any]:
 
 
 def _select_mix_gain(page, expect) -> None:
-    point = page.locator(
-        '#m7AutomationLanes button.m7-point[data-lane-id="A-MIX-GAIN"][data-point-id="P-GAIN-001"]'
+    row = page.locator(
+        '#m7AutomationLanes tr[data-lane-id="A-MIX-GAIN"][data-point-id="P-GAIN-001"]'
     ).first
-    expect(point).to_be_visible()
-    point.click()
+    expect(row).to_be_visible()
+    row.press("Enter")
     expect(page.locator("#m7SelectedPoint")).to_contain_text("P-GAIN-001")
     expect(page.locator("#m7SelectedPoint")).to_contain_text("A-MIX-GAIN")
 
@@ -184,7 +195,10 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
             opened = _open_project(page, base1, expect, "audition")
             session_id = str(opened["session_id"])
             accepted_root = str(opened["head_revision_id"])
+            historical_r2 = _automation_view(page)
             accepted_initial = _audition(page)
+            if historical_r2["capabilities"]["audible_automation_validated"] is not False:
+                raise RuntimeError("R6 Browser reinterpreted the historical R2 audible capability")
             if accepted_initial["accepted_revision_id"] != accepted_root:
                 raise RuntimeError("R6 accepted inspection is not bound to the opened head")
             if accepted_initial["accepted_mapping"]["mapped_lane_ids"] != ["A-MIX-GAIN"]:
@@ -294,7 +308,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
     proof = {
         "proof_version": "0",
         "real_chromium_used": True,
-        "historical_r2_view_preserved": True,
+        "historical_r2_view_preserved": historical_r2["capabilities"]["audible_automation_validated"] is False,
         "accepted_mapping_mix_gain_only": accepted_initial["accepted_mapping"]["mapped_lane_ids"] == ["A-MIX-GAIN"],
         "unsupported_cutoff_truthfully_unmapped": accepted_initial["accepted_mapping"]["unmapped_lane_ids"] == ["B-SYNTH-CUTOFF"],
         "initial_accepted_media_fallback_truthful": accepted_initial["accepted_media"]["wav"]["source"] == "fallback_render" and accepted_initial["accepted_media"]["midi"]["source"] == "fallback_render",
@@ -346,6 +360,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
             f"page={page_errors}, requests={request_failures}"
         )
 
+    write_canonical_json(root / "historical-r2-view.json", historical_r2)
     write_canonical_json(root / "accepted-initial.json", accepted_initial)
     write_canonical_json(root / "first-preview.json", first_preview)
     write_canonical_json(root / "discarded.json", discarded)

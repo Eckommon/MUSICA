@@ -2,191 +2,145 @@
 
 ## Exact resume point / 정확한 재개점
 
-**ISSUE #89 — ACCEPTED REVISION A/B COMPARE & DECISION SURFACE v0**
+**POST-COMPARE SUCCESSOR REVIEW — SELECT EXACTLY ONE BOUNDED NEXT MISSION**
 
-The post-M7 closure review has selected exactly one bounded successor capability. Do not infer `M7-R7` or `M8`; the selected mission is identified by its descriptive product capability and Issue `#89` until repository governance explicitly decides otherwise.
+The explicit accepted-revision Compare gap is closed. Issue `#89` is completed and PR `#91` is merged. The repository now validates the canonical thesis loop within a bounded local workstation path.
 
-M7-R6 remains `VALIDATED — BOUNDED TRUTHFUL AUDITION INSPECTION`. Issue `#89` is **RATIFIED FOR IMPLEMENTATION, NOT YET VALIDATED**.
+Do **not** infer `M7-R7`, `M8`, or automatically continue one deferred candidate. The next implementation begins only after a new evidence-based successor selection is ratified in the repository.
 
 ## Canonical starting point / 공식 시작점
 
-- predecessor canonical main: `2bfc8ffbe707c06f016d820cc47d901ed862be92`
-- M7-R6 Issue `#86` — **COMPLETED**
-- M7-R6 implementation PR `#87` — **MERGED**
-- M7-R6 state closure PR `#88` — **MERGED**
-- selected successor Issue `#89` — **OPEN**
-- selection record: `docs/POST_M7_NEXT_MILESTONE_SELECTION.md`
+- Compare Issue `#89` — **COMPLETED**
+- Compare PR `#91` — **MERGED**
+- Compare implementation/validation main: `7314deb5aba93073f1f7750dc68f9f4d31cd3c06`
+- Compare durable evidence: `evidence/POST_M7_REVISION_COMPARE_VALIDATION.md`
+- pre-durable Compare gates: **15/15 SUCCESS**
+- durable-record Compare gates: **15/15 SUCCESS**
+- previous selection record: `docs/POST_M7_NEXT_MILESTONE_SELECTION.md` — **COMPLETED**
 
-## Why this mission / 선정 이유
+## Why a review is required now / 왜 재선정이 필요한가
 
-The canonical product thesis defines:
+The canonical thesis loop is:
 
 ```text
 Describe → Generate Blueprint → Audition → Lock → Refine → Compare → Accept
 ```
 
-M4-R3 already validates natural-language create → audition → semantic Preview → explicit Accept → branch/history/export → restart/reopen in real Chromium. A generic natural-language end-to-end milestone would duplicate validated work.
+Every stage now has bounded repository evidence. The remaining gaps are no longer one obvious missing stage. They are different expansion/hardening directions with different user leverage, authority risk, dependencies and evidence cost.
 
-M2 already validates arbitrary accepted revision reads, immutable revision records, deterministic Blueprint diffs and revision-bound artifacts. Studio already supports artifact-first / deterministic-render-fallback media for the accepted HEAD. The remaining user-level gap is therefore a truthful **accepted-revision Compare** surface.
+Therefore the correct next action is to compare serious candidates before coding.
 
-Live OpenAI execution remains a valid later `LIVE_PROVIDER_EVIDENCE` mission, but it is not selected now: M3-R2 already implements the live-ready provider boundary, while the live smoke is externally dependent and does not close the explicit Compare stage.
+## Exact review order / 정확한 검토 순서
 
-## Ratified mission / 비준 미션
+Proceed in this order:
 
-Given two immutable accepted revisions in the same MUSICA project:
+1. **Re-ground canonical evidence**
+   - read `docs/PRODUCT_THESIS.md`, `README.md`, `memory/CURRENT_STATE.md`;
+   - inspect latest durable validation records, especially Compare, M7-R6 and M3-R2;
+   - verify canonical `main`, open Issues/PRs and permanent workflows;
+   - distinguish validated capability from stated non-claims.
 
-```text
-accepted revision A + accepted revision B
-→ validated revision records + Blueprint SHA identities
-→ deterministic structured_diff(A, B)
-→ exact per-revision media provenance
-   ├─ bound artifact when present
-   └─ explicit deterministic fallback render otherwise
-→ read-only Browser A/B comparison
-→ independent A/B audition
-→ user-controlled decision/navigation only
-```
+2. **Build the remaining-gap register**
+   - list unresolved product/user gaps;
+   - classify each as core capability, external integration, evidence-only, production hardening or evaluation;
+   - state exact authority expansion each candidate would introduce;
+   - reject duplicate work already covered by evidence.
 
-Comparison itself must not mutate accepted authority.
+3. **Evaluate serious candidates**
+   Compare at minimum:
 
-## Exact implementation order / 정확한 구현 순서
+   ### A. `LIVE_PROVIDER_EVIDENCE`
+   - prove actual authorized OpenAI execution through the already validated M3-R2 boundary;
+   - primarily evidence/deployment value rather than a new canonical music capability;
+   - external credential/network/model dependency.
 
-Proceed in this order unless repository evidence forces a narrower correction:
+   ### B. Automation renderer/mapping expansion
+   - move beyond the single validated `mix.gain / project / normalized` family;
+   - high programmable-music leverage;
+   - increases renderer/backend semantic authority surface and must remain explicit/fail-closed.
 
-1. **Contract first**
-   - add `studio-revision-compare-v0` schema;
-   - encode A/B identities, `A_TO_B` direction, revision/Blueprint hashes, structured diff, media provenance and current HEAD identity;
-   - prohibit winner/score/preference semantics by schema and tests.
+   ### C. Automation-aware DAW/interchange reconciliation
+   - extend bounded DAWproject/exact-note interchange toward automation round-trip truth;
+   - useful for professional workflow interoperability;
+   - introduces external-state reconciliation complexity.
 
-2. **Trusted read-only comparison projection**
-   - add a dedicated comparison surface/module;
-   - resolve exactly two existing accepted revision IDs;
-   - call existing M2 revision readers and `structured_diff()`;
-   - verify project integrity before exposing comparison data;
-   - support A == B as a zero-diff identity case.
+   ### D. Richer automation authoring
+   - lane creation/deletion, parameter reassignment, tempo maps, additional curve families;
+   - improves programmability and editing depth;
+   - must not outrun renderer semantics.
 
-3. **Arbitrary accepted-revision media**
-   - generalize the current accepted-media helper narrowly from HEAD-only to an explicit accepted `revision_id`;
-   - prefer exact bound artifacts;
-   - otherwise render deterministically from the exact accepted Blueprint;
-   - label provenance as `bound_artifact` or `deterministic_fallback`;
-   - return SHA-256 of the exact served bytes;
-   - never persist fallback media as canonical bound artifact.
+   ### E. Plug-in/device or real-time control integration
+   - VST/AU/CLAP/device mapping and/or MIDI/OSC;
+   - major workstation leverage but much larger external/runtime authority and test surface.
 
-4. **Read-only HTTP routes**
-   - add bounded same-origin compare projection route;
-   - add arbitrary accepted-revision WAV/MIDI retrieval route;
-   - reject unknown/unaccepted/corrupt revision state fail-closed;
-   - preserve loopback/workspace confinement.
+   ### F. Production/distribution/collaboration hardening
+   - packaging, installer/signing, cloud/multi-user workflow, operational hardening;
+   - productization value but may not deepen the canonical music model.
 
-5. **Browser Compare surface**
-   - expose accepted revision history as A/B selectors;
-   - visible Compare action;
-   - independent A/B audio controls;
-   - visible revision IDs, Blueprint/provenance hashes and structured diff;
-   - no automatic winner, score, Accept or branch movement.
+   ### G. Human usability/perceptual evaluation
+   - needed before making user-preference, workflow-efficiency or perceptual-superiority claims;
+   - evaluation mission, not a substitute for missing implementation.
 
-6. **Deterministic tests**
-   - valid A/B and reversed direction;
-   - A == B zero-diff case;
-   - bound/bound, fallback/fallback and mixed media cases;
-   - unknown/tampered revision failures;
-   - compare/media access leaves HEAD and accepted state unchanged;
-   - contract contains no creative ranking semantics;
-   - M5-R4 comparison semantics unchanged.
-
-7. **Real-browser evidence**
-   - actual Chromium A/B selection and audition;
-   - exact requested revision IDs in media requests;
-   - structured diff visible;
-   - pre/post HEAD identical;
-   - refresh/reopen preserves canonical state;
-   - console/page/request failure accounting.
-
-8. **Permanent CI / evidence package**
-   - dedicated evidence workflow;
-   - all existing permanent M0→M7-R6 regressions remain green;
-   - deterministic evidence manifest and exact hashes;
-   - durable validation record only after exact-head success.
-
-9. **Promotion**
-   - expected-head implementation merge;
-   - close Issue `#89` only after implementation/evidence merge;
-   - separate state-only closure updates README/current state/next action.
-
-## Authority invariant / 권한 불변식
-
-Allowed:
+4. **Score only mission properties, not creative outputs**
+   Use an explicit decision matrix such as:
 
 ```text
-accepted revisions
-→ read-only compare projection
-→ Browser inspection / audition
-→ explicit user navigation through existing project authority
+user leverage
+thesis alignment
+prerequisite readiness
+authority risk
+external dependency
+implementation size
+evidence determinism
+regression surface
+sequencing value
 ```
 
-Forbidden:
+The score/ranking restriction for musical revisions does not prohibit governance comparison of engineering missions.
 
-```text
-comparison result → canonical mutation
-Browser selection → implicit Accept
-A/B audio → inferred Blueprint
-metric → creative winner
-M5-R4 same-IR renderer comparator → cross-revision preference score
-```
+5. **Select exactly one successor**
+   - write a durable selection record;
+   - create one implementation Issue;
+   - define maximum intended claim, non-goals, authority invariant, exact test matrix and promotion criteria;
+   - only then begin implementation.
 
-## Media truth rule / 미디어 진실성 규칙
+## Current bounded baseline / 현재 기준선
 
-For each side and media kind:
+The next mission must preserve all of these unless it explicitly and safely extends them:
 
-```text
-bound artifact exists
-    → serve exact bound bytes + exact SHA-256 + bound_artifact provenance
-else
-    → deterministic render from exact accepted Blueprint
-       + exact served SHA-256 + deterministic_fallback provenance
-```
+- Accepted Music Blueprint/project revision is canonical creative authority.
+- Preview is non-canonical until explicit Accept.
+- Browser/audio/render/comparison state has no reverse-promotion authority.
+- Unknown mappings or corrupt provenance fail closed.
+- M5-R4 same-Music-IR renderer comparison is not a cross-revision creative ranking system.
+- Browser-local Compare choice cannot implicitly Accept or move HEAD.
+- Existing M0→M7-R6 + Compare permanent workflows remain green.
 
-A fallback render is derived and disposable. It must not rewrite the immutable artifact record.
+## Current non-claims / 현재 비주장
 
-## Required evidence / 필수 근거
+Do not silently convert any of these into claims during the review:
 
-Promotion requires all of:
-
-- machine-valid comparison contract;
-- deterministic A/B structured diff proof;
-- exact revision-record/Blueprint hash provenance;
-- exact bound/fallback WAV/MIDI SHA proof;
-- no-HEAD-mutation proof before/after compare and audition;
-- real-Chromium A/B workflow evidence;
-- full permanent regression set success on exact evidence-bearing head;
-- durable evidence document;
-- expected-head merge.
-
-## Explicit non-goals / 명시적 비목표
-
-Do not expand Issue `#89` into:
-
-- creative winner/ranking/preference scoring;
-- human-subject perceptual superiority claims;
-- M5-R4 cross-revision audio scoring;
-- revision merge/rebase/cherry-pick semantics;
-- implicit branch-head movement;
-- additional automation renderer mappings;
-- live OpenAI provider execution;
+- MUSICA-selected creative winner/preference;
+- second/generalized automation renderer mapping;
+- arbitrary parameter → renderer/MIDI/plugin mapping;
+- plug-in/device hosting;
 - DAW automation reconciliation;
+- arbitrary tempo maps/lane lifecycle/advanced curves;
 - real-time MIDI/OSC;
-- destructive waveform editing;
-- cloud/multi-user comparison.
+- live OpenAI execution;
+- human preference/perceptual superiority;
+- destructive audio editing;
+- cloud collaboration/multi-user authority;
+- signed installer/distribution or production SLA guarantees.
 
-## Deferred mission / 보류 미션
+## Deferred mission note / 보류 미션 메모
 
-`LIVE_PROVIDER_EVIDENCE` remains deferred and separate. A future authorized live smoke must be recorded independently and must not reinterpret M3-R2's offline adapter evidence.
+`LIVE_PROVIDER_EVIDENCE` remains valid and should be compared seriously, but it is **not automatically next**. Its value is to prove real provider execution through a boundary that is already structurally validated; it should not be confused with a new canonical music capability.
 
-## Maximum intended outcome / 최대 의도 결과
+## Maximum intended outcome of this next step / 다음 단계의 최대 결과
 
-> **MUSICA can truthfully compare two immutable accepted creative revisions by showing their exact structured Blueprint differences and revision-bound/fallback audition media side by side, while leaving creative preference and any canonical navigation/acceptance decision to the user.**
+> **Produce one repository-grounded successor decision that maximizes product/user leverage while preserving MUSICA's canonical authority model and evidence discipline, then hand off a single bounded implementation mission.**
 
-This remains a **target claim until Issue #89 is implemented, independently evidenced, merged and state-closed**.
+Until that selection is ratified, the correct project status is **SUCCESSOR REVIEW**, not active implementation.
 
 **Repository evidence remains authoritative over conversation/model memory.**

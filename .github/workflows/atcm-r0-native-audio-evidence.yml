@@ -20,7 +20,12 @@ jobs:
       - name: Install MUSICA / MUSICA 설치
         run: python -m pip install -e '.[dev]'
       - name: Run ATCM-R0 regressions / ATCM-R0 회귀 테스트
-        run: pytest -q tests/test_atcm_r0_audio_assets.py tests/test_m2_project.py tests/test_contracts.py
+        run: >-
+          pytest -q
+          tests/test_atcm_r0_audio_assets.py
+          tests/test_atcm_r0_project_integrity.py
+          tests/test_m2_project.py
+          tests/test_contracts.py
       - name: Generate ATCM-R0 evidence A / ATCM-R0 근거 A 생성
         env:
           MUSICA_ATCM_R0_EVIDENCE_OUT: artifacts/atcm-r0-native-audio-evidence-a

@@ -1,0 +1,53 @@
+name: Post-M7 Accepted Revision Compare Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  post-m7-accepted-revision-compare-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA + browser evidence dependencies / MUSICA + browser 근거 의존성 설치
+        run: python -m pip install -e '.[dev,e2e]'
+      - name: Install Chromium for Playwright / Playwright Chromium 설치
+        run: python -m playwright install --with-deps chromium
+      - name: Run accepted revision Compare regressions / accepted revision Compare 회귀 테스트
+        run: >-
+          pytest -q
+          tests/test_m2_project.py
+          tests/test_m4_studio.py
+          tests/test_m5_r4_audio_compare.py
+          tests/test_m7_r6_studio_audition_inspection.py
+          tests/test_post_m7_revision_compare.py
+          tests/test_post_m7_revision_compare_provenance.py
+      - name: Run real-Chromium Compare and browser-local human choice / 실제 Chromium Compare 및 Browser-local 사용자 선택 실행
+        env:
+          MUSICA_POST_M7_COMPARE_E2E_OUT: artifacts/post-m7-revision-compare-browser
+        run: >-
+          pytest -q
+          e2e/test_post_m7_revision_compare_browser.py
+          e2e/test_post_m7_revision_compare_choice_browser.py
+      - name: Generate deterministic Compare evidence A / 결정적 Compare 근거 A 생성
+        run: python -m musica.post_m7_revision_compare_demo --out artifacts/post-m7-revision-compare-a
+      - name: Generate deterministic Compare evidence B / 결정적 Compare 근거 B 생성
+        run: python -m musica.post_m7_revision_compare_demo --out artifacts/post-m7-revision-compare-b
+      - name: Prove byte-reproducible deterministic Compare evidence / 결정적 Compare 근거 byte 재현성 증명
+        run: diff -qr artifacts/post-m7-revision-compare-a artifacts/post-m7-revision-compare-b
+      - name: Upload accepted revision Compare evidence / accepted revision Compare 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-post-m7-accepted-revision-compare-evidence
+          path: |
+            artifacts/post-m7-revision-compare-a
+            artifacts/post-m7-revision-compare-browser
+          if-no-files-found: error

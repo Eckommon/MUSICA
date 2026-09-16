@@ -3,6 +3,7 @@
 The bridge serves only the validated Studio application JSON/media surface plus packaged
 same-origin HTML/CSS/JavaScript assets. M6 adds bounded exact-note editing; M7-R2 adds a
 bounded automation projection/Preview surface while preserving loopback-only authority.
+Issue #89 adds a read-only accepted-revision A/B comparison projection.
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ from urllib.parse import urlsplit
 from .studio import StudioApplication, StudioService, StudioServiceError
 from .studio_automation import StudioAutomationSurface
 from .studio_automation_audition import StudioAutomationAuditionSurface
+from .studio_compare import StudioRevisionCompareSurface
 from .studio_notes import StudioNoteSurface
 
 MAX_JSON_BODY_BYTES = 1_048_576
@@ -76,6 +78,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + b"\n"
             + _static_bytes("automation_audition.js")
             + b"\n"
+            + _static_bytes("revision_compare.js")
+            + b"\n"
             + _static_bytes("app.js")
         )
     if name == "app.css":
@@ -88,6 +92,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + b"\n"
             + _static_bytes("automation_audition.css")
             + b"\n"
+            + _static_bytes("revision_compare.css")
+            + b"\n"
             + _static_bytes("app.css")
         )
     return _static_bytes(name)
@@ -97,9 +103,10 @@ def make_handler(application: StudioApplication):
     note_surface = StudioNoteSurface(application.service)
     automation_surface = StudioAutomationSurface(application.service)
     audition_surface = StudioAutomationAuditionSurface(application.service)
+    compare_surface = StudioRevisionCompareSurface(application.service)
 
     class StudioRequestHandler(BaseHTTPRequestHandler):
-        server_version = "MUSICAStudio/0.5"
+        server_version = "MUSICAStudio/0.6"
         protocol_version = "HTTP/1.1"
 
         def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
@@ -184,6 +191,7 @@ def make_handler(application: StudioApplication):
                             "exact_note_surface": True,
                             "automation_surface": True,
                             "audible_automation_validated": False,
+                            "accepted_revision_compare": True,
                         },
                     )
                     return
@@ -200,6 +208,38 @@ def make_handler(application: StudioApplication):
                     data = application.service.media_bytes(parts[2], kind)
                     content_type = "audio/wav" if kind == "audio" else "audio/midi"
                     self._send_bytes(HTTPStatus.OK, content_type, data)
+                    return
+
+                if (
+                    method == "GET"
+                    and len(parts) == 7
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3] == "revisions"
+                    and parts[5] == "media"
+                    and parts[6] in {"audio.wav", "preview.mid"}
+                ):
+                    kind = "audio" if parts[6] == "audio.wav" else "midi"
+                    data = compare_surface.media_bytes(
+                        parts[2],
+                        revision_id=parts[4],
+                        kind=kind,
+                    )
+                    content_type = "audio/wav" if kind == "audio" else "audio/midi"
+                    self._send_bytes(HTTPStatus.OK, content_type, data)
+                    return
+
+                if (
+                    method == "GET"
+                    and len(parts) == 6
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3] == "compare"
+                ):
+                    data = compare_surface.compare_view(
+                        parts[2],
+                        revision_a=parts[4],
+                        revision_b=parts[5],
+                    )
+                    self._send_json(HTTPStatus.OK, application._response("revision_compare", data))
                     return
 
                 if (

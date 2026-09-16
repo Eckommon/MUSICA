@@ -102,11 +102,23 @@ def validate_audio_material(
     _require_unique(global_clip_ids, "audio clip_id across material")
 
 
-def validate_blueprint_audio(blueprint: dict[str, Any]) -> None:
-    """Explicitly validate the optional R0 audio extension of a Blueprint."""
+def validate_blueprint_audio(
+    blueprint: dict[str, Any], *, allow_nonempty: bool = False
+) -> None:
+    """Validate the optional R0 audio extension without silently granting authority.
+
+    The standalone material contract may describe future track/clip state, but R0 does
+    not yet grant acceptance authority to a non-empty native audio material. The
+    canonical Blueprint validation path therefore fails closed until the source-bound
+    Preview/Accept rung explicitly opens that boundary.
+    """
 
     value = audio_material_from_blueprint(blueprint, materialize_empty=False)
     if value is None:
         return
     duration = float(blueprint["project"]["duration_seconds"])
     validate_audio_material(value, project_duration_seconds=duration)
+    if value["tracks"] and not allow_nonempty:
+        raise ContractError(
+            "ATCM-R0 does not grant accepted non-empty native audio material authority"
+        )

@@ -95,13 +95,32 @@ def _screenshot(page, path: Path) -> Path:
     return path
 
 
-def _attach_observers(page, console_errors: list[str], page_errors: list[str], request_failures: list[str]) -> None:
+def _attach_observers(
+    page,
+    console_errors: list[str],
+    page_errors: list[str],
+    request_failures: list[str],
+    expected_media_aborts: list[str],
+) -> None:
     page.on("console", lambda message: console_errors.append(message.text) if message.type == "error" else None)
     page.on("pageerror", lambda error: page_errors.append(str(error)))
-    page.on(
-        "requestfailed",
-        lambda request: request_failures.append(f"{request.method} {request.url}: {request.failure}"),
-    )
+
+    def on_request_failed(request) -> None:
+        failure = str(request.failure or "")
+        record = f"{request.method} {request.url}: {failure}"
+        if (
+            request.method == "GET"
+            and "/media/audio.wav?v=" in request.url
+            and "ERR_ABORTED" in failure
+        ):
+            # The Studio intentionally changes the cache-busted <audio> source when the
+            # Preview/accepted lifecycle changes. Chromium cancels the superseded media
+            # request; classify only that exact same-origin audio cancellation as expected.
+            expected_media_aborts.append(record)
+            return
+        request_failures.append(record)
+
+    page.on("requestfailed", on_request_failed)
 
 
 def _open_project(page, base: str, expect, slug: str) -> dict[str, Any]:
@@ -180,6 +199,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
     console_errors: list[str] = []
     page_errors: list[str] = []
     request_failures: list[str] = []
+    expected_media_aborts: list[str] = []
     screenshots: list[Path] = []
 
     service1, server1, thread1, base1 = _start_server(workspace)
@@ -191,7 +211,13 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
         context.set_default_timeout(30_000)
         try:
             page = context.new_page()
-            _attach_observers(page, console_errors, page_errors, request_failures)
+            _attach_observers(
+                page,
+                console_errors,
+                page_errors,
+                request_failures,
+                expected_media_aborts,
+            )
             opened = _open_project(page, base1, expect, "audition")
             session_id = str(opened["session_id"])
             accepted_root = str(opened["head_revision_id"])
@@ -283,7 +309,13 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
             service2, server2, thread2, base2 = _start_server(workspace)
             try:
                 reopen_page = context.new_page()
-                _attach_observers(reopen_page, console_errors, page_errors, request_failures)
+                _attach_observers(
+                    reopen_page,
+                    console_errors,
+                    page_errors,
+                    request_failures,
+                    expected_media_aborts,
+                )
                 reopened_session = _open_project(reopen_page, base2, expect, "audition")
                 reopened = _audition(reopen_page)
                 if str(reopened_session["head_revision_id"]) != candidate_revision:
@@ -330,6 +362,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
         "browser_console_error_count": len(console_errors),
         "browser_page_error_count": len(page_errors),
         "browser_request_failure_count": len(request_failures),
+        "expected_media_abort_count": len(expected_media_aborts),
     }
 
     required_true = [
@@ -371,6 +404,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
     write_canonical_json(root / "browser-console-errors.json", console_errors)
     write_canonical_json(root / "browser-page-errors.json", page_errors)
     write_canonical_json(root / "browser-request-failures.json", request_failures)
+    write_canonical_json(root / "expected-media-aborts.json", expected_media_aborts)
 
     evidence_files = sorted(path for path in root.iterdir() if path.is_file())
     manifest = {

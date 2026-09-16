@@ -2,11 +2,11 @@
 
 ## Project phase / 프로젝트 단계
 
-**POST-M7 NEXT-MILESTONE SELECTION — ACCEPTED REVISION A/B COMPARE & DECISION SURFACE v0 RATIFIED FOR IMPLEMENTATION**
+**POST-COMPARE CORE PRODUCT LOOP — BOUNDEDLY VALIDATED; SUCCESSOR REVIEW REQUIRED**
 
-M0→M7-R6 remain validated only within their durable repository claims. Accepted Music Blueprint remains canonical creative authority. Browser, Music IR, automation execution, renderer/plugin, audio artifact, comparison projection and external DAW state remain derived or non-authoritative.
+M0→M7-R6 and the post-M7 Accepted Revision A/B Compare & Human Decision Surface v0 are validated only within their durable repository claims. Accepted Music Blueprint remains canonical creative authority. Browser, Music IR, automation execution, renderer/plugin, audio artifact, comparison projection, Browser-local A/B choice and external DAW state remain derived or non-authoritative.
 
-The post-M7 planning gate has now selected exactly one successor capability: **Issue #89 — Accepted Revision A/B Compare & Decision Surface v0**. It is ratified for implementation but is **not yet a validated capability**.
+The previous post-M7 planning gate and Issue `#89` are complete. No successor implementation is currently ratified. Do not infer `M7-R7`, `M8`, or another milestone number without a new repository selection decision.
 
 ## Canonical proposition / 공식 핵심 명제
 
@@ -30,170 +30,148 @@ The post-M7 planning gate has now selected exactly one successor capability: **I
 | M7-R4 Reference Renderer Automation Mapping & Audible Evidence | **VALIDATED — BOUNDED AUDIBLE EXECUTION** | `evidence/M7_R4_VALIDATION.md` |
 | M7-R5 Studio Automation Audition & Accepted Artifact Persistence | **VALIDATED — BOUNDED STUDIO AUDITION & ARTIFACT PERSISTENCE** | `evidence/M7_R5_VALIDATION.md` |
 | M7-R6 Truthful Audible Automation Capability & Browser Lifecycle Inspection | **VALIDATED — BOUNDED TRUTHFUL AUDITION INSPECTION** | `evidence/M7_R6_VALIDATION.md` |
-| Post-M7 Accepted Revision A/B Compare & Decision Surface v0 | **RATIFIED FOR IMPLEMENTATION — NOT YET VALIDATED** | Issue `#89`, `docs/POST_M7_NEXT_MILESTONE_SELECTION.md` |
+| Post-M7 Accepted Revision A/B Compare & Human Decision Surface v0 | **VALIDATED — BOUNDED READ-ONLY DECISION SURFACE** | `evidence/POST_M7_REVISION_COMPARE_VALIDATION.md` |
 
-No artificial `M7-R7` or `M8` identifier is assigned by this planning decision.
+## Latest canonical completion / 최신 공식 완료
 
-## M7-R6 final evidence / M7-R6 최종 근거
+### Accepted Revision A/B Compare & Human Decision Surface v0
 
-- Issue `#86` — **COMPLETED**
-- PR `#87` — **MERGED**
-- implementation/validation merge main: `1de099e8d3e489c818ae561ddfb0c43c4ffdcbfc`
-- pre-durable exact head: `af11315c777f761179ca3d94bfed1a6e472dd315`
-- successor evidence head: `93129768ff4b33c663eeeccda22c1d07faea0872`
-- final validation-record head: `0ea3fd976a8b63293d434bb427f7dfeffb68fcfd`
-- pre-durable, successor and final-record permanent workflow sets: **14/14 SUCCESS** each
-- pre-durable R6 artifact: `10426461920`
-- successor R6 artifact: `10426332617`
-- deterministic manifest SHA-256: `926c0608c5998ceaa1ac0f49c19dbf4f293acc180d0e2433d067b369d32b953a`
-- deterministic pre-durable vs successor evidence: **14 files / 0 differences**
-- accepted/reopened WAV SHA-256: `4f26a08636726945205c97575885f9966f67245dc086eb30fd4af198c71d21b7`
-- accepted/reopened MIDI SHA-256: `b7b5f5cbeff58888132032f13880d2bc5aad701e906c37daa077c6e8a834248f`
-- Browser proof on pre-durable/successor: console errors `0`, page errors `0`, unexpected request failures `0`, expected superseded-audio aborts `2`
+- Issue `#89` — **COMPLETED**
+- PR `#91` — **MERGED**
+- implementation/validation main: `7314deb5aba93073f1f7750dc68f9f4d31cd3c06`
+- pre-durable exact head: `b22e41f690606aeedcffa11ef2ec5e915b34551d`
+- durable-record exact head: `de309c7f030d6c3f8085da312bc7c7bfaa94e19d`
+- pre-durable permanent workflows: **15/15 SUCCESS**
+- durable-record permanent workflows: **15/15 SUCCESS**
+- dedicated pre-durable Compare run: `35063187699` — **SUCCESS**
+- evidence artifact: `10433182942`
+- artifact ZIP SHA-256: `43116ab6d75bb96a52cdadea8a299325480feb514b6a9e814955aa40ad59368c`
+- deterministic manifest: **8/8 exact SHA-256 + size records**
+- Browser manifest: **9/9 exact SHA-256 + size records**
+- deterministic evidence A/B byte-tree reproduction: **SUCCESS**
+- real-Chromium A/B comparison: **SUCCESS**
+- real-Chromium Browser-local `Choose A` / `Choose B` isolation: **SUCCESS**
 
-## M7-R6 validated lifecycle / 검증된 수명주기
+## Canonical product-loop coverage / 공식 제품 루프 커버리지
 
-```text
-accepted automation material
-→ historical R2 view remains unchanged
-→ trusted R5 audible Preview
-→ studio-automation-audition-v0 read-only inspection
-→ Browser verifies mapped/unmapped lanes + exact media hashes
-→ PREVIEW · NOT ACCEPTED
-→ Discard OR explicit Accept
-→ exact pending WAV/MIDI bound to accepted revision
-→ restart/reopen serves accepted bytes unchanged
-```
-
-Validated properties remain unchanged:
-
-- historical `studio-automation-view-v0` remains unchanged with `audible_automation_validated=false`;
-- `studio-automation-audition-v0` truthfully reports current bounded audible capability;
-- current mapped lane set is exactly `A-MIX-GAIN` under `mix.gain/project/normalized`;
-- `B-SYNTH-CUTOFF` remains explicitly unmapped;
-- pending Browser inspection is non-canonical and does not mutate Project authority;
-- Browser-computed Preview WAV/MIDI hashes equal trusted pending hashes;
-- Discard restores accepted identity;
-- explicit Accept advances exactly one revision;
-- accepted/reopened WAV/MIDI equal exact Preview bytes;
-- unsupported-only automation cannot claim audible application;
-- Browser/audio/renderer state has no reverse-promotion authority.
-
-## Current capability stack / 현재 기능 스택
-
-### Authority & project core
-Typed Intent/Blueprint, semantic controls, locks/constraints, immutable revisions/branches/audit, exact-note material and accepted explicit automation material.
-
-### Precision editing
-M6 exact-note editing and M7 automation point editing use source-bound Preview/Accept authority patterns.
-
-### Studio
-Browser Studio Direct → Shape → Inspect → Code, exact-note piano roll, bounded automation editing, audible automation Preview and truthful audition inspection are validated within their stated boundaries.
-
-### Version foundation
-M2 can read arbitrary immutable accepted revision records and Blueprints with hash verification, stores deterministic per-revision structured diffs, and binds artifacts to exact revisions. This foundation is validated; an A/B user-facing comparison surface is not yet validated.
-
-### Derived execution
-R3 deterministically lowers accepted/candidate canonical automation to `automation-execution-v0` without guessing backend addresses.
-
-### Renderer
-R4 maps exactly one automation family — `mix.gain/project/normalized` — through an explicit reference-renderer plan to byte-reproducible audible WAV output. R5 integrates it into Studio Preview; R6 exposes the resulting lifecycle truthfully without granting new authority.
-
-### Interchange
-Existing bounded DAWproject interchange/evaluation and exact-note reconciliation remain validated. Automation interchange remains unvalidated.
-
-### AI provider
-M3-R2 validates the OpenAI adapter contract and offline integration path. The adapter is live-ready, but **live OpenAI provider execution remains unvalidated** and any future live smoke must be separate `LIVE_PROVIDER_EVIDENCE`.
-
-## Post-M7 closure review finding / Post-M7 종결 검토 결과
-
-The product thesis explicitly requires:
+The thesis loop is:
 
 ```text
 Describe → Generate Blueprint → Audition → Lock → Refine → Compare → Accept
 ```
 
-M4-R3 already validates natural-language create, audition, semantic Preview, explicit Accept, branch/history/export and restart/reopen in real Chromium. A generic end-to-end natural-language milestone would therefore duplicate existing evidence.
+Within the current bounded local workstation scope, repository evidence now covers the full loop:
 
-The strongest unresolved product-loop gap is **Compare**. The repository already contains nearly all prerequisites: arbitrary accepted revision reads, immutable revision records, `structured_diff()`, revision-bound artifacts, deterministic rendering, Studio same-origin media delivery and real-browser evidence infrastructure.
+1. **Describe / Generate Blueprint** — intent/provider-neutral Director path produces typed Blueprint candidates.
+2. **Audition** — deterministic rendering and Browser Studio media paths are validated.
+3. **Lock** — hard locks/constraints and exact-note/automation source binding protect canonical decisions.
+4. **Refine** — semantic, exact-note and automation edits use Preview → explicit Accept.
+5. **Compare** — two immutable accepted revisions can be compared by exact structured diff and exact revision-specific media provenance.
+6. **Human decision** — Browser-local A/B choice is available but remains non-canonical.
+7. **Accept** — M2 explicit Accept remains the only canonical acceptance transition.
+8. **Reproduce/version** — immutable revisions, branches, audit, artifact binding and restart/reopen persistence are validated.
 
-The concrete missing boundary is that Studio currently serves media for pending Preview or current accepted HEAD; it does not yet expose a bounded read-only projection/media surface for arbitrary accepted revisions A and B at once.
+This closes the explicit thesis-loop gap. It does **not** imply production-DAW completeness or validation of every external integration.
 
-The closure review therefore selected:
-
-> **Issue #89 — Accepted Revision A/B Compare & Decision Surface v0**
-
-See `docs/POST_M7_NEXT_MILESTONE_SELECTION.md`.
-
-## Issue #89 target authority / Issue #89 목표 권한
+## Compare validated authority / Compare 검증 권한
 
 ```text
 accepted revision A ─┐
                      ├→ read-only comparison projection
 accepted revision B ─┘
                               ↓
-                    Browser inspection/audition
+                 independent Browser A/B audition
+                              ↓
+                 Browser-local human choice
 ```
 
-The comparison projection has **no write authority**.
+The comparison/choice path has no canonical write authority.
 
-It may expose:
+Validated truth includes:
 
-- exact revision IDs and revision-record/Blueprint hashes;
-- deterministic `A_TO_B` Blueprint diff;
-- exact per-revision media provenance;
-- bound artifact bytes when present;
-- explicit deterministic fallback render otherwise;
-- independent A/B audition;
-- existing user-controlled project navigation only.
+- explicit `A_TO_B` direction;
+- deterministic forward/reverse diff and A==B identity;
+- exact revision-record + Blueprint SHA provenance;
+- exact bound/fallback WAV/MIDI provenance and served-byte SHA;
+- bound artifact filename + immutable manifest SHA where applicable;
+- arbitrary accepted-revision media without checkout/HEAD mutation;
+- fail-closed unknown/tampered state;
+- independent Browser A/B audition;
+- refresh/reopen diff/media stability;
+- local human choice does not Accept, checkout, create revisions or move HEAD;
+- no winner/score/preference-probability authority;
+- M5-R4 same-Music-IR renderer comparison remains semantically unchanged.
 
-It may not expose or perform:
+## Current capability stack / 현재 기능 스택
 
-- system-selected creative winner;
-- creative quality/preference score;
-- implicit Accept;
-- automatic branch/head movement;
-- cross-revision reuse of M5-R4's same-Music-IR renderer comparison semantics;
-- reverse promotion from Browser/audio/comparison state into Blueprint authority.
+### Authority & project core
+Typed Intent/Blueprint, semantic controls, locks/constraints, immutable revisions/branches/audit, exact-note material, accepted explicit automation material, revision-bound artifacts and explicit Accept authority.
 
-## Exact next phase / 다음 단계
+### Browser Studio
+Natural-language create/edit workflow, Direct/Shape/Inspect/Code surfaces, exact-note piano roll, bounded automation editing, audible Preview, truthful audition inspection and accepted-revision A/B Compare with independent audition.
 
-> **Implement Issue #89 contract-first, then trusted comparison projection → arbitrary accepted-revision media → read-only HTTP routes → Browser A/B surface → deterministic tests → real-Chromium evidence → permanent CI/evidence → expected-head merge → state-only closure.**
+### Precision & automation
+Exact-note editing and bounded automation point editing are canonical through source-bound Preview/Accept. Derived automation execution is deterministic.
 
-See `memory/NEXT_ACTION.md` for the exact execution order and promotion gate.
+### Renderer
+Exactly one canonical automation renderer mapping family is validated: `mix.gain / project / normalized` through `musica-reference-local`. Unsupported parameters remain explicitly unmapped rather than guessed.
 
-## Current claim boundaries / 현재 주장 경계
+### Version & Compare
+M2 arbitrary immutable revision reads + `structured_diff()` + revision-bound artifacts now feed a validated read-only A/B decision surface.
+
+### Interchange
+Bounded DAWproject interchange/evaluation and exact-note reconciliation are validated. Automation interchange/reconciliation is not.
+
+### AI provider
+The OpenAI adapter contract and offline integration path are validated. The adapter is live-ready, but actual live OpenAI execution remains unvalidated and separately classified `LIVE_PROVIDER_EVIDENCE`.
+
+## Remaining claim boundaries / 남은 주장 경계
 
 The repository does **not** yet validate:
 
-- accepted-revision A/B Browser comparison or arbitrary-revision Studio audition;
-- a system-selected creative preference/winner between revisions;
+- system-selected creative preference/winner across revisions;
 - a second automation renderer mapping family;
 - arbitrary canonical parameter → renderer/MIDI/plugin mapping;
-- plug-in/device mapping or VST/AU/CLAP hosting;
+- VST/AU/CLAP hosting or generalized device/plugin automation;
 - external DAW automation reconciliation;
-- arbitrary tempo maps or spline/bezier curves;
-- lane creation/deletion or parameter reassignment;
+- arbitrary tempo maps, lane lifecycle or spline/bezier/exponential automation curves;
 - real-time MIDI/OSC automation;
 - live OpenAI provider execution;
-- human-subject usability/preference or perceptual superiority;
-- waveform/destructive audio editing, cloud collaboration or desktop signing.
+- human-subject usability/preference or perceptual-superiority claims;
+- destructive waveform/audio editing;
+- cloud collaboration or multi-user authority;
+- installer/signing/distribution hardening or production SLA guarantees.
+
+These are candidates or future scope, not automatically required milestones.
+
+## Exact next phase / 다음 단계
+
+> **POST-COMPARE SUCCESSOR REVIEW — reassess the product thesis, current validated stack, remaining claim gaps, user leverage, authority risk and evidence cost; compare serious candidates and ratify exactly one bounded successor before implementation.**
+
+The review must include at minimum:
+
+- `LIVE_PROVIDER_EVIDENCE`;
+- automation renderer/mapping expansion;
+- automation-aware DAW/interchange reconciliation;
+- richer authoring/tempo/curve operations;
+- plug-in/device and real-time control integration;
+- production/distribution/collaboration hardening;
+- human usability/perceptual evaluation where it is necessary to support a claim.
+
+Do not implement one by default merely because it is listed.
 
 ## Resume authority / 재개 권위
 
-Before implementing Issue `#89`, inspect:
+Before selecting the next successor, inspect:
 
 1. `governance/SOURCE_OF_TRUTH.md`
 2. `docs/PRODUCT_THESIS.md`
-3. `docs/POST_M7_NEXT_MILESTONE_SELECTION.md`
-4. Issue `#89`
-5. `src/musica/project.py`
-6. `src/musica/diff.py`
-7. `src/musica/studio.py`
-8. `src/musica/studio_http.py`
-9. `evidence/M4_R3_VALIDATION.md`
-10. `evidence/M3_R2_VALIDATION.md`
-11. `evidence/M7_R6_VALIDATION.md`
-12. `memory/NEXT_ACTION.md`
+3. `README.md`
+4. `docs/POST_M7_NEXT_MILESTONE_SELECTION.md`
+5. `evidence/POST_M7_REVISION_COMPARE_VALIDATION.md`
+6. `evidence/M7_R6_VALIDATION.md`
+7. `evidence/M3_R2_VALIDATION.md`
+8. `memory/NEXT_ACTION.md`
+9. open Issues/PRs and current permanent workflows
 
 **Repository evidence remains authoritative over conversation/model memory.**

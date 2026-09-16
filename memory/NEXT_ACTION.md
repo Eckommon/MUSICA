@@ -2,258 +2,164 @@
 
 ## Exact resume point / 정확한 재개점
 
-**M7-R6 — TRUTHFUL AUDIBLE AUTOMATION CAPABILITY & BROWSER LIFECYCLE INSPECTION**
+**POST-M7 CLOSURE REVIEW — EVIDENCE-BASED NEXT-MILESTONE SELECTION**
 
-M7-R5 is `VALIDATED — BOUNDED STUDIO AUDITION & ARTIFACT PERSISTENCE`. The next mission is to make the Browser/Studio inspection surface truthfully describe the audible automation capability that R5 now actually provides, **without rewriting the historical R2 contract, without adding a second renderer mapping family, and without changing M2 authority**.
+M7-R6 is `VALIDATED — BOUNDED TRUTHFUL AUDITION INSPECTION`. The repository does not currently ratify an `M7-R7` or `M8`. Do not infer a new milestone from numbering, implementation momentum or adjacent technical possibility.
+
+The next mission is a **bounded planning gate** that selects exactly one successor milestone from evidence.
 
 ## Canonical starting point / 공식 시작점
 
-- M7-R5 Issue `#84` — **COMPLETED**
-- M7-R5 PR `#83` — **MERGED**
-- implementation merge/main: `43488fe85bb6c2fde19dc27d0dabfdb7587d7f1f`
-- pre-durable head: `298a46a4de360d697c2fe55006cd17966c3bf1e8`
-- successor evidence head: `87dd85cb2ff2f0a576db24c6b87c7ad16a32bb29`
-- final validation-record head: `41f98e882e62cf638370c998447e754398c63284`
-- final exact-head regression set: **13/13 SUCCESS**
-- final M7-R5 workflow: `35039890451` — **SUCCESS**
-- final MUSICA CI: `35039890429` — **SUCCESS**
-- R5 manifest SHA-256: `ab5c99c4ab474eccac17b727cf0a502061f2691ffae5bbfab734572a90e5c772`
-- Preview/accepted/reopened WAV SHA-256: `4f26a08636726945205c97575885f9966f67245dc086eb30fd4af198c71d21b7`
-- Preview/accepted/reopened MIDI SHA-256: `b7b5f5cbeff58888132032f13880d2bc5aad701e906c37daa077c6e8a834248f`
-- durable evidence: `evidence/M7_R5_VALIDATION.md`
+- M7-R6 Issue `#86` — **COMPLETED**
+- M7-R6 PR `#87` — **MERGED**
+- implementation/validation merge main: `1de099e8d3e489c818ae561ddfb0c43c4ffdcbfc`
+- pre-durable head: `af11315c777f761179ca3d94bfed1a6e472dd315`
+- successor evidence head: `93129768ff4b33c663eeeccda22c1d07faea0872`
+- final validation-record head: `0ea3fd976a8b63293d434bb427f7dfeffb68fcfd`
+- pre-durable / successor / final-record permanent gates: **14/14 SUCCESS** each
+- deterministic manifest SHA-256: `926c0608c5998ceaa1ac0f49c19dbf4f293acc180d0e2433d067b369d32b953a`
+- deterministic pre-durable vs successor evidence: **14 files / 0 differences**
+- accepted/reopened WAV SHA-256: `4f26a08636726945205c97575885f9966f67245dc086eb30fd4af198c71d21b7`
+- accepted/reopened MIDI SHA-256: `b7b5f5cbeff58888132032f13880d2bc5aad701e906c37daa077c6e8a834248f`
+- durable evidence: `evidence/M7_R6_VALIDATION.md`
 
-## Architecture fact R6 must close / R6가 닫아야 할 구조 사실
+## Why a planning gate is required / 왜 계획 게이트가 필요한가
 
-R5 now creates trusted pending audition proof in `pending.detail.studio_audition`, including:
-
-```text
-automation_applied
-output_differs_from_baseline
-mapped_lane_ids
-unmapped_lane_ids
-render_plan_sha256
-baseline_wav_sha256
-preview_wav_sha256
-preview_midi_sha256
-project_ref_unchanged
-canonical = false
-reverse_promotion_authorized = false
-```
-
-However the historical R2 `studio-automation-view-v0` schema still requires:
+M0→M7 now validates a broad vertical slice:
 
 ```text
-capabilities.audible_automation_validated = false
+intent / Blueprint authority
+→ immutable project/version authority
+→ AI Director/provider boundary
+→ Browser Studio workflow
+→ rendering/interchange/evaluation
+→ exact-note precision editing
+→ canonical automation editing
+→ deterministic automation lowering
+→ one bounded audible renderer mapping
+→ Studio audible Preview / Accept / reopen
+→ truthful Browser audition inspection
 ```
 
-and the Browser automation view does not formally expose R5 `studio_audition` proof or accepted artifact lineage. This is intentional historical preservation, but it is now a product truthfulness gap.
+At this point, several legitimate directions remain, but the repository contains no evidence that any one of them should automatically become the next milestone. Continuing the M7 numbering by inertia would blur product priority with implementation convenience.
 
-The system can perform the audible audition, yet the versioned Browser inspection contract cannot truthfully say which lanes are audible, which are unmapped, whether automation changed the Preview WAV, or which exact WAV/MIDI artifacts were accepted and served after reopen.
+## Review objective / 검토 목표
 
-## Bounded R6 mission / 제한 미션
+Select **one and only one** bounded next milestone that maximizes product leverage while preserving MUSICA authority discipline.
 
-R6 adds a **new versioned inspection/capability surface** for the already validated R5 lifecycle.
+The review must answer:
 
-Preferred architecture:
+1. What is the highest-value user workflow still blocked by the validated stack?
+2. Which missing capability is prerequisite-like rather than merely adjacent?
+3. Which candidate can be specified with a narrow authority boundary and deterministic evidence?
+4. Which candidate reuses the greatest amount of already validated infrastructure?
+5. Which candidate has the lowest risk of silently expanding canonical authority?
+6. What should explicitly remain deferred after the selection?
+
+## Candidate domains to inspect / 검토할 후보 영역
+
+These are **candidate domains, not approved milestones and not a ranking**:
+
+### A. Intent-to-music product workflow
+Close gaps between user intent, AI Director proposals, Preview, bounded editing and accepted project revisions so a normal user can complete a coherent end-to-end creation session with less low-level intervention.
+
+### B. AI provider execution
+Revisit the currently bounded provider layer and determine whether live provider execution, reproducible prompt/model provenance or provider failover is now the highest-leverage missing layer.
+
+### C. Automation expressiveness
+Consider whether another automation mapping, lane management, tempo behavior or curve family is actually required by product workflows. Do **not** expand this merely because M7 validated one mapping.
+
+### D. Interchange / external workflow
+Assess whether automation-aware DAW interchange/reconciliation is now more valuable than additional internal editing capability.
+
+### E. Real-time interaction
+Assess MIDI/OSC/live control only if an actual user workflow justifies introducing a new derived control adapter and latency evidence boundary.
+
+### F. Distribution / usability hardening
+Assess project packaging, installer/desktop delivery, recovery, performance, accessibility or user-facing workflow reliability if product usability is now the bottleneck rather than musical expressiveness.
+
+## Required evidence inputs / 필수 입력
+
+At minimum inspect:
 
 ```text
-accepted automation view v0        # unchanged historical R2 contract
-        +
-R5 pending studio_audition proof
-        +
-accepted artifact metadata
-        ↓
-new audition/capability contract
-        ↓
-Browser Inspect presentation
+governance/SOURCE_OF_TRUTH.md
+docs/PRODUCT_THESIS.md
+memory/CURRENT_STATE.md
+docs/M7_AUTOMATION_AUTHORITY.md
+evidence/M4_R3_VALIDATION.md
+evidence/M5_R4_VALIDATION.md
+evidence/M6_R4_VALIDATION.md
+evidence/M7_R6_VALIDATION.md
+schemas + runtime boundaries implicated by each candidate
+current Browser Studio workflow
+current Director/provider workflow
+current explicit non-claims
 ```
 
-Do not silently change the meaning of `studio-automation-view-v0`.
+Do not base the decision only on conversation memory.
 
-## Required contract / 필수 계약
+## Selection criteria / 선정 기준
 
-Create a new schema/object with bounded fields equivalent to:
+For every serious candidate, record at least:
+
+- **User leverage:** which concrete workflow becomes possible or materially easier;
+- **Dependency readiness:** how much of the prerequisite stack is already validated;
+- **Authority risk:** probability of creating an ambiguous canonical/derived boundary;
+- **Evidence feasibility:** whether success can be proven deterministically and independently;
+- **Regression surface:** number and criticality of existing validated layers touched;
+- **Implementation boundedness:** whether one mission can close the capability without scope creep;
+- **Strategic sequencing:** whether later high-value capabilities depend on this one.
+
+Do not select by a single numeric score alone. Record factual trade-offs and an explicit decision rationale.
+
+## Required planning outputs / 필수 산출물
+
+The planning mission should produce a durable package such as:
 
 ```text
-contract_version
-renderer_policy_id = musica-reference-local
-validated_mapping_families = [mix.gain/project/normalized]
-pending_audition:
-  present
-  preview_id / candidate_revision_id
-  automation_applied
-  output_differs_from_baseline
-  mapped_lane_ids
-  unmapped_lane_ids
-  render_plan_sha256
-  baseline_wav_sha256
-  preview_wav_sha256
-  preview_midi_sha256
-  canonical = false
-  reverse_promotion_authorized = false
-accepted_media:
-  revision_id
-  wav artifact presence/hash
-  midi artifact presence/hash
-  source = bound_artifact | fallback_render
+one next-milestone Issue
+one explicit mission statement
+problem / user workflow blocked
+canonical vs derived authority decision
+bounded scope + explicit non-goals
+expected implementation surface
+test matrix
+evidence package target
+permanent-regression set
+promotion criteria
+updated memory/NEXT_ACTION.md
 ```
 
-Exact field names may differ after implementation inspection, but every claim must be source-bound and schema-validated.
+If the review cannot identify a sufficiently bounded, high-leverage successor, record `HOLD — NEXT MILESTONE NOT YET RATIFIED` rather than inventing work.
 
-## Required implementation direction / 필수 구현 방향
+## Guardrails / 가드레일
 
-### 1. Preserve v0
+The review must not silently authorize:
 
-`schemas/studio-automation-view-v0.schema.json` and the historical R2 meaning of `audible_automation_validated=false` should remain unchanged unless evidence proves a versioned replacement is impossible.
+- new canonical authority from Browser/audio/renderer/DAW state;
+- another renderer mapping merely to extend coverage;
+- MIDI CC or plugin addresses as canonical parameter identities;
+- implicit AI acceptance;
+- unbounded “complete DAW” scope;
+- perceptual superiority claims without appropriate evidence;
+- destructive mutation of accepted project history.
 
-### 2. Add a new inspection boundary
+## Maximum intended outcome / 최대 의도 결과
 
-Prefer one of:
-
-- `studio-automation-audition-v0`, or
-- `studio-automation-view-v1` that explicitly supersedes rather than mutates v0.
-
-A separate audition contract is preferred if it keeps R2 evidence maximally stable.
-
-### 3. Derive only from trusted state
-
-Pending audition fields must come from the trusted R5 pending Preview detail plus exact media bytes, not from DOM state or inferred audio analysis.
-
-Accepted media fields must come from Project/Studio artifact binding and accepted revision identity. Do not infer accepted automation from WAV content.
-
-### 4. Browser truthfulness
-
-The Browser must distinguish at least:
-
-```text
-accepted automation material
-pending non-canonical automation Preview
-mapped audible lanes
-unmapped/non-audible lanes
-accepted bound media artifact
-fallback-rendered media when no bound artifact exists
-```
-
-The UI must not label the entire automation system “audible” merely because one mapping family exists.
-
-### 5. Lifecycle preservation
-
-R6 presentation/inspection must not alter:
-
-- Preview authority;
-- Discard behavior;
-- Accept revision count;
-- accepted artifact bytes;
-- renderer mapping policy;
-- MIDI bytes.
-
-## Required tests / 필수 테스트
-
-At minimum prove:
-
-1. historical `studio-automation-view-v0` remains byte/schema compatible with R2 expectations;
-2. new audition contract validates for accepted state with no pending Preview;
-3. new audition contract validates during an R5 eligible `mix.gain` Preview;
-4. mapped lane IDs expose exactly `A-MIX-GAIN` for the canonical fixture;
-5. `B-SYNTH-CUTOFF` is explicitly exposed as unmapped;
-6. `automation_applied=true` only when mapped lanes exist;
-7. Preview WAV/MIDI/render-plan hashes equal the actual pending files/proof;
-8. `canonical=false` and `reverse_promotion_authorized=false` are explicit;
-9. Discard removes pending audition inspection state;
-10. accepted project ref remains unchanged on Preview/Discard;
-11. explicit Accept produces exactly one revision;
-12. accepted media inspection identifies the accepted revision and exact bound WAV/MIDI hashes;
-13. close/reopen exposes the same accepted artifact hashes;
-14. fallback render is distinguishable from a bound accepted artifact;
-15. unsupported-only automation does not claim audible application;
-16. stale/cross-surface Preview conflicts remain fail-closed;
-17. real Chromium shows mapped/unmapped/audition status truthfully;
-18. R5/R4/R3/R2/R1/R0 remain green;
-19. M6-R4/R3/R2/R1 and M5-R3/R4 remain green;
-20. Python 3.11/3.12 full suite remains green.
-
-## Expected implementation package / 예상 구현 패키지
-
-Likely bounded changes:
-
-```text
-schemas/studio-automation-audition-v0.schema.json
-src/musica/studio_automation.py
-src/musica/studio_http.py                # only if a dedicated endpoint is cleaner
-src/musica/studio_web/app.js              # exact path after repository inspection
-src/musica/studio_web/...                 # minimal UI presentation only
-tests/test_m7_r6_studio_audition_view.py
-e2e/test_m7_r6_browser.py
-src/musica/m7_r6_demo.py
-.github/workflows/m7-r6-audition-inspection-evidence.yml
-```
-
-Avoid modifying R4 mapping registry, compiler, Music IR, M2 authority or the historical R2 schema.
-
-## Evidence target / 공식 근거 목표
-
-Dedicated evidence should include at minimum:
-
-```text
-accepted-before-audition.json
-pending-audition-view.json
-pending-preview-descriptor.json
-accepted-after.json
-accepted-media-view.json
-reopened-media-view.json
-browser-proof.json
-authority-proof.json
-schema-compatibility-proof.json
-manifest.json
-```
-
-Real-browser evidence should visibly prove:
-
-- `mix.gain` is mapped/audible under `musica-reference-local`;
-- `synth.cutoff` is unmapped;
-- pending audition is `PREVIEW · NOT ACCEPTED`;
-- Discard clears pending audition state;
-- Accept/reopen show the exact accepted media identity;
-- no UI state is treated as canonical authority.
-
-## Scope control / 범위 통제
-
-Do **not** add or claim in M7-R6:
-
-- a second renderer mapping family;
-- canonical MIDI CC mapping;
-- arbitrary part-scope renderer automation;
-- plug-in/device/VST/AU/CLAP hosting;
-- external DAW automation import/export/reconciliation;
-- MIDI/OSC real-time control;
-- lane creation/deletion or parameter reassignment;
-- arbitrary tempo maps;
-- spline/bezier/exponential interpolation;
-- mastering quality or human/perceptual superiority.
-
-## Maximum intended R6 claim / 성공 시 최대 주장
-
-> **MUSICA Browser Studio can truthfully inspect the already validated bounded audible automation lifecycle: it can distinguish accepted automation from a non-canonical audible Preview, show which canonical lanes are mapped or unmapped by the current reference renderer, and after explicit Accept/reopen identify the exact accepted WAV/MIDI artifacts without granting Browser/audio state canonical authority.**
+> **MUSICA selects one evidence-backed, bounded successor milestone after M7-R6, with its user value, authority boundary, dependencies, non-goals, tests and promotion evidence ratified before implementation begins.**
 
 ## Execution discipline / 실행 규율
 
 ```text
-M7-R5 state-only closure
-→ create M7-R6 Issue
-→ fresh branch from closure main
-→ ratify new versioned audition-inspection contract
-→ bounded trusted-state projection
-→ Browser presentation
-→ unit + real-browser lifecycle tests
-→ dedicated deterministic evidence workflow
-→ PR
-→ exact-head full regressions
-→ artifact inspection
-→ durable M7_R6 validation
-→ successor rerun
-→ expected-head merge
-→ Issue completed
-→ state-only closure
+M7-R6 state-only closure
+→ inspect M0→M7 validated stack + product thesis + non-claims
+→ enumerate serious successor candidates
+→ compare user leverage / dependency readiness / authority risk / evidence feasibility
+→ select exactly one bounded successor OR HOLD
+→ create Issue
+→ update canonical NEXT_ACTION
+→ only then create implementation branch
 ```
 
 **Repository evidence remains authoritative over conversation/model memory.**

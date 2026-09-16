@@ -101,16 +101,18 @@ The package establishes the distinction between human/AI-facing `Music Blueprint
 
 이 패키지는 인간/AI 대상 `Music Blueprint`와 실행용 `Music IR`의 분리, 의미 수정 해석, hard-lock 실패 폐쇄, 렌더러 독립성, provenance, 단계적 복잡성 노출을 확정합니다.
 
-## 7. Non-goals / 비목표
+## 7. Foundation-stage non-goals / 기반 단계 비목표
 
-At foundation stage MUSICA is not defined as:
+At foundation stage MUSICA was not required to be:
 
 - a clone of Suno or another text-to-song service,
 - a full replacement for every professional DAW,
 - a proprietary audio foundation model project,
 - a system that hides all musical decisions behind opaque generation.
 
-기반 단계에서 MUSICA는 Suno 복제, 모든 DAW 대체, 독자 오디오 파운데이션 모델 구축, 불투명한 생성 결과만 제공하는 시스템을 목표로 하지 않습니다.
+기반 단계에서 MUSICA는 Suno 복제, 모든 DAW 대체, 독자 오디오 파운데이션 모델 구축, 불투명한 생성 결과만 제공하는 시스템일 필요가 없었습니다.
+
+These were **foundation acceptance boundaries, not permanent product ceilings**. In particular, “not a full replacement for every professional DAW” does not prevent MUSICA from becoming a general-purpose commercial music-production workstation. It means commercial expansion must be evidence-driven rather than required to validate the initial architecture.
 
 ## 8. Product test / 제품 판단 기준
 
@@ -122,3 +124,33 @@ A feature belongs in MUSICA when it improves at least one of these without mater
 4. inspectability / 검사 가능성,
 5. interoperability / 상호운용성,
 6. trustworthy AI operation / 신뢰 가능한 AI 작업.
+
+## 9. Long-term product target / 장기 제품 목표
+
+One governing long-term objective is:
+
+> **MUSICA shall grow into a general-purpose, commercially usable music production workstation while preserving its AI-native authority, inspectability, reproducibility and programmability.**
+>
+> **MUSICA는 AI-native 권한 구조, 검사 가능성, 재현성, 프로그래밍 가능성을 보존하면서 범용적으로 사용할 수 있는 상용 음악 제작 워크스테이션으로 성장한다.**
+
+“General-purpose” does not mean copying every feature in every DAW. It means ordinary end-to-end music production should eventually have first-class native workflows for arrangement, audio tracks/clips, mixing/signal flow, recording, supported instruments/effects/plugins, automation, interoperability, persistence/recovery and reliable distribution.
+
+The detailed capability map and commercial-readiness boundaries are defined in `docs/COMMERCIAL_WORKSTATION_TARGET.md`.
+
+## 10. Expansion rule / 확장 원칙
+
+Commercial DAW capability must extend, not bypass, the canonical MUSICA model.
+
+```text
+more production power
+    +
+explicit typed authority
+    +
+reproducible/provenance-bearing execution
+    ≠
+hidden mutable runtime state becoming canonical
+```
+
+The first post-Compare expansion selected under this rule is Issue `#95` — **Audio Track / Clip / Mixer Foundation v0**. Its selection rationale is recorded in `docs/POST_COMPARE_SUCCESSOR_SELECTION.md`.
+
+**Repository evidence remains authoritative over conversation/model memory.**

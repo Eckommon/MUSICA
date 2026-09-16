@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/audio-material-v0.schema.json",
+  "title": "MUSICA Audio Material v0",
+  "description": "Accepted native audio track/clip/mixer structure / 승인된 native audio track·clip·mixer 구조",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["material_version", "mode", "tracks"],
+  "properties": {
+    "material_version": {"const": "0"},
+    "mode": {"const": "audio_tracks"},
+    "tracks": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/track"}
+    }
+  },
+  "$defs": {
+    "assetId": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "gainDb": {
+      "type": "number",
+      "minimum": -60.0,
+      "maximum": 12.0
+    },
+    "mixer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gain_db", "pan", "mute", "solo"],
+      "properties": {
+        "gain_db": {"$ref": "#/$defs/gainDb"},
+        "pan": {"type": "number", "minimum": -1.0, "maximum": 1.0},
+        "mute": {"type": "boolean"},
+        "solo": {"type": "boolean"}
+      }
+    },
+    "clip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "clip_id",
+        "asset_id",
+        "timeline_start_seconds",
+        "source_in_seconds",
+        "source_out_seconds",
+        "gain_db"
+      ],
+      "properties": {
+        "clip_id": {"type": "string", "minLength": 1},
+        "asset_id": {"$ref": "#/$defs/assetId"},
+        "timeline_start_seconds": {"type": "number", "minimum": 0},
+        "source_in_seconds": {"type": "number", "minimum": 0},
+        "source_out_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "gain_db": {"$ref": "#/$defs/gainDb"}
+      }
+    },
+    "track": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["track_id", "order", "name", "mixer", "clips"],
+      "properties": {
+        "track_id": {"type": "string", "minLength": 1},
+        "order": {"type": "integer", "minimum": 0},
+        "name": {"type": "string", "minLength": 1},
+        "mixer": {"$ref": "#/$defs/mixer"},
+        "clips": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/clip"}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/audio-asset-v0.schema.json",
+  "title": "MUSICA Audio Asset v0",
+  "description": "Immutable bounded PCM WAV project resource descriptor / 불변 PCM WAV 프로젝트 리소스 기술자",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "asset_version",
+    "asset_id",
+    "media_type",
+    "object_sha256",
+    "size_bytes",
+    "format"
+  ],
+  "properties": {
+    "asset_version": {"const": "0"},
+    "asset_id": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "media_type": {"const": "audio/wav"},
+    "object_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "size_bytes": {"type": "integer", "minimum": 1},
+    "format": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "container",
+        "codec",
+        "channels",
+        "sample_rate_hz",
+        "sample_width_bytes",
+        "frame_count",
+        "duration_seconds"
+      ],
+      "properties": {
+        "container": {"const": "wav"},
+        "codec": {"const": "pcm_integer"},
+        "channels": {"enum": [1, 2]},
+        "sample_rate_hz": {
+          "type": "integer",
+          "minimum": 8000,
+          "maximum": 192000
+        },
+        "sample_width_bytes": {"enum": [1, 2, 3, 4]},
+        "frame_count": {"type": "integer", "minimum": 1},
+        "duration_seconds": {"type": "number", "exclusiveMinimum": 0}
+      }
+    }
+  }
+}

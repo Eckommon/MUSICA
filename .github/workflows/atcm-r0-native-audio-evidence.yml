@@ -24,6 +24,7 @@ jobs:
           pytest -q
           tests/test_atcm_r0_audio_assets.py
           tests/test_atcm_r0_project_integrity.py
+          tests/test_atcm_r0_authority_boundary.py
           tests/test_m2_project.py
           tests/test_contracts.py
       - name: Generate ATCM-R0 evidence A / ATCM-R0 근거 A 생성

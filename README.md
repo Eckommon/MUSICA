@@ -4,7 +4,17 @@
 >
 > **MUSICA는 누구나 의도로 음악을 만들 수 있게 하되, 모든 음악적 결정을 검사하고, 잠그고, 편집하고, 재현하고, 프로그래밍할 수 있게 하는 시스템이다.**
 
-MUSICA is an **AI-native programmable music workstation**. The accepted Music Blueprint/project revision is creative authority. Music IR, Browser state, derived automation execution, renderer/plugin state, audio artifacts, comparison projections and interchange/DAW state are derived or non-canonical unless an explicit authority contract says otherwise.
+MUSICA is an **AI-native programmable music workstation**. The accepted Music Blueprint/project revision is creative authority. Music IR, Browser state, derived execution, renderer/plugin runtime state, audio artifacts, comparison projections and interchange/DAW state remain derived or non-canonical unless an explicit authority contract says otherwise.
+
+## Long-term product direction / 장기 제품 방향
+
+MUSICA's long-term scope includes becoming a **general-purpose, commercially usable music production workstation** while preserving its AI-native authority model.
+
+This does not mean cloning every feature of every DAW. It means ordinary end-to-end production should eventually have first-class native workflows for arrangement, audio tracks/clips, mixing and signal flow, recording, supported instruments/effects/plugins, automation, interoperability, persistence/recovery and reliable commercial distribution.
+
+The governing capability map is `docs/COMMERCIAL_WORKSTATION_TARGET.md`.
+
+Foundation-stage statements that MUSICA did not need to replace every professional DAW or provide universal plugin hosting remain valid as **foundation acceptance boundaries**, not permanent product ceilings.
 
 ## Current canonical status / 현재 공식 상태
 
@@ -28,32 +38,30 @@ M7-R6   truthful audible automation inspection              VALIDATED — BOUNDE
 Post-M7 accepted revision A/B Compare + human choice        VALIDATED — BOUNDED READ-ONLY DECISION SURFACE
 ```
 
-No artificial `M7-R7` or `M8` identifier is inferred from this closure.
+No artificial `M8` identifier is inferred from the next product expansion.
 
 ## Canonical product loop / 공식 제품 루프
-
-The thesis-level loop is:
 
 ```text
 Describe → Generate Blueprint → Audition → Lock → Refine → Compare → Accept
 ```
 
-The repository now contains bounded validated evidence for every stage of that loop:
+The repository contains bounded validated evidence for every stage of that loop:
 
 - natural-language intent → typed Blueprint generation;
 - deterministic compilation/rendering and Browser audition;
 - locks/constraints and source-bound edit authority;
 - semantic, exact-note and automation refinement through Preview → explicit Accept;
 - immutable revision/history/branch/project persistence;
-- accepted-revision A/B comparison with exact structured diff and exact media provenance;
-- human A/B decision state that remains Browser-local and cannot silently mutate project authority;
-- explicit Accept as the only canonical acceptance transition.
+- accepted-revision A/B comparison with exact structured diff and media provenance;
+- Browser-local human A/B decision state with no hidden canonical mutation;
+- explicit Accept as the canonical acceptance transition.
 
-This does **not** mean MUSICA is a finished production DAW. It means the canonical product thesis is now demonstrably implemented across a bounded local workstation path.
+This closes the core interaction-loop gap. It does **not** mean MUSICA is already a finished commercial DAW.
 
-## Accepted Revision A/B Compare — validated boundary
+## Latest validated capability — Accepted Revision A/B Compare
 
-Issue `#89` / PR `#91` closes the explicit Compare gap.
+Issue `#89` / PR `#91` validated:
 
 ```text
 accepted revision A + accepted revision B
@@ -66,40 +74,53 @@ accepted revision A + accepted revision B
 → no canonical mutation
 ```
 
-Validated properties include:
-
-- explicit `A_TO_B` diff direction;
-- A→B and B→A deterministic structured diffs;
-- A==B zero-diff identity behavior;
-- exact revision-record and Blueprint SHA-256 provenance;
-- exact WAV/MIDI SHA-256 and byte-size provenance;
-- bound artifact filename + immutable artifact-manifest SHA when bound media exists;
-- explicit `deterministic_fallback` when an accepted revision lacks bound media;
-- fail-closed unknown/tampered revision or artifact state;
-- arbitrary accepted-revision media access without checkout/HEAD mutation;
-- independent real-Chromium A/B audition;
-- refresh/reopen preservation of diff/media provenance;
-- Browser-local human choice without Accept, checkout, revision creation or HEAD movement;
-- no creative winner, score, preference probability or cross-revision M5-R4 ranking authority.
-
 Durable evidence: `evidence/POST_M7_REVISION_COMPARE_VALIDATION.md`.
 
-### Final Compare evidence
+Final state:
 
 - Issue `#89` — **COMPLETED**
-- PR `#91` — **MERGED**
-- implementation/validation merge main: `7314deb5aba93073f1f7750dc68f9f4d31cd3c06`
-- pre-durable exact head: `b22e41f690606aeedcffa11ef2ec5e915b34551d`
-- durable-record exact head: `de309c7f030d6c3f8085da312bc7c7bfaa94e19d`
-- pre-durable permanent gates: **15/15 SUCCESS**
-- durable-record permanent gates: **15/15 SUCCESS**
-- dedicated pre-durable Compare run: `35063187699` — **SUCCESS**
-- evidence artifact: `10433182942`
-- artifact ZIP SHA-256: `43116ab6d75bb96a52cdadea8a299325480feb514b6a9e814955aa40ad59368c`
-- deterministic manifest: **8/8 exact records**
-- Browser manifest: **9/9 exact records**
-- real Chromium + Browser-local human choice: **SUCCESS**
-- deterministic evidence A/B byte-tree reproduction: **SUCCESS**
+- implementation PR `#91` — **MERGED**
+- implementation/validation main: `7314deb5aba93073f1f7750dc68f9f4d31cd3c06`
+- state closure PR `#94` — **MERGED**
+- state closure main: `f6128a8b5dcaae5f4cb4e05ad21da415b34afaa5`
+- pre-durable exact head: `b22e41f690606aeedcffa11ef2ec5e915b34551d` — **15/15 SUCCESS**
+- durable-record exact head: `de309c7f030d6c3f8085da312bc7c7bfaa94e19d` — **15/15 SUCCESS**
+
+## Selected commercial-workstation successor / 선정된 상용 워크스테이션 후속 미션
+
+The post-Compare successor review selected:
+
+> **Issue #95 — Audio Track / Clip / Mixer Foundation v0 — RATIFIED TARGET, NOT YET VALIDATED**
+
+Selection record: `docs/POST_COMPARE_SUCCESSOR_SELECTION.md`.
+
+Why this comes before plugin hosting or recording:
+
+- the repository has no native immutable audio-asset domain;
+- no native audio clip model;
+- no native audio track model;
+- no internal multitrack mixer state;
+- no deterministic project mixdown derived from accepted audio arrangement state.
+
+Those are prerequisite primitives for recording, routing/buses, plugin hosting, latency compensation, waveform editing and deeper professional mixing.
+
+### Issue #95 target path
+
+```text
+supported WAV/PCM bytes
+→ immutable content-addressed audio asset
+→ accepted audio track + clip state
+→ source-bound Preview edit
+→ explicit Accept
+→ accepted mixer state
+→ deterministic offline mix plan
+→ deterministic stereo mixdown
+→ Browser arrangement/mixer inspection + audition
+```
+
+Minimum target controls include stable tracks/clips, clip placement/source range/gain and track gain/pan/mute/solo.
+
+Issue #95 explicitly does **not** yet claim microphone recording, low-latency device I/O, plugin hosting, latency compensation, arbitrary buses/sends, warp/time-stretch, destructive editing, comping or commercial release readiness.
 
 ## Canonical authority / 공식 권한 구조
 
@@ -116,53 +137,38 @@ PREVIEW · NOT ACCEPTED
         ↓ explicit Accept only
 M2 Project & Version Engine
         ↓
-Accepted Music Blueprint revision
-        ↓ trusted deterministic lowering
-Music IR + automation execution
-        ↓ explicit renderer mapping policy
-Renderer / Studio media artifacts
-        ↓ read-only projection
-Browser audition / accepted-revision Compare
+Accepted project / Music Blueprint revision
+        ↓ trusted deterministic lowering/execution
+Music IR / automation / future native audio mix plan
         ↓
-Browser-local human decision state
+Renderer / Studio media artifacts
+        ↓ read-only or bounded UI projection
+Browser Studio
 ```
 
-No renderer, Browser, Music IR, derived execution package, audio artifact, comparison result, local A/B choice or DAW/plugin state may promote itself back into canonical Blueprint authority.
+No renderer, Browser, decoded audio buffer, waveform cache, meter, Music IR, derived execution package, audio artifact, comparison result, local A/B choice, plugin runtime or external DAW state may silently promote itself into accepted project authority.
 
 ## Exact next bounded action / 정확한 다음 작업
 
-The explicit Compare gap is closed. The next repository action is therefore **not another implementation by assumption**.
+> **After this planning decision is merged, implement Issue #95 contract-first: choose the least invasive accepted audio-material authority shape → define audio asset/material/edit/mix contracts → immutable project asset store → source-bound Preview/Accept audio editing → deterministic offline mixer → Studio/Browser arrangement+mixer → restart/reopen evidence → permanent CI → durable validation → expected-head implementation merge → separate state-only closure.**
 
-> **Run a post-Compare successor review against `docs/PRODUCT_THESIS.md`, validated evidence, current non-claims and user leverage; compare the strongest remaining candidates and ratify exactly one bounded successor before implementation.**
+See `memory/NEXT_ACTION.md` for the exact execution order.
 
-Candidate families that must be evaluated rather than automatically selected include:
+## Important current non-claims / 주요 현재 비주장
 
-- `LIVE_PROVIDER_EVIDENCE` for actual OpenAI execution;
-- expansion beyond the single validated `mix.gain/project/normalized` automation renderer mapping;
-- automation-aware DAW/interchange reconciliation;
-- richer automation authoring/tempo/curve operations;
-- plug-in/device or real-time MIDI/OSC integration;
-- production distribution/collaboration surfaces;
-- human usability/perceptual evaluation where claims require it.
+MUSICA does not yet validate:
 
-See `memory/NEXT_ACTION.md`.
-
-## Current non-claims / 현재 비주장
-
-MUSICA does not yet validate, unless a future milestone explicitly does so:
-
-- a system-selected creative winner/preference between different revisions;
-- a second canonical automation renderer mapping family;
-- arbitrary canonical parameter → renderer/MIDI/plugin mapping;
-- VST/AU/CLAP hosting or generalized plug-in/device automation;
-- external DAW automation reconciliation;
-- arbitrary tempo maps or spline/bezier/exponential automation curves;
-- lane creation/deletion or parameter reassignment;
-- real-time MIDI/OSC automation;
+- native accepted audio track/clip/multitrack mixer workflow;
+- microphone/line recording or low-latency real-time device engine;
+- VST3/AU/CLAP hosting;
+- generalized routing/buses/sends or latency compensation;
+- arbitrary parameter → renderer/MIDI/plugin mapping;
+- external DAW automation/native-audio reconciliation;
 - live OpenAI provider execution;
-- human-subject usability/preference or perceptual-superiority claims;
-- waveform/destructive audio editing;
-- cloud collaboration, multi-user authority, installer/signing or production SLA claims.
+- time-stretch/warp or destructive waveform editing;
+- human preference/perceptual-superiority claims;
+- cloud collaboration or multi-user authority;
+- installer/signing/commercial release qualification or production SLA claims.
 
 ## Repository as source of truth / Repo 공식 근거
 

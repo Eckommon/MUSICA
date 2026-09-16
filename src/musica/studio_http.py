@@ -74,6 +74,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + b"\n"
             + _static_bytes("automation_editing.js")
             + b"\n"
+            + _static_bytes("automation_audition.js")
+            + b"\n"
             + _static_bytes("app.js")
         )
     if name == "app.css":
@@ -83,6 +85,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + _static_bytes("precision_editing.css")
             + b"\n"
             + _static_bytes("automation_editing.css")
+            + b"\n"
+            + _static_bytes("automation_audition.css")
             + b"\n"
             + _static_bytes("app.css")
         )

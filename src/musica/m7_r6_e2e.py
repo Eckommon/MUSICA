@@ -264,7 +264,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
                     view.accepted_media.wav.source === 'bound_artifact' &&
                     view.accepted_media.midi.source === 'bound_artifact';
                 }""",
-                candidate_revision,
+                arg=candidate_revision,
             )
             accepted = _audition(page)
             if accepted["accepted_media"]["wav"]["sha256"] != preview_audio_sha:

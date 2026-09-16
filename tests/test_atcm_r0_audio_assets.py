@@ -86,12 +86,21 @@ def test_legacy_blueprint_has_deterministic_empty_audio_material() -> None:
     validate_blueprint_audio(blueprint)
 
 
-def test_blueprint_allows_explicit_valid_audio_material() -> None:
+def test_nonempty_audio_structure_is_valid_but_r0_acceptance_is_fail_closed() -> None:
     blueprint = _blueprint()
-    blueprint["materials"]["audio"] = _material()
-    validate_contract(blueprint, "music-blueprint-v0.schema.json")
-    validate_blueprint_audio(blueprint)
-    assert audio_material_from_blueprint(blueprint, materialize_empty=False) == _material()
+    material = _material()
+    blueprint["materials"]["audio"] = material
+
+    validate_audio_material(
+        material, project_duration_seconds=float(blueprint["project"]["duration_seconds"])
+    )
+    validate_blueprint_audio(blueprint, allow_nonempty=True)
+    assert audio_material_from_blueprint(blueprint, materialize_empty=False) == material
+
+    with pytest.raises(ContractError, match="does not grant accepted non-empty"):
+        validate_blueprint_audio(blueprint)
+    with pytest.raises(ContractError, match="does not grant accepted non-empty"):
+        validate_contract(blueprint, "music-blueprint-v0.schema.json")
 
 
 def test_audio_material_rejects_duplicate_ids_bad_ranges_and_noncanonical_order() -> None:
@@ -172,6 +181,7 @@ def test_asset_export_import_and_reexport_preserve_exact_identity(tmp_path: Path
     imported = MusicaProject.import_from(archive, tmp_path / "imported.musica")
 
     assert verify_audio_assets(imported)["status"] == "PASS"
+    assert imported.verify_integrity()["audio_asset_count"] == 1
     assert read_audio_asset(imported, descriptor["asset_id"]) == descriptor
     assert audio_asset_bytes(imported, descriptor["asset_id"]) == data
     assert imported.export_bytes() == archive.read_bytes()
@@ -220,6 +230,8 @@ def test_missing_tampered_and_descriptor_corruption_fail_closed(tmp_path: Path) 
     descriptor_path.write_text(json.dumps(value), encoding="utf-8")
     with pytest.raises(ProjectIntegrityError, match="size mismatch|descriptor object"):
         read_audio_asset(project, descriptor["asset_id"])
+    with pytest.raises(ProjectIntegrityError, match="audio assets"):
+        project.verify_integrity()
 
     descriptor_path.write_bytes(project._object_path(
         next(

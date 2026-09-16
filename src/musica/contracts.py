@@ -291,6 +291,12 @@ def _validate_blueprint_invariants(blueprint: dict[str, Any]) -> None:
         part_ids=[str(value) for value in part_ids],
     )
 
+    # Native audio is an additive Blueprint extension, but once present it is subject
+    # to the same canonical fail-closed validation gate as notes and automation.
+    from .audio_contracts import validate_blueprint_audio
+
+    validate_blueprint_audio(blueprint)
+
 
 def validate_contract(instance: dict[str, Any], schema_name: str) -> None:
     """Validate one object against a MUSICA JSON Schema and v0 invariants."""

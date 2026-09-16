@@ -545,6 +545,17 @@ class MusicaProject:
         elif self.audit_head_path.exists():
             errors.append("audit HEAD exists without history")
 
+        audio_asset_count = 0
+        try:
+            # Local import prevents a module cycle: audio_assets reuses MusicaProject
+            # storage primitives while project integrity owns the aggregate fail-closed gate.
+            from .audio_assets import verify_audio_assets
+
+            audio_report = verify_audio_assets(self)
+            audio_asset_count = int(audio_report["audio_asset_count"])
+        except ContractError as exc:
+            errors.append(f"audio assets: {exc}")
+
         if metadata["root_revision_id"] not in record_hashes:
             errors.append("project root_revision_id does not exist")
 
@@ -558,6 +569,7 @@ class MusicaProject:
             "ref_count": ref_count,
             "object_count": object_count,
             "artifact_count": artifact_count,
+            "audio_asset_count": audio_asset_count,
             "audit_event_count": len(events),
             "audit_head_sha256": expected_audit_head,
         }

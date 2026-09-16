@@ -1,14 +1,15 @@
 # M7 Automation & Continuous-Control Authority v0 / M7 자동화·연속제어 권한 v0
 
-**Status:** `RATIFIED — M7-R0 CONTRACT + R1 CORE RUNTIME + R2 BROWSER SURFACE + R3 DERIVED EXECUTION + R4 BOUNDED AUDIBLE EXECUTION + R5 STUDIO AUDITION/PERSISTENCE VALIDATED`  
+**Status:** `RATIFIED — M7-R0 CONTRACT + R1 CORE RUNTIME + R2 BROWSER SURFACE + R3 DERIVED EXECUTION + R4 BOUNDED AUDIBLE EXECUTION + R5 STUDIO AUDITION/PERSISTENCE + R6 TRUTHFUL AUDITION INSPECTION VALIDATED`  
 **R0 Issue/PR:** `#68 / #69`  
 **R1 Issue/PR:** `#71 / #72`  
 **R2 Issue/PR:** `#74 / #75`  
 **R3 Issue/PR:** `#77 / #78`  
 **R4 Issue/PR:** `#80 / #81`  
 **R5 Issue/PR:** `#84 / #83`  
-**Durable evidence:** `evidence/M7_R0_VALIDATION.md` → `evidence/M7_R5_VALIDATION.md`  
-**Next bounded extension:** `M7-R6 — Truthful Audible Automation Capability & Browser Lifecycle Inspection`
+**R6 Issue/PR:** `#86 / #87`  
+**Durable evidence:** `evidence/M7_R0_VALIDATION.md` → `evidence/M7_R6_VALIDATION.md`  
+**Next bounded action:** `Post-M7 closure review & next-milestone selection`
 
 ## 1. Authority invariant
 
@@ -21,6 +22,7 @@ accepted Blueprint automation material
 → R5 Studio pending audition artifact
 → explicit Accept only
 → existing M2 revision + bound artifact authority
+→ R6 read-only truthful audition inspection
 
 user / AI / bounded Browser proposal
 → source-bound AutomationEditCandidate
@@ -38,6 +40,7 @@ Forbidden authority remains:
 derived execution → fabricated canonical automation
 Music IR / renderer / plug-in / audio state → accepted Blueprint
 Browser DOM/canvas coordinate → canonical identity
+Browser inspection state → canonical identity or acceptance
 DAW lane/index → stable MUSICA identity
 AI-generated curve → implicit acceptance
 backend address / MIDI CC → canonical parameter identity
@@ -49,7 +52,7 @@ accepted audio artifact → canonical automation inference
 
 `automation-material-v0` remains the canonical explicit continuous-control representation under accepted Blueprint `materials.automation`; `materials.automation_locks` carries optional stable-ID automation locks.
 
-A legacy Blueprint with no automation remains valid and unchanged. Missing automation means **no accepted explicit automation**. Deterministic empty material/execution may be used for source binding only; it is not written into legacy Blueprint authority and is not inferred from semantic controls, Music IR, renderer, audio or interchange state.
+A legacy Blueprint with no automation remains valid and unchanged. Missing automation means **no accepted explicit automation**. Deterministic empty material/execution may be used for source binding only; it is not written into legacy Blueprint authority and is not inferred from semantic controls, Music IR, renderer, audio, Browser inspection or interchange state.
 
 ## 3. Ratified identity, scope and domains
 
@@ -77,11 +80,12 @@ Lane creation/deletion and parameter reassignment remain out of scope.
 
 `src/musica/automation_edit.py` implements trusted-core edit authority. A valid candidate creates a non-canonical Preview and cannot mutate Project refs or Music IR directly. Only explicit existing M2 acceptance may advance canonical project authority.
 
-Validated through R5:
+Validated through R6:
 
 ```text
 Preview construction → accepted ref unchanged
 R5 audible audition install → accepted ref unchanged
+R6 Browser inspection → read-only, accepted ref unchanged
 Discard → pending audition removed, accepted ref/artifacts unchanged
 explicit Accept → exactly one immutable M2 revision advance
 Accept → exact pending WAV/MIDI bound to accepted revision
@@ -89,11 +93,11 @@ reopen → accepted artifact bytes served unchanged
 blocked/failing candidate → no accepted mutation
 ```
 
-Audio availability never implies acceptance.
+Audio availability or Browser visibility never implies acceptance.
 
 ## 5. M7-R3 derived execution authority
 
-`automation-execution-v0` is an L4 derived sidecar. It binds exact accepted project/revision/Blueprint/material identity and lowers canonical beats to deterministic PPQ 480 ticks using Decimal `ROUND_HALF_UP` while preserving source beats, values, point IDs and `hold|linear` segment semantics.
+`automation-execution-v0` is a derived sidecar. It binds exact accepted project/revision/Blueprint/material identity and lowers canonical beats to deterministic PPQ 480 ticks using Decimal `ROUND_HALF_UP` while preserving source beats, values, point IDs and `hold|linear` segment semantics.
 
 Every lane remains `DERIVED_GENERIC` with typed backend mapping `UNMAPPED`. R3 grants no Project, Blueprint, renderer or reverse-promotion authority.
 
@@ -140,21 +144,7 @@ Any future MIDI/plugin mapping requires its own explicit derived adapter contrac
 
 ## 8. M7-R5 Studio audition authority
 
-R5 integrates the already validated R3→R4 path into the actual Studio pending Preview lifecycle without changing M2 authority.
-
-`StudioAutomationSurface._install_audible_preview()`:
-
-1. requires an existing trusted pending `automation_edit` Preview;
-2. reads the candidate Blueprint only from that pending trusted Preview;
-3. compiles candidate Music IR;
-4. derives R3 execution;
-5. builds the R4 reference-renderer plan;
-6. replaces only the pending Preview WAV;
-7. records `studio_audition` proof as non-canonical detail;
-8. verifies the accepted project ref is unchanged;
-9. clears the pending Preview fail-closed on any audible-installation failure.
-
-R5 does not create a new acceptance path. Existing `StudioService.accept_preview()` remains the only transition that can commit the candidate revision and bind its exact pending WAV/MIDI artifacts.
+R5 integrates the validated R3→R4 path into the Studio pending Preview lifecycle without changing M2 authority.
 
 Validated R5 lifecycle:
 
@@ -164,60 +154,86 @@ Preview WAV = accepted WAV = reopened WAV
 Preview MIDI = accepted MIDI = reopened MIDI
 ```
 
-Reference evidence hashes:
+Reference evidence hashes remain:
 
-- R5 manifest: `ab5c99c4ab474eccac17b727cf0a502061f2691ffae5bbfab734572a90e5c772`
 - Preview/accepted/reopened WAV: `4f26a08636726945205c97575885f9966f67245dc086eb30fd4af198c71d21b7`
 - Preview/accepted/reopened MIDI: `b7b5f5cbeff58888132032f13880d2bc5aad701e906c37daa077c6e8a834248f`
-- pre-durable vs successor R5 evidence: **16 files / 0 differences**
-- R4 preservation recheck: **14 files / 0 differences**
 
-Implementation merge/main: `43488fe85bb6c2fde19dc27d0dabfdb7587d7f1f`.
+R5 creates no new acceptance path. Existing `StudioService.accept_preview()` remains the transition that can commit the candidate revision and bind its exact pending WAV/MIDI artifacts.
 
 ## 9. Historical R2 Browser contract remains historical
 
-R5 intentionally does **not** silently rewrite `studio-automation-view-v0`. That schema still contains:
+`studio-automation-view-v0` remains frozen and still contains:
 
 ```text
 audible_automation_validated = false
 ```
 
-This field describes the bounded R2 view contract as ratified at R2. R5 proof is currently carried separately under pending `studio_audition` detail.
+This is historically truthful for the bounded R2 contract. R6 does not reinterpret or mutate that field.
 
-After R5 this creates a product truthfulness gap: the Studio can perform a validated audible audition, but the versioned Browser automation view does not yet formally expose the renderer policy, mapped/unmapped lanes, automation-applied status, Preview media hashes or accepted-artifact lineage.
+## 10. M7-R6 truthful audition-inspection authority
 
-## 10. M7-R6 authority decision
-
-R6 must close the truthfulness/inspection gap **without mutating the historical meaning of v0 and without expanding renderer mapping coverage**.
-
-Preferred design:
+R6 closes the post-R5 truthfulness gap with a **separate versioned read-only contract**, `studio-automation-audition-v0`.
 
 ```text
-R5 studio_audition proof
-→ new versioned Browser audition/capability contract
-→ explicit renderer_policy_id
-→ supported/mapped lane IDs
-→ unsupported/unmapped lane IDs
-→ automation_applied + output_differs_from_baseline
-→ render-plan + media hashes
-→ pending PREVIEW lifecycle visibility
-→ accepted artifact identity after Accept/reopen
+historical accepted automation state
++ trusted R5 pending.detail.studio_audition
++ exact accepted/fallback media identity
+→ studio-automation-audition-v0
+→ localhost GET inspection endpoint
+→ non-authoritative Browser inspector
 ```
 
-R6 must preserve:
+R6 truthfully exposes:
 
-- accepted Blueprint as canonical authority;
-- Preview as non-canonical;
-- explicit Accept as the only project-state transition;
-- current R4 mapping set exactly as-is;
-- no inference from audio back into automation;
-- no mutation of the old R2 contract by reinterpretation.
+- renderer policy identity;
+- mapped lane IDs and unmapped lane IDs;
+- pending `PREVIEW · NOT ACCEPTED` state;
+- `automation_applied` and baseline-difference status;
+- render-plan and Preview media hashes;
+- exact accepted revision and WAV/MIDI source (`bound_artifact | fallback_render`);
+- Discard restoration;
+- explicit Accept lineage;
+- restart/reopen artifact identity.
 
-## 11. Explicit non-claims
+The Browser computes served media SHA-256 during real-Chromium evidence and verifies it against trusted inspection hashes. This remains verification only, not authority.
 
-M7-R0→R5 do **not** validate:
+Validated R6 boundaries:
 
-- a truthful versioned Browser contract for R5 audible capabilities/artifact lineage;
+```text
+mapped_lane_ids   = [A-MIX-GAIN]
+unmapped_lane_ids = [B-SYNTH-CUTOFF]
+canonical = false
+browser_mutation_authorized = false
+project_mutation_authorized = false
+reverse_promotion_authorized = false
+explicit_accept_required = true
+```
+
+Unsupported-only `synth.cutoff` audition reports `automation_applied=false` and `output_differs_from_baseline=false`.
+
+Durable evidence: `evidence/M7_R6_VALIDATION.md`.
+
+R6 exact lineage:
+
+- pre-durable head: `af11315c777f761179ca3d94bfed1a6e472dd315`
+- successor head: `93129768ff4b33c663eeeccda22c1d07faea0872`
+- final validation-record head: `0ea3fd976a8b63293d434bb427f7dfeffb68fcfd`
+- implementation/validation merge main: `1de099e8d3e489c818ae561ddfb0c43c4ffdcbfc`
+- pre-durable, successor and final-record permanent gates: **14/14 SUCCESS** each
+- deterministic manifest: `926c0608c5998ceaa1ac0f49c19dbf4f293acc180d0e2433d067b369d32b953a`
+- deterministic pre-durable vs successor: **14 files / 0 differences**
+
+## 11. Post-M7 decision boundary
+
+No `M7-R7` or `M8` is currently ratified in the repository. M7-R6 therefore closes the currently planned M7 sequence.
+
+The next action is an evidence-based architecture/product closure review. It must select exactly one bounded next milestone from the remaining product gaps before implementation begins. Renderer mapping expansion is **not** the default continuation merely because R4→R6 validated one family.
+
+## 12. Explicit non-claims
+
+M7-R0→R6 do **not** validate:
+
 - a second canonical parameter mapping family;
 - arbitrary parameter → renderer/MIDI/plugin mappings;
 - arbitrary VST/AU/CLAP mapping/hosting;
@@ -226,6 +242,8 @@ M7-R0→R5 do **not** validate:
 - lane create/delete or parameter reassignment;
 - arbitrary tempo maps;
 - spline/bezier/exponential curves;
-- human-subject usability/perceptual benefit.
+- live OpenAI provider execution;
+- human-subject usability/perceptual benefit;
+- destructive waveform editing, cloud collaboration or production installer/signing.
 
 **Repository evidence remains authoritative over conversation/model memory.**

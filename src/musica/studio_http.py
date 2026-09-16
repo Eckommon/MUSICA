@@ -16,6 +16,7 @@ from urllib.parse import urlsplit
 
 from .studio import StudioApplication, StudioService, StudioServiceError
 from .studio_automation import StudioAutomationSurface
+from .studio_automation_audition import StudioAutomationAuditionSurface
 from .studio_notes import StudioNoteSurface
 
 MAX_JSON_BODY_BYTES = 1_048_576
@@ -73,6 +74,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + b"\n"
             + _static_bytes("automation_editing.js")
             + b"\n"
+            + _static_bytes("automation_audition.js")
+            + b"\n"
             + _static_bytes("app.js")
         )
     if name == "app.css":
@@ -83,6 +86,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + b"\n"
             + _static_bytes("automation_editing.css")
             + b"\n"
+            + _static_bytes("automation_audition.css")
+            + b"\n"
             + _static_bytes("app.css")
         )
     return _static_bytes(name)
@@ -91,6 +96,7 @@ def _browser_asset_bytes(name: str) -> bytes:
 def make_handler(application: StudioApplication):
     note_surface = StudioNoteSurface(application.service)
     automation_surface = StudioAutomationSurface(application.service)
+    audition_surface = StudioAutomationAuditionSurface(application.service)
 
     class StudioRequestHandler(BaseHTTPRequestHandler):
         server_version = "MUSICAStudio/0.5"
@@ -214,6 +220,16 @@ def make_handler(application: StudioApplication):
                 ):
                     data = automation_surface.automation_view(parts[2])
                     self._send_json(HTTPStatus.OK, application._response("automation_view", data))
+                    return
+
+                if (
+                    method == "GET"
+                    and len(parts) == 5
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3:] == ["automation", "audition"]
+                ):
+                    data = audition_surface.audition_view(parts[2])
+                    self._send_json(HTTPStatus.OK, application._response("automation_audition_view", data))
                     return
 
                 if (

@@ -1,0 +1,127 @@
+.revision-compare-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.revision-compare-heading,
+.revision-compare-side-heading,
+.revision-compare-diff-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.revision-compare-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.revision-compare-toolbar label {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.revision-compare-toolbar select {
+  width: 100%;
+}
+
+.revision-compare-arrow {
+  align-self: center;
+  font-size: 1.2rem;
+  opacity: 0.65;
+}
+
+.revision-compare-status {
+  border-radius: 0.65rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+}
+
+.revision-compare-status.success {
+  border-color: rgba(82, 196, 130, 0.45);
+}
+
+.revision-compare-status.error {
+  border-color: rgba(255, 107, 107, 0.55);
+}
+
+.revision-compare-audio-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin: 0.9rem 0;
+}
+
+.revision-compare-side {
+  display: grid;
+  gap: 0.6rem;
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.revision-compare-side audio {
+  width: 100%;
+}
+
+.revision-compare-side-heading span,
+.revision-compare-side .mono {
+  overflow-wrap: anywhere;
+}
+
+.revision-compare-diff-heading {
+  margin-top: 1rem;
+}
+
+.revision-compare-diff {
+  display: grid;
+  gap: 0.55rem;
+  max-height: 24rem;
+  overflow: auto;
+  padding-left: 1.5rem;
+}
+
+.revision-compare-diff li {
+  padding: 0.55rem 0.65rem;
+  border-bottom: 1px solid var(--line, rgba(255, 255, 255, 0.09));
+}
+
+.revision-compare-diff code {
+  margin-left: 0.35rem;
+}
+
+.revision-compare-values {
+  display: block;
+  margin-top: 0.25rem;
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.78rem;
+  opacity: 0.72;
+  overflow-wrap: anywhere;
+}
+
+.revision-compare-empty {
+  list-style: none;
+  margin-left: -1.5rem;
+  opacity: 0.75;
+}
+
+.revision-compare-authority {
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 820px) {
+  .revision-compare-toolbar,
+  .revision-compare-audio-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .revision-compare-arrow {
+    display: none;
+  }
+}

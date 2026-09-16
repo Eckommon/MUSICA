@@ -1,10 +1,10 @@
 # M7-R6 Validation — Truthful Audible Automation Capability & Browser Lifecycle Inspection
 
-Status: **VALIDATION CANDIDATE — SUCCESSOR RERUN REQUIRED**
+Status: **VALIDATED — BOUNDED TRUTHFUL AUDITION INSPECTION**
 
-M7-R6 is not yet promoted. This record durably captures the exact pre-durable evidence on the implementation head and the bounded claim that must reproduce on the successor head before merge. Repository evidence remains authoritative over conversation/model memory.
+M7-R6 is validated only for the bounded truthful-inspection lifecycle described here. Repository evidence remains authoritative over conversation/model memory.
 
-## 1. Candidate validated claim
+## 1. Validated claim
 
 > MUSICA can expose a separate, versioned, read-only Studio automation audition inspection contract that truthfully reports the already validated bounded `mix.gain / project / normalized` renderer mapping, pending audible Preview state, exact Preview WAV/MIDI hashes, accepted artifact identity and source, Discard restoration, explicit Accept lineage, and restart/reopen persistence, without rewriting the historical R2 automation view or granting Browser/audio/renderer reverse authority.
 
@@ -50,21 +50,30 @@ The Browser inspector does not create authority. Canonical transitions still occ
 - branch: `m7-r6-truthful-audition-inspection`
 - canonical base/main: `4c2960e7e10329c34fda05e6ae146e9cb382fb5f`
 - exact pre-durable head: `af11315c777f761179ca3d94bfed1a6e472dd315`
+- exact successor evidence head: `93129768ff4b33c663eeeccda22c1d07faea0872`
 
-The implementation changes exactly these ten paths before this durable evidence record:
+The implementation changes exactly these ten paths before the durable validation record:
 
 ```text
 .github/workflows/m7-r6-truthful-audition-inspection-evidence.yml
- e2e/test_m7_r6_browser.py
- schemas/studio-automation-audition-v0.schema.json
- src/musica/m7_r6_demo.py
- src/musica/m7_r6_e2e.py
- src/musica/studio_automation_audition.py
- src/musica/studio_http.py
- src/musica/studio_web/automation_audition.css
- src/musica/studio_web/automation_audition.js
- tests/test_m7_r6_studio_audition_inspection.py
+e2e/test_m7_r6_browser.py
+schemas/studio-automation-audition-v0.schema.json
+src/musica/m7_r6_demo.py
+src/musica/m7_r6_e2e.py
+src/musica/studio_automation_audition.py
+src/musica/studio_http.py
+src/musica/studio_web/automation_audition.css
+src/musica/studio_web/automation_audition.js
+tests/test_m7_r6_studio_audition_inspection.py
 ```
+
+The successor head differs from the pre-durable head by exactly one file:
+
+```text
+evidence/M7_R6_VALIDATION.md
+```
+
+No runtime, schema, test or workflow file changed between pre-durable and successor evidence heads.
 
 M7-R6 does not modify the canonical Blueprint schema, canonical automation schema, Music IR schema, R3 execution schema, R4 renderer mapping family, M2 project authority, MIDI renderer semantics, or the frozen R2 automation-view schema.
 
@@ -89,7 +98,28 @@ Exact head: `af11315c777f761179ca3d94bfed1a6e472dd315`
 | M5-R4 Paired Audio Evidence | `35043531157` | SUCCESS |
 | M5-R3 DAWproject Evidence | `35043531103` | SUCCESS |
 
-The R6 workflow itself completed all of the following steps successfully:
+## 5. Successor exact-head permanent gates — 14/14 SUCCESS
+
+Exact successor head: `93129768ff4b33c663eeeccda22c1d07faea0872`
+
+| Workflow | Run | Result |
+|---|---:|---|
+| MUSICA CI | `35044535273` | SUCCESS |
+| M7-R6 Truthful Audition Inspection Evidence | `35044535253` | SUCCESS |
+| M7-R5 Studio Audible Automation Evidence | `35044535247` | SUCCESS |
+| M7-R4 Audible Automation Evidence | `35044535284` | SUCCESS |
+| M7-R3 Automation Lowering Evidence | `35044535269` | SUCCESS |
+| M7-R2 Real-Browser Automation Evidence | `35044535228` | SUCCESS |
+| M7-R1 Automation Runtime Evidence | `35044535289` | SUCCESS |
+| M7-R0 Automation Contract Evidence | `35044535227` | SUCCESS |
+| M6-R4 Interchange Note Reconciliation | `35044535237` | SUCCESS |
+| M6-R3 Real-Browser Exact-Note Evidence | `35044535226` | SUCCESS |
+| M6-R2 Piano-Roll Evidence | `35044535209` | SUCCESS |
+| M6-R1 Exact-Note Edit Evidence | `35044535233` | SUCCESS |
+| M5-R4 Paired Audio Evidence | `35044535219` | SUCCESS |
+| M5-R3 DAWproject Evidence | `35044535224` | SUCCESS |
+
+On both heads the R6 workflow itself completed all of the following successfully:
 
 1. bounded Studio automation regression suite;
 2. real-Chromium accepted → Preview → Discard → Preview → explicit Accept → restart/reopen lifecycle;
@@ -98,7 +128,7 @@ The R6 workflow itself completed all of the following steps successfully:
 5. `diff -qr artifacts/m7-r6-a artifacts/m7-r6-b` byte-tree reproducibility proof;
 6. evidence artifact upload.
 
-## 5. Pre-durable R6 artifact integrity
+## 6. Pre-durable R6 artifact integrity
 
 Artifact:
 
@@ -129,9 +159,42 @@ The workflow intentionally uploads deterministic evidence A and the real-browser
 - accepted MIDI SHA-256: `b7b5f5cbeff58888132032f13880d2bc5aad701e906c37daa077c6e8a834248f`
 - real Browser screenshots: **5** lifecycle states
 
-The deterministic and Browser paths independently converge on the same accepted WAV and MIDI bytes.
+## 7. Successor R6 artifact integrity and reproducibility
 
-## 6. Exact lifecycle proof
+Successor artifact:
+
+- artifact ID: `10426332617`
+- artifact name: `musica-m7-r6-truthful-audition-inspection-evidence`
+- packaging ZIP SHA-256: `dff062e068a73c5a6e134913327576e32cfc5aa7e7761b80a3d6b650a980d7dd`
+- archive size: `5,648,182` bytes
+- archive files: **55**
+
+### Deterministic evidence
+
+- successor deterministic manifest SHA-256: `926c0608c5998ceaa1ac0f49c19dbf4f293acc180d0e2433d067b369d32b953a`
+- successor manifest records: **13/13 exact SHA-256 + byte-size matches**
+- extracted pre-durable vs successor deterministic evidence: **14 files / 0 differences**
+- accepted revision remains `rev-studio-25899a82ea1f87628cc0f71c`
+- accepted WAV remains `4f26a08636726945205c97575885f9966f67245dc086eb30fd4af198c71d21b7`
+- accepted MIDI remains `b7b5f5cbeff58888132032f13880d2bc5aad701e906c37daa077c6e8a834248f`
+
+### Real-Chromium evidence
+
+- successor Browser manifest SHA-256: `b1ca6fbf9cfb72b344dde0eb9ffc81710e935292b1ec7d6bf2ab2e458c95cb1c`
+- successor Browser manifest records: **17/17 exact SHA-256 + byte-size matches**
+- accepted WAV remains `4f26a08636726945205c97575885f9966f67245dc086eb30fd4af198c71d21b7`
+- accepted MIDI remains `b7b5f5cbeff58888132032f13880d2bc5aad701e906c37daa077c6e8a834248f`
+- `proof.json` is byte/semantic identical between pre-durable and successor Browser evidence;
+- historical R2 view, initial accepted state and discarded state are byte/semantic identical;
+- mapped/unmapped lane sets remain exactly `["A-MIX-GAIN"]` / `["B-SYNTH-CUTOFF"]`;
+- expected superseded-audio abort count remains exactly `2`;
+- accepted/reopened media identity is exact within each run and converges on the same WAV/MIDI bytes across runs.
+
+The real-browser tree is intentionally not required to be byte-identical across independent runs because session IDs, generated candidate revision IDs, cache-bust URL values and screenshots contain run-local identity. Those values carry no canonical authority. The stable semantic proof and exact media bytes are the promotion criteria.
+
+The ZIP packaging digest is also not expected to be byte-stable.
+
+## 8. Exact lifecycle proof
 
 Independent artifact inspection proves:
 
@@ -158,7 +221,22 @@ Independent artifact inspection proves:
 - `reverse_promotion_authorized=false`;
 - `explicit_accept_required=true`.
 
-## 7. Browser request-cancellation classification
+The stable Browser proof is identical on pre-durable and successor runs, including:
+
+- Browser console errors: `0`;
+- Browser page errors: `0`;
+- unexpected Browser request failures: `0`;
+- expected superseded audio aborts: `2`;
+- `real_chromium_used=true`;
+- `historical_r2_view_preserved=true`;
+- `accepted_mapping_mix_gain_only=true`;
+- `unsupported_cutoff_truthfully_unmapped=true`;
+- `browser_audio_hash_matches_pending_inspection=true`;
+- `browser_midi_hash_matches_pending_inspection=true`;
+- `explicit_accept_advanced_exactly_once=true`;
+- `reopen_preserves_exact_bound_artifacts=true`.
+
+## 9. Browser request-cancellation classification
 
 During source changes, Chromium may abort a superseded `<audio>` request when the Studio replaces the cache-busted media URL during Preview/Discard/Accept transitions.
 
@@ -170,16 +248,9 @@ GET .../media/audio.wav?v=...: net::ERR_ABORTED
 
 and records it separately in `expected-media-aborts.json`.
 
-The pre-durable Browser run recorded exactly **2** expected media aborts. All other request failures remain fail-closed. The final proof reports:
+Both pre-durable and successor Browser runs recorded exactly **2** expected media aborts. All other request failures remain fail-closed. This classification does not weaken transport or API failure detection outside the exact superseded-audio case.
 
-- Browser console errors: `0`
-- Browser page errors: `0`
-- unexpected Browser request failures: `0`
-- expected superseded audio aborts: `2`
-
-This classification does not weaken transport or API failure detection outside the exact superseded-audio case.
-
-## 8. Explicit non-claims
+## 10. Explicit non-claims
 
 M7-R6 does **not** validate or claim:
 
@@ -196,21 +267,23 @@ M7-R6 does **not** validate or claim:
 - perceptual quality, mastering quality or human preference;
 - production latency/SLA guarantees.
 
-## 9. Promotion gate still required
+## 11. Promotion verdict
 
-This record does **not** promote M7-R6 by itself.
+All successor promotion conditions are satisfied:
 
-Before the status can change to `VALIDATED`, the exact successor head containing this durable record must satisfy all of the following:
+1. **14/14 permanent workflows SUCCESS** on the pre-durable head;
+2. **14/14 permanent workflows SUCCESS** on the successor head;
+3. pre-durable and successor R6 artifacts independently inspected;
+4. deterministic manifest integrity is **13/13** on both artifacts;
+5. Browser manifest integrity is **17/17** on both artifacts;
+6. deterministic evidence is **14 files / 0 differences** across pre-durable and successor runs;
+7. Browser semantic `proof.json` is identical across runs;
+8. accepted WAV/MIDI hashes are unchanged across deterministic and Browser paths;
+9. mapped/unmapped boundary remains exactly `A-MIX-GAIN` / `B-SYNTH-CUTOFF`;
+10. historical R2 contract remains unchanged and truthful;
+11. authority remains non-canonical with no reverse promotion;
+12. no excluded capability is newly claimed.
 
-1. all **14/14 permanent workflows SUCCESS**;
-2. successor R6 artifact independently inspected;
-3. deterministic manifest integrity preserved;
-4. Browser manifest integrity preserved;
-5. successor deterministic evidence tree byte-identical to the pre-durable deterministic evidence tree;
-6. accepted WAV/MIDI hashes unchanged;
-7. mapping/unmapping boundary unchanged;
-8. historical R2 contract remains unchanged;
-9. authority flags remain non-canonical/fail-closed;
-10. no excluded capability is newly claimed.
+Therefore M7-R6 is **VALIDATED — BOUNDED TRUTHFUL AUDITION INSPECTION**.
 
-Only after those conditions are satisfied may this record be updated to a final validated verdict and PR #87 be considered for expected-head merge.
+The final validation-record head containing this verdict must itself reproduce the permanent 14-workflow set before PR #87 is eligible for expected-head merge.

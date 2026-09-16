@@ -4,7 +4,7 @@
 >
 > **MUSICA는 누구나 의도로 음악을 만들 수 있게 하되, 모든 음악적 결정을 검사하고, 잠그고, 편집하고, 재현하고, 프로그래밍할 수 있게 하는 시스템이다.**
 
-MUSICA is an **AI-native programmable music workstation**. The accepted Music Blueprint/project revision is creative authority. Music IR, Browser state, derived automation execution, renderer/plugin state, audio artifacts and interchange/DAW state are derived or non-canonical.
+MUSICA is an **AI-native programmable music workstation**. The accepted Music Blueprint/project revision is creative authority. Music IR, Browser state, derived automation execution, renderer/plugin state, audio artifacts, comparison projections and interchange/DAW state are derived or non-canonical.
 
 ## Current canonical status / 현재 공식 상태
 
@@ -24,6 +24,12 @@ M7-R4  reference-renderer audible mix.gain mapping        VALIDATED — BOUNDED 
 M7-R5  Studio audible Preview / Accept / reopen lifecycle VALIDATED — BOUNDED STUDIO AUDITION & ARTIFACT PERSISTENCE
 M7-R6  truthful audible automation lifecycle inspection   VALIDATED — BOUNDED TRUTHFUL AUDITION INSPECTION
 ```
+
+The post-M7 planning gate has selected exactly one bounded successor:
+
+> **Issue #89 — Accepted Revision A/B Compare & Decision Surface v0 — RATIFIED FOR IMPLEMENTATION, NOT YET VALIDATED**
+
+No artificial `M7-R7` or `M8` number is assigned by this selection.
 
 ## M7-R6 validated boundary
 
@@ -61,6 +67,8 @@ Durable evidence: `evidence/M7_R6_VALIDATION.md`.
 - Issue `#86` — **COMPLETED**
 - PR `#87` — **MERGED**
 - implementation + validation merge/main: `1de099e8d3e489c818ae561ddfb0c43c4ffdcbfc`
+- state closure PR `#88` — **MERGED**
+- state closure main: `2bfc8ffbe707c06f016d820cc47d901ed862be92`
 - pre-durable head: `af11315c777f761179ca3d94bfed1a6e472dd315`
 - successor evidence head: `93129768ff4b33c663eeeccda22c1d07faea0872`
 - final validation-record head: `0ea3fd976a8b63293d434bb427f7dfeffb68fcfd`
@@ -92,23 +100,56 @@ Music IR + automation-execution-v0
         ↓ explicit renderer mapping policy
 Renderer / Studio media artifacts
         ↓ read-only inspection only
-Browser audition inspector
+Browser audition / comparison surfaces
 ```
 
-No renderer, Browser, Music IR, derived execution package, audio artifact or DAW/plugin state may promote itself back into canonical Blueprint authority.
+No renderer, Browser, Music IR, derived execution package, audio artifact, comparison projection or DAW/plugin state may promote itself back into canonical Blueprint authority.
+
+## Selected post-M7 successor / 선정된 Post-M7 후속 capability
+
+The product thesis defines the core loop:
+
+```text
+Describe → Generate Blueprint → Audition → Lock → Refine → Compare → Accept
+```
+
+M4-R3 already validates natural-language create, audition, semantic Preview, explicit Accept, branch/history/export and restart/reopen in real Chromium. The post-M7 review therefore rejected a duplicate generic end-to-end milestone.
+
+The selected gap is **Compare** at the accepted-revision product level. M2 already validates immutable accepted revisions, arbitrary revision reads and deterministic structured diffs. Accepted artifacts are revision-bound, while Studio already has artifact-first / deterministic-render-fallback audition for the current accepted HEAD.
+
+Issue `#89` will add a bounded read-only path:
+
+```text
+accepted revision A + accepted revision B
+→ exact revision/Blueprint provenance
+→ deterministic A_TO_B structured diff
+→ exact per-revision bound/fallback media provenance
+→ independent Browser A/B audition
+→ user decision only
+```
+
+The system must not rank the versions, assign a creative winner, infer canonical state from audio, or move branch/HEAD merely because Compare was opened.
+
+Selection record: `docs/POST_M7_NEXT_MILESTONE_SELECTION.md`.
+
+## Why live OpenAI is deferred / live OpenAI 보류 이유
+
+M3-R2 already implements and validates the provider adapter contract and offline integration path, including a live-ready HTTPS transport behind the trusted provider-neutral boundary. What remains is a separately classified `LIVE_PROVIDER_EVIDENCE` smoke test, dependent on network/credentials/model availability.
+
+That evidence remains useful but is not prerequisite to closing the explicit Compare stage, so it is deferred rather than rejected.
 
 ## Exact next bounded action / 정확한 다음 작업
 
-The repository does **not** currently ratify an `M7-R7` or `M8` milestone. The next action is therefore not feature implementation by inertia.
+> **Implement Issue #89 contract-first: comparison contract → trusted read-only projection → arbitrary accepted-revision media → localhost HTTP routes → Browser A/B surface → deterministic tests → real-Chromium evidence → permanent CI/evidence → expected-head merge → state-only closure.**
 
-> **Post-M7 closure review → evidence-based next-milestone selection**
-
-The review must inspect the validated M0→M7 stack, product thesis, remaining non-claims, dependency readiness and user-value leverage, then ratify exactly one bounded next milestone before implementation begins. See `memory/NEXT_ACTION.md`.
+See `memory/NEXT_ACTION.md` for the exact implementation order and promotion criteria.
 
 ## Current non-claims / 현재 비주장
 
 MUSICA does not yet validate, unless a future milestone explicitly does so:
 
+- accepted-revision A/B Browser comparison or arbitrary-revision Studio audition;
+- a system-selected creative winner/preference between revisions;
 - a second canonical automation renderer mapping family;
 - arbitrary parameter → renderer/MIDI/plugin mapping;
 - plug-in/mixer/device mapping or VST/AU/CLAP hosting;
@@ -131,6 +172,6 @@ accepted repository tests/artifacts/evidence
 > model memory/inference
 ```
 
-Before substantive next-milestone work read `governance/SOURCE_OF_TRUTH.md`, `docs/PRODUCT_THESIS.md`, `docs/M7_AUTOMATION_AUTHORITY.md`, `evidence/M7_R6_VALIDATION.md`, `memory/CURRENT_STATE.md`, and `memory/NEXT_ACTION.md`.
+Before Issue `#89` implementation work read `governance/SOURCE_OF_TRUTH.md`, `docs/PRODUCT_THESIS.md`, `docs/POST_M7_NEXT_MILESTONE_SELECTION.md`, Issue `#89`, `src/musica/project.py`, `src/musica/diff.py`, `src/musica/studio.py`, `src/musica/studio_http.py`, `evidence/M4_R3_VALIDATION.md`, `evidence/M7_R6_VALIDATION.md`, `memory/CURRENT_STATE.md`, and `memory/NEXT_ACTION.md`.
 
 **Repository evidence remains authoritative over conversation/model memory.**

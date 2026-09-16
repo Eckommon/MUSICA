@@ -2,164 +2,191 @@
 
 ## Exact resume point / 정확한 재개점
 
-**POST-M7 CLOSURE REVIEW — EVIDENCE-BASED NEXT-MILESTONE SELECTION**
+**ISSUE #89 — ACCEPTED REVISION A/B COMPARE & DECISION SURFACE v0**
 
-M7-R6 is `VALIDATED — BOUNDED TRUTHFUL AUDITION INSPECTION`. The repository does not currently ratify an `M7-R7` or `M8`. Do not infer a new milestone from numbering, implementation momentum or adjacent technical possibility.
+The post-M7 closure review has selected exactly one bounded successor capability. Do not infer `M7-R7` or `M8`; the selected mission is identified by its descriptive product capability and Issue `#89` until repository governance explicitly decides otherwise.
 
-The next mission is a **bounded planning gate** that selects exactly one successor milestone from evidence.
+M7-R6 remains `VALIDATED — BOUNDED TRUTHFUL AUDITION INSPECTION`. Issue `#89` is **RATIFIED FOR IMPLEMENTATION, NOT YET VALIDATED**.
 
 ## Canonical starting point / 공식 시작점
 
+- predecessor canonical main: `2bfc8ffbe707c06f016d820cc47d901ed862be92`
 - M7-R6 Issue `#86` — **COMPLETED**
-- M7-R6 PR `#87` — **MERGED**
-- implementation/validation merge main: `1de099e8d3e489c818ae561ddfb0c43c4ffdcbfc`
-- pre-durable head: `af11315c777f761179ca3d94bfed1a6e472dd315`
-- successor evidence head: `93129768ff4b33c663eeeccda22c1d07faea0872`
-- final validation-record head: `0ea3fd976a8b63293d434bb427f7dfeffb68fcfd`
-- pre-durable / successor / final-record permanent gates: **14/14 SUCCESS** each
-- deterministic manifest SHA-256: `926c0608c5998ceaa1ac0f49c19dbf4f293acc180d0e2433d067b369d32b953a`
-- deterministic pre-durable vs successor evidence: **14 files / 0 differences**
-- accepted/reopened WAV SHA-256: `4f26a08636726945205c97575885f9966f67245dc086eb30fd4af198c71d21b7`
-- accepted/reopened MIDI SHA-256: `b7b5f5cbeff58888132032f13880d2bc5aad701e906c37daa077c6e8a834248f`
-- durable evidence: `evidence/M7_R6_VALIDATION.md`
+- M7-R6 implementation PR `#87` — **MERGED**
+- M7-R6 state closure PR `#88` — **MERGED**
+- selected successor Issue `#89` — **OPEN**
+- selection record: `docs/POST_M7_NEXT_MILESTONE_SELECTION.md`
 
-## Why a planning gate is required / 왜 계획 게이트가 필요한가
+## Why this mission / 선정 이유
 
-M0→M7 now validates a broad vertical slice:
+The canonical product thesis defines:
 
 ```text
-intent / Blueprint authority
-→ immutable project/version authority
-→ AI Director/provider boundary
-→ Browser Studio workflow
-→ rendering/interchange/evaluation
-→ exact-note precision editing
-→ canonical automation editing
-→ deterministic automation lowering
-→ one bounded audible renderer mapping
-→ Studio audible Preview / Accept / reopen
-→ truthful Browser audition inspection
+Describe → Generate Blueprint → Audition → Lock → Refine → Compare → Accept
 ```
 
-At this point, several legitimate directions remain, but the repository contains no evidence that any one of them should automatically become the next milestone. Continuing the M7 numbering by inertia would blur product priority with implementation convenience.
+M4-R3 already validates natural-language create → audition → semantic Preview → explicit Accept → branch/history/export → restart/reopen in real Chromium. A generic natural-language end-to-end milestone would duplicate validated work.
 
-## Review objective / 검토 목표
+M2 already validates arbitrary accepted revision reads, immutable revision records, deterministic Blueprint diffs and revision-bound artifacts. Studio already supports artifact-first / deterministic-render-fallback media for the accepted HEAD. The remaining user-level gap is therefore a truthful **accepted-revision Compare** surface.
 
-Select **one and only one** bounded next milestone that maximizes product leverage while preserving MUSICA authority discipline.
+Live OpenAI execution remains a valid later `LIVE_PROVIDER_EVIDENCE` mission, but it is not selected now: M3-R2 already implements the live-ready provider boundary, while the live smoke is externally dependent and does not close the explicit Compare stage.
 
-The review must answer:
+## Ratified mission / 비준 미션
 
-1. What is the highest-value user workflow still blocked by the validated stack?
-2. Which missing capability is prerequisite-like rather than merely adjacent?
-3. Which candidate can be specified with a narrow authority boundary and deterministic evidence?
-4. Which candidate reuses the greatest amount of already validated infrastructure?
-5. Which candidate has the lowest risk of silently expanding canonical authority?
-6. What should explicitly remain deferred after the selection?
-
-## Candidate domains to inspect / 검토할 후보 영역
-
-These are **candidate domains, not approved milestones and not a ranking**:
-
-### A. Intent-to-music product workflow
-Close gaps between user intent, AI Director proposals, Preview, bounded editing and accepted project revisions so a normal user can complete a coherent end-to-end creation session with less low-level intervention.
-
-### B. AI provider execution
-Revisit the currently bounded provider layer and determine whether live provider execution, reproducible prompt/model provenance or provider failover is now the highest-leverage missing layer.
-
-### C. Automation expressiveness
-Consider whether another automation mapping, lane management, tempo behavior or curve family is actually required by product workflows. Do **not** expand this merely because M7 validated one mapping.
-
-### D. Interchange / external workflow
-Assess whether automation-aware DAW interchange/reconciliation is now more valuable than additional internal editing capability.
-
-### E. Real-time interaction
-Assess MIDI/OSC/live control only if an actual user workflow justifies introducing a new derived control adapter and latency evidence boundary.
-
-### F. Distribution / usability hardening
-Assess project packaging, installer/desktop delivery, recovery, performance, accessibility or user-facing workflow reliability if product usability is now the bottleneck rather than musical expressiveness.
-
-## Required evidence inputs / 필수 입력
-
-At minimum inspect:
+Given two immutable accepted revisions in the same MUSICA project:
 
 ```text
-governance/SOURCE_OF_TRUTH.md
-docs/PRODUCT_THESIS.md
-memory/CURRENT_STATE.md
-docs/M7_AUTOMATION_AUTHORITY.md
-evidence/M4_R3_VALIDATION.md
-evidence/M5_R4_VALIDATION.md
-evidence/M6_R4_VALIDATION.md
-evidence/M7_R6_VALIDATION.md
-schemas + runtime boundaries implicated by each candidate
-current Browser Studio workflow
-current Director/provider workflow
-current explicit non-claims
+accepted revision A + accepted revision B
+→ validated revision records + Blueprint SHA identities
+→ deterministic structured_diff(A, B)
+→ exact per-revision media provenance
+   ├─ bound artifact when present
+   └─ explicit deterministic fallback render otherwise
+→ read-only Browser A/B comparison
+→ independent A/B audition
+→ user-controlled decision/navigation only
 ```
 
-Do not base the decision only on conversation memory.
+Comparison itself must not mutate accepted authority.
 
-## Selection criteria / 선정 기준
+## Exact implementation order / 정확한 구현 순서
 
-For every serious candidate, record at least:
+Proceed in this order unless repository evidence forces a narrower correction:
 
-- **User leverage:** which concrete workflow becomes possible or materially easier;
-- **Dependency readiness:** how much of the prerequisite stack is already validated;
-- **Authority risk:** probability of creating an ambiguous canonical/derived boundary;
-- **Evidence feasibility:** whether success can be proven deterministically and independently;
-- **Regression surface:** number and criticality of existing validated layers touched;
-- **Implementation boundedness:** whether one mission can close the capability without scope creep;
-- **Strategic sequencing:** whether later high-value capabilities depend on this one.
+1. **Contract first**
+   - add `studio-revision-compare-v0` schema;
+   - encode A/B identities, `A_TO_B` direction, revision/Blueprint hashes, structured diff, media provenance and current HEAD identity;
+   - prohibit winner/score/preference semantics by schema and tests.
 
-Do not select by a single numeric score alone. Record factual trade-offs and an explicit decision rationale.
+2. **Trusted read-only comparison projection**
+   - add a dedicated comparison surface/module;
+   - resolve exactly two existing accepted revision IDs;
+   - call existing M2 revision readers and `structured_diff()`;
+   - verify project integrity before exposing comparison data;
+   - support A == B as a zero-diff identity case.
 
-## Required planning outputs / 필수 산출물
+3. **Arbitrary accepted-revision media**
+   - generalize the current accepted-media helper narrowly from HEAD-only to an explicit accepted `revision_id`;
+   - prefer exact bound artifacts;
+   - otherwise render deterministically from the exact accepted Blueprint;
+   - label provenance as `bound_artifact` or `deterministic_fallback`;
+   - return SHA-256 of the exact served bytes;
+   - never persist fallback media as canonical bound artifact.
 
-The planning mission should produce a durable package such as:
+4. **Read-only HTTP routes**
+   - add bounded same-origin compare projection route;
+   - add arbitrary accepted-revision WAV/MIDI retrieval route;
+   - reject unknown/unaccepted/corrupt revision state fail-closed;
+   - preserve loopback/workspace confinement.
+
+5. **Browser Compare surface**
+   - expose accepted revision history as A/B selectors;
+   - visible Compare action;
+   - independent A/B audio controls;
+   - visible revision IDs, Blueprint/provenance hashes and structured diff;
+   - no automatic winner, score, Accept or branch movement.
+
+6. **Deterministic tests**
+   - valid A/B and reversed direction;
+   - A == B zero-diff case;
+   - bound/bound, fallback/fallback and mixed media cases;
+   - unknown/tampered revision failures;
+   - compare/media access leaves HEAD and accepted state unchanged;
+   - contract contains no creative ranking semantics;
+   - M5-R4 comparison semantics unchanged.
+
+7. **Real-browser evidence**
+   - actual Chromium A/B selection and audition;
+   - exact requested revision IDs in media requests;
+   - structured diff visible;
+   - pre/post HEAD identical;
+   - refresh/reopen preserves canonical state;
+   - console/page/request failure accounting.
+
+8. **Permanent CI / evidence package**
+   - dedicated evidence workflow;
+   - all existing permanent M0→M7-R6 regressions remain green;
+   - deterministic evidence manifest and exact hashes;
+   - durable validation record only after exact-head success.
+
+9. **Promotion**
+   - expected-head implementation merge;
+   - close Issue `#89` only after implementation/evidence merge;
+   - separate state-only closure updates README/current state/next action.
+
+## Authority invariant / 권한 불변식
+
+Allowed:
 
 ```text
-one next-milestone Issue
-one explicit mission statement
-problem / user workflow blocked
-canonical vs derived authority decision
-bounded scope + explicit non-goals
-expected implementation surface
-test matrix
-evidence package target
-permanent-regression set
-promotion criteria
-updated memory/NEXT_ACTION.md
+accepted revisions
+→ read-only compare projection
+→ Browser inspection / audition
+→ explicit user navigation through existing project authority
 ```
 
-If the review cannot identify a sufficiently bounded, high-leverage successor, record `HOLD — NEXT MILESTONE NOT YET RATIFIED` rather than inventing work.
+Forbidden:
 
-## Guardrails / 가드레일
+```text
+comparison result → canonical mutation
+Browser selection → implicit Accept
+A/B audio → inferred Blueprint
+metric → creative winner
+M5-R4 same-IR renderer comparator → cross-revision preference score
+```
 
-The review must not silently authorize:
+## Media truth rule / 미디어 진실성 규칙
 
-- new canonical authority from Browser/audio/renderer/DAW state;
-- another renderer mapping merely to extend coverage;
-- MIDI CC or plugin addresses as canonical parameter identities;
-- implicit AI acceptance;
-- unbounded “complete DAW” scope;
-- perceptual superiority claims without appropriate evidence;
-- destructive mutation of accepted project history.
+For each side and media kind:
+
+```text
+bound artifact exists
+    → serve exact bound bytes + exact SHA-256 + bound_artifact provenance
+else
+    → deterministic render from exact accepted Blueprint
+       + exact served SHA-256 + deterministic_fallback provenance
+```
+
+A fallback render is derived and disposable. It must not rewrite the immutable artifact record.
+
+## Required evidence / 필수 근거
+
+Promotion requires all of:
+
+- machine-valid comparison contract;
+- deterministic A/B structured diff proof;
+- exact revision-record/Blueprint hash provenance;
+- exact bound/fallback WAV/MIDI SHA proof;
+- no-HEAD-mutation proof before/after compare and audition;
+- real-Chromium A/B workflow evidence;
+- full permanent regression set success on exact evidence-bearing head;
+- durable evidence document;
+- expected-head merge.
+
+## Explicit non-goals / 명시적 비목표
+
+Do not expand Issue `#89` into:
+
+- creative winner/ranking/preference scoring;
+- human-subject perceptual superiority claims;
+- M5-R4 cross-revision audio scoring;
+- revision merge/rebase/cherry-pick semantics;
+- implicit branch-head movement;
+- additional automation renderer mappings;
+- live OpenAI provider execution;
+- DAW automation reconciliation;
+- real-time MIDI/OSC;
+- destructive waveform editing;
+- cloud/multi-user comparison.
+
+## Deferred mission / 보류 미션
+
+`LIVE_PROVIDER_EVIDENCE` remains deferred and separate. A future authorized live smoke must be recorded independently and must not reinterpret M3-R2's offline adapter evidence.
 
 ## Maximum intended outcome / 최대 의도 결과
 
-> **MUSICA selects one evidence-backed, bounded successor milestone after M7-R6, with its user value, authority boundary, dependencies, non-goals, tests and promotion evidence ratified before implementation begins.**
+> **MUSICA can truthfully compare two immutable accepted creative revisions by showing their exact structured Blueprint differences and revision-bound/fallback audition media side by side, while leaving creative preference and any canonical navigation/acceptance decision to the user.**
 
-## Execution discipline / 실행 규율
-
-```text
-M7-R6 state-only closure
-→ inspect M0→M7 validated stack + product thesis + non-claims
-→ enumerate serious successor candidates
-→ compare user leverage / dependency readiness / authority risk / evidence feasibility
-→ select exactly one bounded successor OR HOLD
-→ create Issue
-→ update canonical NEXT_ACTION
-→ only then create implementation branch
-```
+This remains a **target claim until Issue #89 is implemented, independently evidenced, merged and state-closed**.
 
 **Repository evidence remains authoritative over conversation/model memory.**

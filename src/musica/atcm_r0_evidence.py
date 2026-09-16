@@ -31,10 +31,12 @@ CONTRACT_PATHS = [
     ROOT / "schemas" / "audio-asset-v0.schema.json",
     ROOT / "schemas" / "audio-material-v0.schema.json",
     ROOT / "schemas" / "music-blueprint-v0.schema.json",
+    ROOT / "src" / "musica" / "project.py",
     ROOT / "src" / "musica" / "audio_assets.py",
     ROOT / "src" / "musica" / "audio_contracts.py",
     ROOT / "src" / "musica" / "atcm_r0_evidence.py",
     ROOT / "tests" / "test_atcm_r0_audio_assets.py",
+    ROOT / "tests" / "test_atcm_r0_project_integrity.py",
     ROOT / ".github" / "workflows" / "atcm-r0-native-audio-evidence.yml",
 ]
 
@@ -149,13 +151,26 @@ def generate_atcm_r0_evidence(output_dir: str | Path) -> dict[str, Any]:
         imported = MusicaProject.import_from(archive, temp / "imported.musica")
         imported_descriptor = read_audio_asset(imported, str(descriptor["asset_id"]))
         imported_bytes = audio_asset_bytes(imported, str(descriptor["asset_id"]))
+        imported_integrity = imported.verify_integrity()
         reexport_identical = imported.export_bytes() == archive.read_bytes()
 
         tamper_object = imported._object_path(str(descriptor["object_sha256"]))
-        pristine = tamper_object.read_bytes()
-        tamper_object.write_bytes(pristine + b"x")
+        pristine_object = tamper_object.read_bytes()
+        tamper_object.write_bytes(pristine_object + b"x")
         tampered_object_blocked = _blocked(lambda: verify_audio_assets(imported))
-        tamper_object.write_bytes(pristine)
+        tampered_object_project_blocked = _blocked(lambda: imported.verify_integrity())
+        tampered_object_export_blocked = _blocked(lambda: imported.export_bytes())
+        tamper_object.write_bytes(pristine_object)
+
+        digest = str(descriptor["object_sha256"])
+        descriptor_path = imported.root / "assets" / "audio" / "sha256" / f"{digest}.json"
+        pristine_descriptor = descriptor_path.read_bytes()
+        tampered_descriptor = json.loads(pristine_descriptor.decode("utf-8"))
+        tampered_descriptor["size_bytes"] += 1
+        descriptor_path.write_bytes(canonical_json_bytes(tampered_descriptor))
+        tampered_descriptor_project_blocked = _blocked(lambda: imported.verify_integrity())
+        tampered_descriptor_export_blocked = _blocked(lambda: imported.export_bytes())
+        descriptor_path.write_bytes(pristine_descriptor)
 
         proof = {
             "milestone": "ATCM-R0",
@@ -179,10 +194,17 @@ def generate_atcm_r0_evidence(output_dir: str | Path) -> dict[str, Any]:
             "malformed_wav_fails_closed": _blocked(lambda: import_audio_asset(project, malformed)),
             "audio_asset_integrity_status": asset_integrity["status"],
             "project_integrity_status": project_integrity["status"],
+            "project_integrity_audio_asset_count": project_integrity["audio_asset_count"],
+            "imported_project_integrity_status": imported_integrity["status"],
+            "imported_project_audio_asset_count": imported_integrity["audio_asset_count"],
             "export_import_descriptor_exact": imported_descriptor == descriptor,
             "export_import_source_bytes_exact": imported_bytes == wav_bytes,
             "reexport_byte_identical": reexport_identical,
             "tampered_source_object_fails_closed": tampered_object_blocked,
+            "tampered_source_object_project_integrity_fails_closed": tampered_object_project_blocked,
+            "tampered_source_object_export_fails_closed": tampered_object_export_blocked,
+            "tampered_descriptor_project_integrity_fails_closed": tampered_descriptor_project_blocked,
+            "tampered_descriptor_export_fails_closed": tampered_descriptor_export_blocked,
             "audio_edit_authority_claimed": False,
             "multitrack_mix_execution_claimed": False,
             "browser_arrangement_claimed": False,

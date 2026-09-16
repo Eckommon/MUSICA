@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/studio-automation-audition-v0.schema.json",
+  "title": "MUSICA Studio Automation Audition Inspection v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "audition_view_version",
+    "project_id",
+    "branch",
+    "accepted_revision_id",
+    "renderer_policy",
+    "accepted_mapping",
+    "pending_audition",
+    "accepted_media",
+    "authority"
+  ],
+  "properties": {
+    "audition_view_version": {"const": "0"},
+    "project_id": {"type": "string", "minLength": 1},
+    "branch": {"type": "string", "minLength": 1},
+    "accepted_revision_id": {"type": "string", "minLength": 1},
+    "renderer_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["renderer_id", "policy_id", "policy_version", "validated_mapping_families"],
+      "properties": {
+        "renderer_id": {"const": "musica-reference-local"},
+        "policy_id": {"const": "reference-renderer-mix-gain-v0"},
+        "policy_version": {"const": "0.1.0"},
+        "validated_mapping_families": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["mapping_id", "parameter_id", "scope", "owner_id", "unit"],
+              "properties": {
+                "mapping_id": {"const": "reference.mix_gain.normalized"},
+                "parameter_id": {"const": "mix.gain"},
+                "scope": {"const": "project"},
+                "owner_id": {"type": "null"},
+                "unit": {"const": "normalized"}
+              }
+            }
+          ],
+          "items": false,
+          "minItems": 1,
+          "maxItems": 1
+        }
+      }
+    },
+    "accepted_mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["automation_present", "mapped_lane_ids", "unmapped_lane_ids"],
+      "properties": {
+        "automation_present": {"type": "boolean"},
+        "mapped_lane_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "unmapped_lane_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+      }
+    },
+    "pending_audition": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "preview_id",
+            "candidate_revision_id",
+            "automation_applied",
+            "output_differs_from_baseline",
+            "mapped_lane_ids",
+            "unmapped_lane_ids",
+            "render_plan_sha256",
+            "baseline_wav_sha256",
+            "preview_wav_sha256",
+            "preview_midi_sha256",
+            "project_ref_unchanged",
+            "canonical",
+            "reverse_promotion_authorized"
+          ],
+          "properties": {
+            "preview_id": {"type": "string", "minLength": 1},
+            "candidate_revision_id": {"type": "string", "minLength": 1},
+            "automation_applied": {"type": "boolean"},
+            "output_differs_from_baseline": {"type": "boolean"},
+            "mapped_lane_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+            "unmapped_lane_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+            "render_plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "baseline_wav_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "preview_wav_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "preview_midi_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "project_ref_unchanged": {"const": true},
+            "canonical": {"const": false},
+            "reverse_promotion_authorized": {"const": false}
+          }
+        }
+      ]
+    },
+    "accepted_media": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revision_id", "wav", "midi"],
+      "properties": {
+        "revision_id": {"type": "string", "minLength": 1},
+        "wav": {"$ref": "#/$defs/media"},
+        "midi": {"$ref": "#/$defs/media"}
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical",
+        "browser_mutation_authorized",
+        "project_mutation_authorized",
+        "reverse_promotion_authorized",
+        "explicit_accept_required"
+      ],
+      "properties": {
+        "canonical": {"const": false},
+        "browser_mutation_authorized": {"const": false},
+        "project_mutation_authorized": {"const": false},
+        "reverse_promotion_authorized": {"const": false},
+        "explicit_accept_required": {"const": true}
+      }
+    }
+  },
+  "$defs": {
+    "media": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["available", "source", "sha256", "size_bytes"],
+      "properties": {
+        "available": {"const": true},
+        "source": {"enum": ["bound_artifact", "fallback_render"]},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size_bytes": {"type": "integer", "minimum": 1}
+      }
+    }
+  }
+}

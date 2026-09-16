@@ -313,7 +313,10 @@ def _http_json(url: str, *, method: str = "GET", body: dict | None = None) -> tu
     if data is not None:
         request.add_header("Content-Type", "application/json")
     try:
-        with urlopen(request, timeout=5) as response:  # noqa: S310 - loopback test server
+        # R5 performs deterministic local audio rendering during automation Preview.
+        # Shared CI runners can exceed the old 5-second client timeout without the
+        # loopback service being unhealthy, so keep this test timeout non-product-bound.
+        with urlopen(request, timeout=30) as response:  # noqa: S310 - loopback test server
             return response.status, json.loads(response.read().decode("utf-8"))
     except HTTPError as exc:
         return exc.code, json.loads(exc.read().decode("utf-8"))

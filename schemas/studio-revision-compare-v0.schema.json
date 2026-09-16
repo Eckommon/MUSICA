@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://musica.local/schemas/studio-revision-compare-v0.schema.json",
+  "title": "MUSICA Studio Accepted Revision Compare v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "compare_version",
+    "project_id",
+    "current_branch",
+    "current_head_revision_id",
+    "direction",
+    "revision_a",
+    "revision_b",
+    "diff",
+    "head_unchanged",
+    "authority"
+  ],
+  "properties": {
+    "compare_version": {"const": "0"},
+    "project_id": {"type": "string", "minLength": 1},
+    "current_branch": {"type": "string", "minLength": 1},
+    "current_head_revision_id": {"type": "string", "minLength": 1},
+    "direction": {"const": "A_TO_B"},
+    "revision_a": {"$ref": "#/$defs/revisionSide"},
+    "revision_b": {"$ref": "#/$defs/revisionSide"},
+    "diff": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/diffItem"}
+    },
+    "head_unchanged": {"const": true},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical",
+        "browser_mutation_authorized",
+        "project_mutation_authorized",
+        "reverse_promotion_authorized",
+        "creative_ranking_authorized",
+        "implicit_accept_authorized"
+      ],
+      "properties": {
+        "canonical": {"const": false},
+        "browser_mutation_authorized": {"const": false},
+        "project_mutation_authorized": {"const": false},
+        "reverse_promotion_authorized": {"const": false},
+        "creative_ranking_authorized": {"const": false},
+        "implicit_accept_authorized": {"const": false}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "mediaItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["available", "source", "sha256", "size_bytes", "media_type"],
+      "properties": {
+        "available": {"const": true},
+        "source": {
+          "type": "string",
+          "enum": ["bound_artifact", "deterministic_fallback"]
+        },
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size_bytes": {"type": "integer", "minimum": 1},
+        "media_type": {
+          "type": "string",
+          "enum": ["audio/wav", "audio/midi"]
+        }
+      }
+    },
+    "revisionSide": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision_id",
+        "revision_record_sha256",
+        "blueprint_sha256",
+        "media"
+      ],
+      "properties": {
+        "revision_id": {"type": "string", "minLength": 1},
+        "revision_record_sha256": {"$ref": "#/$defs/sha256"},
+        "blueprint_sha256": {"$ref": "#/$defs/sha256"},
+        "media": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["wav", "midi"],
+          "properties": {
+            "wav": {"$ref": "#/$defs/mediaItem"},
+            "midi": {"$ref": "#/$defs/mediaItem"}
+          }
+        }
+      }
+    },
+    "diffItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "path", "before", "after"],
+      "properties": {
+        "op": {
+          "type": "string",
+          "enum": ["add", "remove", "replace"]
+        },
+        "path": {"type": "string", "minLength": 1},
+        "before": {},
+        "after": {}
+      }
+    }
+  }
+}

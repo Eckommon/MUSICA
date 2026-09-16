@@ -18,7 +18,7 @@ from .audio_assets import (
     read_audio_asset,
     verify_audio_assets,
 )
-from .audio_contracts import validate_audio_material
+from .audio_contracts import validate_audio_material, validate_blueprint_audio
 from .contracts import ContractError, validate_contract
 from .creative import compose_blueprint
 from .evidence import canonical_json_bytes
@@ -31,12 +31,14 @@ CONTRACT_PATHS = [
     ROOT / "schemas" / "audio-asset-v0.schema.json",
     ROOT / "schemas" / "audio-material-v0.schema.json",
     ROOT / "schemas" / "music-blueprint-v0.schema.json",
+    ROOT / "src" / "musica" / "contracts.py",
     ROOT / "src" / "musica" / "project.py",
     ROOT / "src" / "musica" / "audio_assets.py",
     ROOT / "src" / "musica" / "audio_contracts.py",
     ROOT / "src" / "musica" / "atcm_r0_evidence.py",
     ROOT / "tests" / "test_atcm_r0_audio_assets.py",
     ROOT / "tests" / "test_atcm_r0_project_integrity.py",
+    ROOT / "tests" / "test_atcm_r0_authority_boundary.py",
     ROOT / ".github" / "workflows" / "atcm-r0-native-audio-evidence.yml",
 ]
 
@@ -122,8 +124,8 @@ def generate_atcm_r0_evidence(output_dir: str | Path) -> dict[str, Any]:
         audit_after_first = len(project._audit_events())
         descriptor_second = import_audio_asset(project, source_b)
         audit_after_second = len(project._audit_events())
-        head_after = project.head_revision_id()
-        blueprint_after = project.read_revision(head_after)
+        head_after_import = project.head_revision_id()
+        blueprint_after_import = project.read_revision(head_after_import)
         asset_bytes = audio_asset_bytes(project, descriptor["asset_id"])
         asset_integrity = verify_audio_assets(project)
         project_integrity = project.verify_integrity()
@@ -134,8 +136,16 @@ def generate_atcm_r0_evidence(output_dir: str | Path) -> dict[str, Any]:
             project_duration_seconds=float(blueprint["project"]["duration_seconds"]),
         )
         candidate = copy.deepcopy(blueprint)
+        candidate["project"]["parent_revision_id"] = root_revision_id
+        candidate["project"]["revision_id"] = "rev-atcm-r0-audio-authority-attempt"
         candidate["materials"]["audio"] = material
-        validate_contract(candidate, "music-blueprint-v0.schema.json")
+        validate_blueprint_audio(candidate, allow_nonempty=True)
+        canonical_acceptance_blocked = _blocked(
+            lambda: validate_contract(candidate, "music-blueprint-v0.schema.json")
+        )
+        commit_acceptance_blocked = _blocked(lambda: project.commit_revision(candidate, branch="main"))
+        head_after_rejected_accept = project.head_revision_id()
+        root_after_rejected_accept = project.read_revision(root_revision_id)
 
         duplicate_track = copy.deepcopy(material)
         duplicate_track["tracks"].append(copy.deepcopy(duplicate_track["tracks"][0]))
@@ -179,16 +189,18 @@ def generate_atcm_r0_evidence(output_dir: str | Path) -> dict[str, Any]:
             "source_sha256": _sha(wav_bytes),
             "source_size_bytes": len(wav_bytes),
             "descriptor": descriptor,
-            "asset_id_is_source_sha256": descriptor["asset_id"]
-            == f"sha256:{_sha(wav_bytes)}",
+            "asset_id_is_source_sha256": descriptor["asset_id"] == f"sha256:{_sha(wav_bytes)}",
             "source_bytes_roundtrip_exact": asset_bytes == wav_bytes,
             "identical_import_descriptor_equal": descriptor_second == descriptor,
             "identical_import_idempotent": audit_after_second == audit_after_first,
             "first_import_added_one_audit_event": audit_after_first == audit_before + 1,
-            "import_did_not_advance_head": head_before == head_after,
-            "import_did_not_mutate_accepted_blueprint": blueprint_before == blueprint_after,
-            "audio_material_contract_valid": True,
-            "audio_material_candidate_blueprint_valid": True,
+            "import_did_not_advance_head": head_before == head_after_import,
+            "import_did_not_mutate_accepted_blueprint": blueprint_before == blueprint_after_import,
+            "audio_material_structure_valid": True,
+            "nonempty_audio_canonical_acceptance_fails_closed": canonical_acceptance_blocked,
+            "nonempty_audio_commit_fails_closed": commit_acceptance_blocked,
+            "rejected_accept_did_not_advance_head": head_after_rejected_accept == root_revision_id,
+            "rejected_accept_preserved_root_blueprint": root_after_rejected_accept == blueprint,
             "duplicate_track_id_fails_closed": _blocked(lambda: validate_audio_material(duplicate_track)),
             "invalid_source_range_fails_closed": _blocked(lambda: validate_audio_material(bad_range)),
             "malformed_wav_fails_closed": _blocked(lambda: import_audio_asset(project, malformed)),
@@ -205,6 +217,7 @@ def generate_atcm_r0_evidence(output_dir: str | Path) -> dict[str, Any]:
             "tampered_source_object_export_fails_closed": tampered_object_export_blocked,
             "tampered_descriptor_project_integrity_fails_closed": tampered_descriptor_project_blocked,
             "tampered_descriptor_export_fails_closed": tampered_descriptor_export_blocked,
+            "accepted_native_audio_claimed": False,
             "audio_edit_authority_claimed": False,
             "multitrack_mix_execution_claimed": False,
             "browser_arrangement_claimed": False,

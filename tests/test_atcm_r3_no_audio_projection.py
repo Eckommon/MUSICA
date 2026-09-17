@@ -19,7 +19,7 @@ def _blueprint() -> dict:
     return compose_blueprint(json.loads(INTENT_PATH.read_text(encoding="utf-8")))
 
 
-def test_r3_valid_session_without_native_audio_returns_unavailable_projection(tmp_path: Path) -> None:
+def test_r3_valid_empty_audio_session_projects_without_http_error(tmp_path: Path) -> None:
     workspace = tmp_path / "workspace"
     workspace.mkdir()
     create_project(workspace / "legacy.musica", _blueprint())
@@ -37,7 +37,15 @@ def test_r3_valid_session_without_native_audio_returns_unavailable_projection(tm
             assert response.status == 200
         assert payload["ok"] is True
         assert payload["operation"] == "native_audio_view"
-        assert payload["data"] is None
+        view = payload["data"]
+        # The canonical root Blueprint already carries an empty audio-material contract.
+        # That state must remain a usable R3 arrangement surface (e.g. Add Track), while
+        # truthfully reporting that there is nothing renderable yet.
+        assert view["accepted_state_is_canonical"] is True
+        assert view["browser_state_is_canonical"] is False
+        assert view["tracks"] == []
+        assert view["accepted_audition"]["available"] is False
+        assert "at least one accepted clip" in view["accepted_audition"]["error"]
 
         try:
             urllib.request.urlopen(base + "/v0/sessions/does-not-exist/audio", timeout=10)

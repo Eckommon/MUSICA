@@ -216,6 +216,9 @@ class MusicaProject:
         path = self._revision_dir(revision_id) / "blueprint.json"
         blueprint = _read_json(path)
         validate_contract(blueprint, "music-blueprint-v0.schema.json")
+        from .audio_contracts import validate_project_blueprint_audio
+
+        validate_project_blueprint_audio(self, blueprint)
         if _sha256_bytes(path.read_bytes()) != record["blueprint_sha256"]:
             raise ProjectIntegrityError(f"blueprint hash mismatch for revision {revision_id}")
         return blueprint
@@ -238,9 +241,41 @@ class MusicaProject:
         actor: str | None = None,
         reason: str | None = None,
     ) -> dict[str, Any]:
-        """Commit one immutable accepted Blueprint and advance only the selected ref."""
+        """Commit one accepted Blueprint without granting native-audio mutation authority."""
+
+        return self._commit_revision(
+            blueprint,
+            branch=branch,
+            actor=actor,
+            reason=reason,
+            allow_audio_material_change=False,
+        )
+
+    def _commit_revision(
+        self,
+        blueprint: dict[str, Any],
+        *,
+        branch: str | None = None,
+        actor: str | None = None,
+        reason: str | None = None,
+        allow_audio_material_change: bool = False,
+    ) -> dict[str, Any]:
+        """Internal immutable commit boundary.
+
+        Native audio material changes are denied by default. The ATCM-R1 trusted
+        Preview/Accept path may opt in only after it has revalidated source binding,
+        exact in-project assets and source ranges. A provenance marker alone never
+        grants this permission.
+        """
 
         validate_contract(blueprint, "music-blueprint-v0.schema.json")
+        from .audio_contracts import (
+            audio_material_from_blueprint,
+            empty_audio_material,
+            validate_project_blueprint_audio,
+        )
+
+        validate_project_blueprint_audio(self, blueprint)
         metadata = self.metadata()
         if blueprint["project"]["project_id"] != metadata["project_id"]:
             raise ContractError("Blueprint project_id does not match Project Bundle")
@@ -267,6 +302,18 @@ class MusicaProject:
                 raise ContractError(f"revision commit blocked: {details}")
         elif blueprint["project"].get("parent_revision_id") is not None:
             raise ContractError("first branch revision must be a root Blueprint")
+
+        before_audio = (
+            audio_material_from_blueprint(parent_blueprint)
+            if parent_blueprint is not None
+            else empty_audio_material()
+        )
+        after_audio = audio_material_from_blueprint(blueprint)
+        assert before_audio is not None and after_audio is not None
+        if before_audio != after_audio and not allow_audio_material_change:
+            raise ContractError(
+                "native audio material changes require trusted audio Preview/Accept authority"
+            )
 
         if parent_revision_id != blueprint["project"].get("parent_revision_id"):
             raise ContractError(
@@ -414,6 +461,9 @@ class MusicaProject:
                 blueprint = _read_json(blueprint_path)
                 diff = _read_json(diff_path)
                 validate_contract(blueprint, "music-blueprint-v0.schema.json")
+                from .audio_contracts import validate_project_blueprint_audio
+
+                validate_project_blueprint_audio(self, blueprint)
                 if record["revision_id"] != revision_id:
                     errors.append(f"revision directory/id mismatch: {revision_id}")
                 if record["project_id"] != metadata["project_id"]:

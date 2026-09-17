@@ -10,6 +10,7 @@ from http import HTTPStatus
 from http.server import ThreadingHTTPServer
 from urllib.parse import urlsplit
 
+from .audio_contracts import audio_material_from_blueprint
 from .studio import StudioApplication, StudioService, StudioServiceError
 from .studio_audio import StudioAudioSurface
 from .studio_http import (
@@ -59,7 +60,19 @@ def make_handler(application: StudioApplication):
                     and parts[:2] == ["v0", "sessions"]
                     and parts[3] == "audio"
                 ):
-                    data = audio_surface.audio_view(parts[2])
+                    # Native audio is an additive capability. A valid Studio session whose
+                    # accepted Blueprint has no native-audio material is therefore a truthful
+                    # unavailable projection, not an HTTP error. This keeps pre-R3 Browser
+                    # surfaces (including accepted-revision Compare) clean while preserving
+                    # fail-closed behavior for unknown sessions and actual integrity errors.
+                    session = application.service._get_session(parts[2])
+                    branch = session.project.current_branch()
+                    revision_id = session.project.head_revision_id(branch)
+                    accepted = session.project.read_revision(revision_id)
+                    if audio_material_from_blueprint(accepted) is None:
+                        data = None
+                    else:
+                        data = audio_surface.audio_view(parts[2])
                     self._send_json(HTTPStatus.OK, application._response("native_audio_view", data))
                     return
 

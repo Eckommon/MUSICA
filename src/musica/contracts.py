@@ -297,6 +297,12 @@ def _validate_blueprint_invariants(blueprint: dict[str, Any]) -> None:
 
     validate_blueprint_audio(blueprint)
 
+    # Routing is additive but MRAM-R0 keeps non-empty accepted routing fail-closed.
+    # Later trusted Preview→Accept authority must explicitly open this boundary.
+    from .routing_contracts import validate_blueprint_routing
+
+    validate_blueprint_routing(blueprint)
+
 
 def validate_contract(instance: dict[str, Any], schema_name: str) -> None:
     """Validate one object against a MUSICA JSON Schema and v0 invariants."""

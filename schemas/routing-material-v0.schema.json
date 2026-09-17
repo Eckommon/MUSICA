@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/routing-material-v0.schema.json",
+  "title": "MUSICA Routing Material v0",
+  "description": "Bounded explicit native-audio routing graph. Canonical only after a trusted authority rung explicitly permits acceptance.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["material_version", "mode", "nodes", "track_outputs", "sends"],
+  "properties": {
+    "material_version": {"const": "0"},
+    "mode": {"const": "explicit_routing"},
+    "nodes": {
+      "type": "array",
+      "maxItems": 1024,
+      "items": {"$ref": "#/$defs/node"}
+    },
+    "track_outputs": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {"$ref": "#/$defs/trackOutput"}
+    },
+    "sends": {
+      "type": "array",
+      "maxItems": 8192,
+      "items": {"$ref": "#/$defs/send"}
+    }
+  },
+  "$defs": {
+    "stableId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "gainDb": {"type": "number", "minimum": -60.0, "maximum": 12.0},
+    "mixer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gain_db", "pan", "mute"],
+      "properties": {
+        "gain_db": {"$ref": "#/$defs/gainDb"},
+        "pan": {"type": "number", "minimum": -1.0, "maximum": 1.0},
+        "mute": {"type": "boolean"}
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node_id", "order", "name", "node_type", "mixer", "output_node_id"],
+      "properties": {
+        "node_id": {"$ref": "#/$defs/stableId"},
+        "order": {"type": "integer", "minimum": 0},
+        "name": {"type": "string", "minLength": 1, "maxLength": 256},
+        "node_type": {"enum": ["bus", "group", "return", "master"]},
+        "mixer": {"$ref": "#/$defs/mixer"},
+        "output_node_id": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        }
+      }
+    },
+    "trackOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["track_id", "target_node_id"],
+      "properties": {
+        "track_id": {"$ref": "#/$defs/stableId"},
+        "target_node_id": {"$ref": "#/$defs/stableId"}
+      }
+    },
+    "sendSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "source_id"],
+      "properties": {
+        "kind": {"enum": ["track", "node"]},
+        "source_id": {"$ref": "#/$defs/stableId"}
+      }
+    },
+    "send": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["send_id", "source", "target_node_id", "gain_db", "tap"],
+      "properties": {
+        "send_id": {"$ref": "#/$defs/stableId"},
+        "source": {"$ref": "#/$defs/sendSource"},
+        "target_node_id": {"$ref": "#/$defs/stableId"},
+        "gain_db": {"$ref": "#/$defs/gainDb"},
+        "tap": {"const": "post_fader"}
+      }
+    }
+  }
+}

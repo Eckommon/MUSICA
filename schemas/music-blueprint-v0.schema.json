@@ -188,6 +188,7 @@
         "mix_intent": {"type": "object", "additionalProperties": true},
         "audio": {"type": "object", "additionalProperties": true},
         "automation": {"type": "object", "additionalProperties": true},
+        "routing": {"type": "object", "additionalProperties": true},
         "automation_locks": {"type": "array", "items": {"type": "object", "additionalProperties": true}}
       }
     },

@@ -28,8 +28,8 @@ jobs:
           tests/test_atcm_r2_native_mixer.py
           tests/test_atcm_r1_audio_authority.py
           tests/test_atcm_r0_audio_assets.py
-          tests/test_studio_http.py
-          tests/test_studio.py
+          tests/test_m4_studio.py
+          tests/test_m4_browser_ui.py
       - name: Run real-Chromium R3 lifecycle A / 실제 Chromium R3 lifecycle A
         run: python -m musica.atcm_r3_e2e --out artifacts/atcm-r3-browser-audio-a
       - name: Run real-Chromium R3 lifecycle B / 실제 Chromium R3 lifecycle B

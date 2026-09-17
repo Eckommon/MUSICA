@@ -8,7 +8,7 @@ Long-term governing target:
 
 > **MUSICA should grow into a general-purpose, commercially usable music production workstation while preserving its AI-native authority, inspectability, reproducibility and programmability.**
 
-This is a product target, not a claim that MUSICA is already a complete commercial DAW.
+This remains a product target, not a claim that MUSICA is already a complete commercial DAW.
 
 ## Canonical baseline / 공식 기준점
 
@@ -16,7 +16,7 @@ Parent mission:
 
 - Issue `#95` — **Audio Track / Clip / Mixer Foundation v0 — OPEN**
 
-Completed ATCM rungs:
+Completed / validated ATCM rungs:
 
 - R0 Issue `#97` — **COMPLETED**
 - R0 PR `#98` — **MERGED**
@@ -28,14 +28,18 @@ Completed ATCM rungs:
 - R1 validation: `evidence/ATCM_R1_VALIDATION.md`
 - R2 Issue `#102` — **COMPLETED**
 - R2 PR `#104` — **MERGED**
-- R2 implementation merge/main: `bada04778630004b3b199a8283bd883a7b07909d`
-- R2 pre-validation exact head: `909300fa50692ca789ba39d7994bd5fa61e8b5ee` — **18/18 permanent workflows SUCCESS**
-- R2 validation-record exact head: `bc68d74b764c1c657654fe0f20b5a3498ed4bc6e` — **18/18 permanent workflows SUCCESS**
-- R2 durable validation: `evidence/ATCM_R2_VALIDATION.md`
+- R2 merge: `bada04778630004b3b199a8283bd883a7b07909d`
+- R2 validation: `evidence/ATCM_R2_VALIDATION.md`
+- R3 Issue `#105` — **COMPLETED**
+- R3 PR `#107` — **MERGED**
+- R3 implementation merge/main: `fe6c53b41bb98762110001a61e715478464a5760`
+- R3 pre-validation exact head: `8db2c3cc0e85d416c84ee2106df4bbb5c64ceeef` — **19/19 permanent workflows SUCCESS**
+- R3 validation-record exact head: `cc5c3111563d2c18015c1d66b110643aa3a20f30` — **19/19 permanent workflows SUCCESS**
+- R3 durable validation: `evidence/ATCM_R3_VALIDATION.md`
 
-Current next rung:
+Current exact rung:
 
-- Issue `#105` — **ATCM-R3 — Browser Native-Audio Arrangement & Mixer Surface v0 — OPEN**
+- Issue `#111` — **ATCM-R4 — Restart/Reopen Native-Audio Lifecycle & Parent Closure Evaluation v0 — OPEN**
 
 ## Canonical proposition / 공식 핵심 명제
 
@@ -47,142 +51,124 @@ The commercial-workstation objective extends this proposition; it does not repla
 
 ### ATCM-R0 — immutable asset boundary
 
-Validated:
+Validated immutable bounded PCM WAV import, content-addressed object identity, descriptor/audit binding, project-integrity checks and deterministic export/import. Imported bytes do not gain creative authority by import alone.
 
-```text
-bounded PCM WAV bytes
-→ content-addressed immutable project object
-→ SHA-256 asset identity
-→ descriptor + audit binding
-→ project-integrity validation
-→ deterministic export/import
-```
+### ATCM-R1 — accepted track/clip authority
 
-Imported resource bytes do not receive creative authority merely by being imported.
-
-### ATCM-R1 — accepted arrangement authority
-
-Validated:
-
-```text
-accepted source revision
-+ immutable project audio asset
-→ source-bound audio edit candidate
-→ READY_FOR_PREVIEW or BLOCKED
-→ Preview; accepted HEAD unchanged
-→ explicit Accept
-→ exactly one accepted revision advance
-```
-
-Validated operations include stable track/clip creation, clip placement, source trim and bounded clip gain, with stale/missing/corrupt/out-of-range references failing closed.
+Validated source-bound native-audio Preview → explicit Accept authority for stable tracks/clips, move/trim/clip-gain editing, exact asset/range binding, stale-source rejection and deterministic reopen.
 
 ### ATCM-R2 — deterministic offline mixer
 
+Validated exact accepted arrangement/mixer → deterministic mix plan → byte-reproducible stereo PCM16 WAV, including explicit sample-rate/channel, gain, pan, mute/solo, summing, clipping and output semantics. Mixed audio remains derived/non-canonical.
+
+### ATCM-R3 — truthful Browser arrangement/mixer surface
+
 Validated:
 
 ```text
 exact accepted native-audio revision
-+ immutable project audio assets
-+ versioned deterministic mixer policy
-→ exact mix plan
-→ deterministic offline stereo PCM mix
-→ byte-reproducible WAV
-≠ creative authority
+→ Browser arrangement/mixer projection
+→ source-bound native-audio Preview
+→ accepted HEAD unchanged
+→ derived R2 native-mix audition
+→ explicit trusted Accept
+→ exactly one accepted revision advance
 ```
 
-Bounded R2 semantics now include:
+R3 real-Chromium evidence proved:
 
-- exact revision / Blueprint / audio-material / asset bindings;
-- exact source-rate match with no hidden resampling;
-- mono/stereo source to stereo output;
-- deterministic seconds→frame round-half-up rule;
-- clip and track dB gain lowering;
-- linear-balance pan law;
-- mute-wins then solo-isolates precedence;
-- canonical track/clip summing order;
-- float64 accumulation;
-- hard clip before deterministic PCM16 little-endian WAV encoding;
-- deterministic mix-plan SHA-256 and WAV SHA-256;
-- byte-identical repeated rendering and reopen/re-render identity;
-- R2 mixer field edits using the same R1 Preview/Accept authority family.
+- accepted track/clip/mixer projection;
+- arrangement Preview with accepted HEAD unchanged;
+- preview-derived audition distinct from accepted audition;
+- discard with accepted HEAD unchanged;
+- mixer Preview with accepted HEAD unchanged;
+- explicit trusted Accept advancing exactly once;
+- service restart + fresh Browser reopen restoring accepted mixer state;
+- stale Preview rejection after an independent accepted HEAD advance;
+- zero page errors, console errors and non-ignored request failures in final evidence.
 
-R2 dedicated evidence:
+R3 dedicated evidence:
 
-- workflow: `ATCM-R2 Native Mixer Evidence`
-- successful pre-validation run: `35184486911`
-- artifact: `10481497910`
-- artifact ZIP digest: `sha256:403f04a307ea7cc6f73c74a7e24aa36414e4f0cf64a55184cb4aadddf04be5b2`
-- before WAV SHA-256: `c30d8c450ee37ecae99aff96c00011b2dab0d2ece2c981484bed52912d9154a7`
-- after WAV SHA-256: `aa9b9d6015f4f0d65d3390a659bcf306deb0e9fb9036d31fcef8e9c72c687db8`
+- workflow: `ATCM-R3 Browser Native Audio Evidence`
+- pre-validation run: `35192996006` — **SUCCESS**
+- artifact ID: `10484249087`
+- artifact ZIP SHA-256: `ebe04df259bdb8948446533096f8061acdd21cdafdf4cca9f443d258abf07bdd`
 
-### R2 maximum validated claim
+### R3 maximum validated claim
 
-> **MUSICA can deterministically lower an exact accepted native-audio arrangement and bounded mixer state into an exact project-bound mix plan and byte-reproducible offline stereo WAV, with explicit gain/pan/mute/solo/summing/clipping semantics and fail-closed unsupported inputs, while keeping rendered audio derived from accepted creative authority.**
+> **MUSICA can truthfully project exact accepted native-audio tracks/clips and bounded mixer state into a Browser arrangement/mixer surface, create source-bound arrangement or mixer Previews without mutating accepted state, audition exact derived R2 mixes, explicitly Accept through the existing trusted native-audio authority path, restore accepted state after restart/reopen, and fail closed on stale Preview acceptance.**
 
-## ATCM-R3 selected current rung / R3 현재 단계
+## ATCM-R4 selected current rung / R4 현재 단계
 
-Issue `#105` is now the exact implementation rung.
+Issue `#111` is the exact next implementation/evidence rung.
 
-Its bounded authority loop is:
+Its bounded lifecycle is:
 
 ```text
-exact accepted native-audio revision
-→ Browser arrangement + mixer projection
-→ source-bound Preview edit
-→ accepted HEAD remains unchanged
-→ truthful derived R2 audition
-→ explicit Accept or discard
-→ exactly one accepted revision advance only on Accept
+accepted project revision + immutable audio assets
+→ deterministic persistence/export
+→ process/service stop
+→ fresh process + reopen/import
+→ exact accepted revision/arrangement/mixer restored
+→ fresh Browser projection
+→ same deterministic R2 mix-plan SHA + WAV SHA
+→ pending/orphaned Preview not promoted
+→ corrupted persistence fails closed
 ```
 
-R3 must expose accepted-vs-preview truth, stable track/clip IDs, asset identity, clip placement/range/gain and track gain/pan/mute/solo while reusing R1/R2 authority rather than inventing Browser authority.
+R4 must use actual process/service restart and fresh Chromium evidence, not only in-process object re-instantiation.
 
-## Parent Issue #95 remaining path / 상위 미션 잔여 경로
+## Parent Issue #95 closure rule / 상위 미션 종결 규칙
 
-```text
-ATCM-R0 immutable asset + authority contracts        VALIDATED
-→ ATCM-R1 accepted track/clip Preview→Accept        VALIDATED
-→ ATCM-R2 deterministic multitrack mixer            VALIDATED
-→ ATCM-R3 Browser arrangement + mixer               CURRENT / Issue #105
-→ ATCM-R4 restart/reopen + real-browser lifecycle
-→ parent Issue #95 closure decision
-```
+R4 must evaluate parent `#95` only against its bounded foundation scope:
+
+- immutable native audio asset boundary;
+- accepted audio track/clip authority;
+- deterministic bounded multitrack mixer;
+- truthful Browser arrangement/mixer interaction;
+- restart/reopen persistence lifecycle with fail-closed integrity.
+
+If these are fully evidenced, a later state-only closure may close `#95` with bounded wording. If not, keep `#95` open and create the smallest evidence-backed missing rung. Closing `#95` must not imply completion of recording, real-time device I/O, plugins, buses/sends, latency compensation, resampling, warp/time-stretch, destructive editing, mastering, collaboration or commercial release hardening.
 
 ## Current important non-claims / 현재 주요 비주장
 
 Until separately validated, do not claim:
 
-- R3 Browser native-audio arrangement/mixer workflow;
 - microphone/line recording or monitoring;
-- low-latency ASIO/CoreAudio/WASAPI device engine;
+- low-latency ASIO/CoreAudio/WASAPI device operation;
 - VST3/AU/CLAP hosting;
 - generalized buses/sends/sidechains or latency compensation;
-- hidden sample-rate conversion, warp/time-stretch or destructive waveform editing;
+- implicit sample-rate conversion;
+- warp/time-stretch/pitch shift or destructive waveform editing;
+- mastering-grade processing;
 - commercial release readiness or supported production SLA;
-- cloud/multi-user authority;
+- cloud/multi-user creative authority;
 - perceptual superiority.
 
 ## Exact next phase / 다음 단계
 
-> **Issue #105 — ATCM-R3: expose the validated native-audio arrangement and bounded mixer through a truthful Browser/Studio surface, preserve Preview-vs-Accept authority, and audition exact derived R2 mixes without granting Browser/runtime state reverse authority.**
+> **Issue #111 — ATCM-R4: prove exact native-audio persistence across real process/service restart and fresh Browser reopen, reproduce the same accepted-state derived mix, fail closed on orphaned Preview/corrupted persistence, then perform a bounded evidence-based parent #95 closure evaluation.**
 
 See `memory/NEXT_ACTION.md` for exact execution order.
 
 ## Resume authority / 재개 권위
 
-Before R3 implementation inspect at minimum:
+Before R4 implementation inspect at minimum:
 
 1. `governance/SOURCE_OF_TRUTH.md`
 2. `docs/COMMERCIAL_WORKSTATION_TARGET.md`
 3. parent Issue `#95`
-4. Issue `#105`
+4. Issue `#111`
 5. `evidence/ATCM_R0_VALIDATION.md`
 6. `evidence/ATCM_R1_VALIDATION.md`
 7. `evidence/ATCM_R2_VALIDATION.md`
-8. `src/musica/audio_edit.py`
-9. `src/musica/audio_mixer_edit.py`
-10. `src/musica/native_mixer.py`
-11. current Studio/Browser service and web-app modules/tests
-12. `memory/NEXT_ACTION.md`
+8. `evidence/ATCM_R3_VALIDATION.md`
+9. `src/musica/project.py`
+10. `src/musica/audio_assets.py`
+11. `src/musica/audio_edit.py`
+12. `src/musica/native_mixer.py`
+13. `src/musica/studio_audio.py`
+14. R3 Browser/HTTP/E2E modules and tests
+15. `memory/NEXT_ACTION.md`
 
 **Repository evidence remains authoritative over conversation/model memory.**

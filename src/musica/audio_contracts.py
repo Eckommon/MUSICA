@@ -161,12 +161,12 @@ def validate_project_audio_material(
             clip_id = str(clip["clip_id"])
             asset_id = str(clip["asset_id"])
             descriptor = read_audio_asset(project, asset_id)
-            asset_duration = float(descriptor["format"]["duration_seconds"])
+            source_duration = float(descriptor["format"]["duration_seconds"])
             source_out = float(clip["source_out_seconds"])
-            if source_out > asset_duration + epsilon:
+            if source_out > source_duration + epsilon:
                 raise ContractError(
                     f"audio clip {clip_id} source_out_seconds {source_out} exceeds "
-                    f"asset duration {asset_duration}: {asset_id}"
+                    f"source duration {source_duration}: {asset_id}"
                 )
 
 

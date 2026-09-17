@@ -1,7 +1,8 @@
 """Typed native-audio contracts for the ATCM commercial-workstation program.
 
-R0 defines the future accepted track/clip/mixer shape without yet granting audio edits,
-mixing, Browser state, or imported bytes any acceptance authority.
+R0 established the immutable source-audio/resource boundary. R1 adds project-bound
+asset/reference validation and a provenance-readable shape for trusted Preview/Accept
+revisions without making a provenance marker itself sufficient commit authority.
 """
 
 from __future__ import annotations
@@ -18,6 +19,8 @@ EMPTY_AUDIO_MATERIAL: dict[str, Any] = {
     "tracks": [],
 }
 
+AUDIO_AUTHORITY_MECHANISM_PREFIX = "audio_edit_candidate:"
+
 
 def empty_audio_material() -> dict[str, Any]:
     """Return a fresh canonical empty native-audio material."""
@@ -28,11 +31,7 @@ def empty_audio_material() -> dict[str, Any]:
 def audio_material_from_blueprint(
     blueprint: dict[str, Any], *, materialize_empty: bool = True
 ) -> dict[str, Any] | None:
-    """Read the optional additive ``materials.audio`` extension.
-
-    R0 deliberately keeps this helper separate from acceptance/edit authority. Later
-    ATCM rungs may source-bind and mutate this material only through Preview/Accept.
-    """
+    """Read the optional additive ``materials.audio`` extension."""
 
     materials = blueprint.get("materials", {})
     value = materials.get("audio") if isinstance(materials, dict) else None
@@ -41,6 +40,25 @@ def audio_material_from_blueprint(
     if not isinstance(value, dict):
         raise ContractError("materials.audio must be an object")
     return value
+
+
+def has_audio_authority_provenance(blueprint: dict[str, Any]) -> bool:
+    """Return whether the Blueprint carries durable R1 audio-edit provenance.
+
+    This marker makes an already-authorized accepted revision structurally readable.
+    It is deliberately *not* sufficient to authorize project mutation; the Project
+    Engine separately blocks audio-material changes unless the trusted R1 accept path
+    invokes its internal audio-authorized commit boundary.
+    """
+
+    provenance = blueprint.get("provenance", {})
+    mechanisms = provenance.get("selected_mechanisms", []) if isinstance(provenance, dict) else []
+    if not isinstance(mechanisms, list):
+        return False
+    return any(
+        isinstance(value, str) and value.startswith(AUDIO_AUTHORITY_MECHANISM_PREFIX)
+        for value in mechanisms
+    )
 
 
 def _require_unique(values: list[Any], label: str) -> None:
@@ -105,12 +123,12 @@ def validate_audio_material(
 def validate_blueprint_audio(
     blueprint: dict[str, Any], *, allow_nonempty: bool = False
 ) -> None:
-    """Validate the optional R0 audio extension without silently granting authority.
+    """Validate the optional audio extension without granting mutation authority.
 
-    The standalone material contract may describe future track/clip state, but R0 does
-    not yet grant acceptance authority to a non-empty native audio material. The
-    canonical Blueprint validation path therefore fails closed until the source-bound
-    Preview/Accept rung explicitly opens that boundary.
+    R0 keeps non-empty native audio fail-closed by default. R1 accepted revisions carry
+    durable ``audio_edit_candidate:*`` provenance so they remain readable by generic
+    Blueprint/revision validation after acceptance. Mutation authority is still enforced
+    separately by the Project Engine and cannot be obtained merely by forging this marker.
     """
 
     value = audio_material_from_blueprint(blueprint, materialize_empty=False)
@@ -118,7 +136,47 @@ def validate_blueprint_audio(
         return
     duration = float(blueprint["project"]["duration_seconds"])
     validate_audio_material(value, project_duration_seconds=duration)
-    if value["tracks"] and not allow_nonempty:
+    if value["tracks"] and not (allow_nonempty or has_audio_authority_provenance(blueprint)):
         raise ContractError(
             "ATCM-R0 does not grant accepted non-empty native audio material authority"
         )
+
+
+def validate_project_audio_material(
+    project: Any,
+    material: dict[str, Any],
+    *,
+    project_duration_seconds: float | None = None,
+) -> None:
+    """Validate native audio material against exact immutable assets in one project."""
+
+    validate_audio_material(material, project_duration_seconds=project_duration_seconds)
+
+    # Local import avoids a module cycle: audio_assets uses MusicaProject storage helpers.
+    from .audio_assets import read_audio_asset
+
+    epsilon = 1e-9
+    for track in material["tracks"]:
+        for clip in track["clips"]:
+            clip_id = str(clip["clip_id"])
+            asset_id = str(clip["asset_id"])
+            descriptor = read_audio_asset(project, asset_id)
+            asset_duration = float(descriptor["format"]["duration_seconds"])
+            source_out = float(clip["source_out_seconds"])
+            if source_out > asset_duration + epsilon:
+                raise ContractError(
+                    f"audio clip {clip_id} source_out_seconds {source_out} exceeds "
+                    f"asset duration {asset_duration}: {asset_id}"
+                )
+
+
+def validate_project_blueprint_audio(project: Any, blueprint: dict[str, Any]) -> None:
+    """Validate one accepted/candidate Blueprint against project-owned audio assets."""
+
+    material = audio_material_from_blueprint(blueprint)
+    assert material is not None
+    validate_project_audio_material(
+        project,
+        material,
+        project_duration_seconds=float(blueprint["project"]["duration_seconds"]),
+    )

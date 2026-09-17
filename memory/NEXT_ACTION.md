@@ -2,278 +2,305 @@
 
 ## Exact resume point / 정확한 재개점
 
-**ISSUE #111 — ATCM-R4 — RESTART/REOPEN NATIVE-AUDIO LIFECYCLE & PARENT CLOSURE EVALUATION v0**
+**ISSUE #115 — MIXER ROUTING & AUTOMATION FOUNDATION v0**
 
-ATCM-R3 is validated and merged. The exact next rung is to prove the bounded native-audio foundation across real process/service restart and fresh Browser reopen, then evaluate parent Issue #95 against its intended foundation scope only.
+The bounded Audio Track / Clip / Mixer Foundation v0 is validated end-to-end through ATCM-R4. This state-only closure authorizes closing parent Issue `#95` after the state record itself is green and merged.
 
-Do **not** widen this rung into recording, low-latency device I/O, plugin hosting, buses/sends, resampling, warp/time-stretch, mastering or generalized release hardening.
+The next dependency-safe commercial-workstation mission is explicit mixer routing plus supported programmable mixer automation.
+
+Do **not** jump directly to recording, low-latency device I/O or third-party plugin hosting before the routing substrate is trustworthy.
 
 ## Canonical base / 공식 기준점
 
-- parent Issue `#95` — **OPEN**
+- parent Issue `#95` — bounded closure criteria **SATISFIED; close after state-only merge**
 - ATCM-R0 `#97` — **COMPLETED / VALIDATED**
 - ATCM-R1 `#99` — **COMPLETED / VALIDATED**
 - ATCM-R2 `#102` — **COMPLETED / VALIDATED**
-- ATCM-R3 Issue `#105` — **COMPLETED**
-- ATCM-R3 PR `#107` — **MERGED**
-- ATCM-R3 merge/main: `fe6c53b41bb98762110001a61e715478464a5760`
-- R3 pre-validation exact head `8db2c3cc0e85d416c84ee2106df4bbb5c64ceeef` — **19/19 SUCCESS**
-- R3 validation-record exact head `cc5c3111563d2c18015c1d66b110643aa3a20f30` — **19/19 SUCCESS**
-- durable R3 validation: `evidence/ATCM_R3_VALIDATION.md`
-- exact next Issue `#111` — **OPEN**
+- ATCM-R3 `#105` — **COMPLETED / VALIDATED**
+- ATCM-R4 `#111` — **COMPLETED / VALIDATED**
+- ATCM-R4 PR `#114` — **MERGED**
+- R4 merge/main: `e19c8ebf81b1dc37a03493458abb180adf48e9c7`
+- R4 pre-validation exact head `2062c6e778b4cd7c726644550ca3917e4c102275` — **20/20 SUCCESS**
+- R4 validation-record successor head `714769e2cedaa545512b8763066ef11fb9a594d1` — **20/20 SUCCESS**
+- durable R4 validation: `evidence/ATCM_R4_VALIDATION.md`
+- exact successor Issue `#115` — **OPEN**
 
 ## Inherited authority / 상속 권한
 
-R4 inherits four validated layers:
+Issue #115 inherits a validated native-audio substrate:
 
 ```text
-R0: immutable bounded PCM WAV resource boundary
-R1: accepted native-audio track/clip Preview→Accept authority
-R2: deterministic accepted arrangement/mixer → derived mix plan/WAV
-R3: truthful Browser arrangement/mixer projection + Preview/Audition/Accept
+immutable audio asset
+→ accepted track / clip state
+→ Preview → explicit Accept
+→ accepted per-track mixer state
+→ deterministic offline mix
+→ truthful Browser interaction
+→ deterministic persistence / fresh reopen
 ```
 
-R4 must prove these survive restart/reopen without creating, inferring or repairing creative authority from derived state.
+Routing and automation must extend that substrate without creating a second source of creative authority.
+
+## Core invariant / 핵심 불변식
+
+```text
+accepted tracks + clips + mixer state
++ accepted explicit routing graph
++ accepted supported automation
+→ deterministic signal-flow plan
+→ deterministic derived routed mix
+≠ reverse creative authority
+```
+
+Browser state, runtime graph objects, meters and rendered audio remain derived unless explicitly accepted through the trusted authority path.
 
 ## Exact implementation order / 정확한 구현 순서
 
-### 1. Re-ground persistence and R3 lifecycle code
+### 1. Re-ground the completed native-audio foundation
 
-Inspect before writing R4 code:
+Inspect at minimum:
 
+- `docs/COMMERCIAL_WORKSTATION_TARGET.md`;
+- `evidence/ATCM_R2_VALIDATION.md`;
 - `evidence/ATCM_R3_VALIDATION.md`;
-- `src/musica/project.py` export/import/reopen/integrity paths;
-- `src/musica/audio_assets.py`;
+- `evidence/ATCM_R4_VALIDATION.md`;
+- `schemas/audio-material-v0.schema.json`;
+- native mixer contracts/schemas;
 - `src/musica/audio_edit.py`;
 - `src/musica/audio_mixer_edit.py`;
 - `src/musica/native_mixer.py`;
-- `src/musica/studio_audio.py`;
-- `src/musica/studio_http_r3.py`;
-- R3 Browser JS/CSS/server overlay;
-- `src/musica/atcm_r3_e2e.py`;
-- project persistence and Browser lifecycle tests.
+- Studio/Browser native-audio projection and E2E code;
+- existing automation contract/runtime/lowering modules.
 
-Do not create a second persistence format or authority model if the existing project archive/store already carries the required truth.
+Do not fork accepted-state authority or duplicate the automation system.
 
-### 2. Freeze the restart/reopen contract
+### 2. Freeze routing topology v0 before implementation
 
-Specify exactly what must survive:
+Define a small explicit acyclic graph with stable identities.
 
-- project ID;
-- accepted HEAD revision ID;
-- accepted Blueprint hash/content;
-- immutable audio asset IDs/descriptors/object hashes;
-- audio track IDs/order/names;
-- clip IDs/assets/timeline/source ranges/clip gains;
-- track gain/pan/mute/solo;
-- project-integrity status;
-- R2 mix-plan SHA and WAV SHA regenerated from accepted state.
+At minimum decide and version:
 
-Specify what must **not** survive as authority:
+- master/output sink identity;
+- bus/group/return node identity and ordering;
+- track output target semantics;
+- send identity;
+- send gain range/unit;
+- one exact send tap position for v0 unless pre/post semantics are fully contracted;
+- deterministic node/edge ordering;
+- summing order;
+- graph validation and cycle policy;
+- missing target behavior;
+- unsupported topology behavior.
 
-- Browser-local UI state;
-- transport position;
-- decoded PCM caches;
-- rendered WAV authority;
-- pending nonaccepted Preview as accepted state;
-- transient service/session identifiers unless explicitly required for diagnostics.
+Prefer a narrow DAG over an under-specified general graph.
 
-### 3. Define real restart boundary
+### 3. Define canonical routing contract
 
-Evidence must include actual service/process termination and fresh startup, not only a new Python object inside the same process.
+The accepted routing representation must bind at least:
 
-Prefer one deterministic harness that can:
+- routing version;
+- stable node IDs;
+- node kind;
+- explicit output target;
+- ordered sends;
+- exact source/target IDs;
+- accepted gain/pan/mute/solo where applicable;
+- one master sink;
+- canonical ordering rules.
 
-```text
-start service A
-→ operate project through Browser/API
-→ persist/export
-→ stop service A
-→ start fresh service B
-→ reopen/import
-→ launch fresh Chromium
-```
+Reject:
 
-Process identity should be recorded in evidence where practical so restart is independently inspectable.
+- duplicate node/send IDs;
+- unknown targets;
+- cycles;
+- missing master;
+- ambiguous multiple masters;
+- invalid gains/parameters;
+- routes that violate the bounded topology.
 
-### 4. Establish accepted baseline before restart
+### 4. Extend Preview→Accept authority for routing edits
 
-Create a deterministic native-audio project using only validated R0–R3 paths:
+Routing state changes must be source-bound candidates.
 
-- immutable bounded audio asset import;
-- accepted track/clip arrangement;
-- accepted mixer state;
-- exact accepted HEAD;
-- accepted R2 mix plan + WAV.
+At minimum support:
 
-Record all relevant hashes before persistence/restart.
+- add bus/group;
+- set track output target;
+- add/remove bounded send;
+- set send gain;
+- set bounded bus mixer state where contracted.
 
-### 5. Persist/export through existing canonical project boundary
-
-Use the existing deterministic project export/archive or equivalent validated persistence boundary.
-
-Verify before shutdown:
-
-- aggregate project integrity passes;
-- archive/object/descriptor hashes are known;
-- accepted revision and native-audio material are present;
-- no derived Browser/runtime state is being smuggled into creative authority.
-
-### 6. Fresh-process reopen/import
-
-After terminating the first service/process:
-
-- start a fresh service/process;
-- reopen/import the persisted project;
-- run project integrity;
-- verify exact accepted HEAD and accepted Blueprint identity;
-- verify exact asset descriptors/objects;
-- verify exact arrangement and mixer state.
-
-Any mismatch must fail promotion.
-
-### 7. Fresh Browser truth projection
-
-Launch a fresh Chromium process/session against the reopened project.
-
-Verify visible/machine-readable truth for:
-
-- accepted revision identity;
-- tracks/clips/assets;
-- timeline/source ranges/clip gains;
-- track gain/pan/mute/solo;
-- accepted-vs-preview state;
-- no phantom pending Preview created by restart.
-
-### 8. Reproduce exact accepted derived mix
-
-Rebuild the R2 mix plan and WAV from reopened accepted state.
-
-Required equality:
+Required authority behavior:
 
 ```text
-pre-restart accepted mix-plan SHA == post-restart mix-plan SHA
-pre-restart accepted WAV SHA      == post-restart WAV SHA
+accepted source revision
+→ routing candidate
+→ validate graph + project binding
+→ Preview; accepted HEAD unchanged
+→ explicit Accept
+→ revalidate source/head/graph
+→ exactly one accepted revision advance
 ```
 
-This proves reproducible derived audition binding; it does not grant rendered audio authority.
+Stale Preview must fail closed.
 
-### 9. Nonaccepted Preview restart test
+### 5. Build deterministic signal-flow plan
 
-Create a valid native-audio Preview but do **not** Accept it.
+Lower exact accepted state into an inspectable plan that records:
 
-Then restart/reopen again and prove:
+- source revision / Blueprint hashes;
+- routing contract version;
+- ordered graph nodes and edges;
+- track/clip source bindings;
+- resolved output targets;
+- resolved send gains;
+- mixer parameter values;
+- automation bindings where supported;
+- deterministic plan SHA-256.
 
-- accepted HEAD is unchanged;
-- Preview candidate material was not promoted;
-- Browser accepted projection remains the accepted revision;
-- any orphaned Preview/session reference is rejected or discarded fail-closed;
-- a stale/orphaned Preview cannot be accepted after restart by bypassing source/head validation.
+### 6. Extend the deterministic offline mixer
 
-### 10. Corruption/missing-resource negative fixture
+The routed renderer must inherit existing explicit R2 numeric/output semantics unless a versioned change is necessary.
 
-In an isolated copy/fixture, corrupt or remove at least one persisted native-audio object or descriptor.
+Prove at minimum:
 
-Required result:
+- direct track→master;
+- two or more tracks→bus→master;
+- send contribution;
+- deterministic summing order;
+- mute/solo interactions where applicable;
+- exact byte-reproducible output;
+- invalid graph cannot render.
 
-- import/reopen or integrity check fails closed;
-- no silent resource repair;
-- no fallback to stale rendered audio;
-- no accepted creative state fabricated from Browser/runtime caches.
+Do not introduce hidden resampling, limiter or dynamic routing.
 
-### 11. Authority bypass regression after restart
+### 7. Bind supported mixer automation
 
-Reprove after reopen that:
+Reuse the existing typed automation authority/lowering family.
 
-- generic Studio commit cannot directly mutate accepted native-audio material;
-- Browser direct mutation requests cannot bypass Preview→Accept;
-- Accept revalidates source/head/assets;
-- stale source still fails closed.
+Start with a bounded parameter map, preferably:
 
-### 12. Real-browser deterministic evidence package
+- track gain;
+- track pan;
+- bus/group gain;
+- bus/group pan where the node contract supports it;
+- send gain only if interpolation/execution semantics can be specified exactly.
 
-Evidence should contain at minimum:
+Each automatable parameter must declare:
 
-- machine-readable proof JSON;
-- process/service restart observations;
-- pre/post accepted revision IDs;
-- asset IDs/object/descriptor hashes;
-- pre/post mix-plan and WAV hashes;
-- Browser observations/screenshots before and after restart;
-- orphaned-Preview rejection result;
-- corruption fail-closed result;
-- manifest with exact SHA-256 and byte sizes.
+- stable target identity;
+- parameter identity;
+- unit/range;
+- interpolation semantics;
+- time/sample lowering rule;
+- fail-closed unsupported mapping behavior.
 
-Where deterministic payloads are generated twice, prove byte equality.
+Do not guess plugin/device parameter semantics.
 
-### 13. Permanent R4 gate
+### 8. Browser inspection and edit surface
 
-Add one dedicated permanent ATCM-R4 lifecycle evidence workflow without weakening the existing **19** permanent workflows.
+Expose the accepted routing graph and bounded mixer automation truthfully in Browser Studio.
 
-Expected permanent workflow count after R4 gate: **20**.
+Browser operations must:
 
-### 14. Promotion
+- show accepted vs Preview state;
+- use source-bound candidate endpoints;
+- never directly mutate accepted routing;
+- show exact route target/send identity;
+- truthfully label accepted/preview-derived audition;
+- keep meters/runtime transport derived.
 
-R4 promotion requires:
+### 9. Persistence / reopen
 
-- bounded implementation/evidence complete;
-- dedicated R4 evidence green;
-- all 20 permanent workflows green on exact evidence-bearing head;
-- evidence independently inspected;
-- durable `evidence/ATCM_R4_VALIDATION.md`;
-- all 20 workflows green again on exact validation-record head;
-- expected-head squash merge;
-- Issue `#111` completed;
-- separate state-only closure / parent #95 evaluation.
+Prove accepted routing and supported automation survive deterministic export/import and fresh reopen with exact stable IDs and graph structure.
 
-### 15. Parent Issue #95 closure evaluation
+Regenerated signal-flow plan and routed WAV must match before/after reopen.
 
-After R4 merge, evaluate only these bounded foundation criteria:
+### 10. Negative matrix
+
+At minimum fail closed on:
+
+- routing cycle;
+- unknown output target;
+- unknown send target;
+- duplicate IDs;
+- missing/ambiguous master;
+- invalid gain/pan/send values;
+- stale Preview;
+- unsupported automation target/parameter;
+- missing/corrupt referenced audio asset;
+- Browser/API direct accepted-state mutation attempt.
+
+### 11. Dedicated evidence
+
+Construct deterministic evidence such as:
 
 ```text
-immutable audio assets
-+ accepted track/clip authority
-+ deterministic bounded mixer
-+ truthful Browser arrangement/mixer
-+ restart/reopen persistence/integrity lifecycle
+accepted native-audio project
+→ Preview bus + route + send
+→ accepted HEAD unchanged
+→ explicit Accept
+→ deterministic routed plan A + WAV A
+→ independent plan B + WAV B
+→ byte equality
+→ Preview supported mixer automation
+→ explicit Accept
+→ exact documented routed-audio difference
+→ fresh reopen
+→ same graph/automation IDs + same derived hashes
+→ invalid cycle/missing target/stale Preview fail closed
+→ real Browser projection remains non-canonical
 ```
 
-If all are durably evidenced, close parent `#95` with explicit bounded wording.
+### 12. Permanent CI and promotion
 
-If any criterion remains unsupported, keep `#95` open and open the smallest missing rung. Do **not** weaken the closure criterion merely to finish the mission.
+Issue #115 must add its own dedicated permanent gate without weakening the existing **20** permanent workflows.
 
-## Explicit R4 non-goals / R4 비목표
+Promotion requires:
 
-Do not implement in R4:
+- implementation and deterministic evidence complete;
+- all permanent workflows green on exact evidence-bearing head;
+- independently inspected artifact manifest/hashes;
+- durable routing/automation validation record;
+- successor exact-head full rerun;
+- expected-head merge;
+- Issue #115 completion;
+- separate state-only closure.
 
-- microphone/line recording;
+## Explicit non-goals / 비목표
+
+Do not widen Issue #115 into:
+
 - ASIO/CoreAudio/WASAPI callback engine;
-- low-latency monitoring guarantees;
+- microphone/line recording;
+- low-latency monitoring guarantee;
 - VST3/AU/CLAP hosting;
-- arbitrary buses/sends/sidechains;
-- plugin delay compensation;
+- arbitrary plugin sidechains;
+- plugin-delay compensation;
 - implicit sample-rate conversion;
 - warp/time-stretch/pitch shift;
-- destructive waveform editing;
 - mastering-grade processing;
 - cloud/multi-user authority;
 - generalized commercial release qualification.
 
-## Parent Issue #95 rung sequence / 상위 미션 순서
+## Dependency path / 의존 경로
 
 ```text
-ATCM-R0 immutable asset + authority contracts        VALIDATED
-→ ATCM-R1 accepted track/clip Preview→Accept        VALIDATED
-→ ATCM-R2 deterministic multitrack mixer            VALIDATED
-→ ATCM-R3 Browser arrangement + mixer               VALIDATED
-→ ATCM-R4 restart/reopen + lifecycle closure        CURRENT / Issue #111
-→ Issue #95 bounded closure evaluation
+Audio Track / Clip / Mixer Foundation v0      VALIDATED
+→ Mixer Routing & Automation Foundation v0    CURRENT / Issue #115
+→ real-time engine + devices
+→ recording / monitoring
+→ plugin hosting + latency compensation
+→ deeper audio editing
+→ release hardening
 ```
 
-## R4 maximum intended outcome / R4 최대 의도 결과
+The exact later order remains evidence-driven.
 
-> **MUSICA can persist, restart and reopen the bounded native-audio foundation without changing creative authority, restore exact accepted arrangement/mixer state and immutable asset bindings in a fresh Browser/Studio process, reproduce the same deterministic derived mix, reject orphaned/stale Preview state, and fail closed on corrupted persisted resources; this evidence then supports a bounded decision on closing the Audio Track / Clip / Mixer Foundation v0 parent mission.**
+## Maximum intended outcome / 최대 의도 결과
 
-This remains a target claim until Issue `#111` is implemented, evidenced, merged and state-closed.
+> **MUSICA can represent, edit through Preview/Accept, persist, inspect and deterministically render a bounded explicit mixer routing graph with supported programmable mixer automation, without allowing routing runtime or rendered audio to become reverse creative authority.**
+
+This remains a target claim until Issue `#115` is implemented, evidenced, merged and state-closed.
 
 **Repository evidence remains authoritative over conversation/model memory.**

@@ -72,7 +72,17 @@ def _accept_arrangement(tmp_path: Path, *, rate_b: int = 8000):
     a = tmp_path / "a.wav"
     b = tmp_path / "b.wav"
     a.write_bytes(_wav_bytes(channels=1, sample_rate=8000, left=24576))
-    b.write_bytes(_wav_bytes(channels=2, sample_rate=rate_b, left=24576, right=24576))
+    # Every fixture is exactly 0.1 s long regardless of sample rate. This lets R1
+    # accept the arrangement before R2 independently tests source-rate policy.
+    b.write_bytes(
+        _wav_bytes(
+            channels=2,
+            sample_rate=rate_b,
+            frames=rate_b // 10,
+            left=24576,
+            right=24576,
+        )
+    )
     asset_a = import_audio_asset(project, a)
     asset_b = import_audio_asset(project, b)
     candidate = _candidate(root, "C-R2-ARRANGE", [
@@ -148,15 +158,20 @@ def test_r2_preview_is_noncanonical_and_stale_mixer_preview_fails(tmp_path: Path
         accept_audio_edit_preview(project, preview)
 
 
-def test_r2_rate_mismatch_and_corruption_fail_closed(tmp_path: Path) -> None:
-    project, accepted, _, asset_b = _accept_arrangement(tmp_path, rate_b=16000)
+def test_r2_rate_mismatch_fails_closed_after_valid_r1_accept(tmp_path: Path) -> None:
+    project, accepted, _, _ = _accept_arrangement(tmp_path, rate_b=16000)
     revision_id = accepted["project"]["revision_id"]
     with pytest.raises(ContractError, match="sample-rate match"):
         build_native_mix_plan(project, revision_id, mix_sample_rate_hz=8000)
+
+
+def test_r2_corrupt_asset_fails_closed_independently_of_rate_policy(tmp_path: Path) -> None:
+    project, accepted, _, asset_b = _accept_arrangement(tmp_path)
+    revision_id = accepted["project"]["revision_id"]
     object_path = project._object_path(asset_b["object_sha256"])
     object_path.write_bytes(object_path.read_bytes() + b"x")
     with pytest.raises((ProjectIntegrityError, ContractError), match="hash mismatch|corrupt"):
-        build_native_mix_plan(project, revision_id, mix_sample_rate_hz=16000)
+        build_native_mix_plan(project, revision_id, mix_sample_rate_hz=8000)
 
 
 def test_r2_reopen_preserves_plan_and_wav_identity(tmp_path: Path) -> None:

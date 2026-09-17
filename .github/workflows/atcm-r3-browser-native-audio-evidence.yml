@@ -25,6 +25,7 @@ jobs:
         run: >-
           pytest -q
           tests/test_atcm_r3_studio_audio.py
+          tests/test_atcm_r3_no_audio_projection.py
           tests/test_atcm_r2_native_mixer.py
           tests/test_atcm_r1_audio_authority.py
           tests/test_atcm_r0_audio_assets.py

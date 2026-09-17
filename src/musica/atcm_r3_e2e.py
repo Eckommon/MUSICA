@@ -100,6 +100,15 @@ def _stop(server, thread: threading.Thread) -> None:
         raise RuntimeError("R3 Studio server thread did not stop")
 
 
+def _record_request_failure(request: Any, failures: list[str]) -> None:
+    """Ignore only Chromium's expected media-source cancellation; retain all real failures."""
+
+    failure = request.failure
+    if failure == "net::ERR_ABORTED":
+        return
+    failures.append(f"{request.method} {request.url} :: {failure or 'unknown failure'}")
+
+
 def _browser_state(page) -> dict[str, Any]:
     value = page.evaluate(
         """() => window.MUSICA_NATIVE_AUDIO ? {
@@ -155,7 +164,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
         page = context.new_page()
         page.on("console", lambda message: console_errors.append(message.text) if message.type == "error" else None)
         page.on("pageerror", lambda error: page_errors.append(str(error)))
-        page.on("requestfailed", lambda request: request_failures.append(f"{request.method} {request.url}"))
+        page.on("requestfailed", lambda request: _record_request_failure(request, request_failures))
         try:
             initial = _open(page, base1, expect)
             accepted_mix = initial["view"]["accepted_audition"]
@@ -165,7 +174,6 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
             page.screenshot(path=str(shot), full_page=True)
             screenshots.append(shot.name)
 
-            # Arrangement Preview: move the exact accepted clip, prove HEAD unchanged, then discard.
             clip = page.locator('[data-clip-id="AC-R3-E2E"]')
             clip.locator('[data-field="timeline"]').fill("0.2")
             clip.locator('[data-action="preview-clip"]').click()
@@ -187,7 +195,6 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
             if service1._get_session(next(iter(service1._sessions))).project.head_revision_id() != source_head:
                 raise RuntimeError("R3 discard changed accepted HEAD")
 
-            # Mixer Preview then trusted explicit native-audio Accept.
             track = page.locator('[data-track-id="AT-R3-E2E"]')
             track.locator('[data-field="track-gain"]').fill("-6")
             track.locator('[data-field="track-pan"]').fill("0.5")
@@ -212,7 +219,6 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
             browser.close()
     _stop(server1, thread1)
 
-    # Restart/reopen with a fresh service and Browser process.
     service2, server2, thread2, base2 = _start(workspace)
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True)
@@ -226,7 +232,6 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
                 raise RuntimeError(f"R3 reopen did not preserve accepted mixer state: {track_state}")
             reopened_head = str(reopened["view"]["revision_id"])
 
-            # Install a Browser Preview, then advance HEAD independently and prove stale Accept rejection.
             track = page.locator('[data-track-id="AT-R3-E2E"]')
             track.locator('[data-field="track-gain"]').fill("-3")
             track.locator('[data-action="preview-mixer"]').click()

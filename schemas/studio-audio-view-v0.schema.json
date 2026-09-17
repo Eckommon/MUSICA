@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/studio-audio-view-v0.schema.json",
+  "title": "MUSICA Studio Native Audio View v0",
+  "description": "Read-only accepted native-audio projection plus optional non-canonical Browser Preview.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["view_version","project_id","branch","revision_id","blueprint_sha256","audio_material_sha256","accepted_state_is_canonical","browser_state_is_canonical","tracks","accepted_audition","preview","capabilities"],
+  "properties": {
+    "view_version": {"const":"0"},
+    "project_id": {"type":"string","minLength":1},
+    "branch": {"type":"string","minLength":1},
+    "revision_id": {"type":"string","minLength":1},
+    "blueprint_sha256": {"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "audio_material_sha256": {"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "accepted_state_is_canonical": {"const":true},
+    "browser_state_is_canonical": {"const":false},
+    "tracks": {"type":"array","items":{"$ref":"#/$defs/track"}},
+    "accepted_audition": {"$ref":"#/$defs/audition"},
+    "preview": {"oneOf":[{"type":"null"},{"$ref":"#/$defs/preview"}]},
+    "capabilities": {
+      "type":"object","additionalProperties":false,
+      "required":["arrangement_preview","mixer_preview","explicit_audio_accept_required","discard","native_mix_audition","direct_blueprint_mutation","recording","realtime_device_engine","plugin_hosting","resampling"],
+      "properties": {
+        "arrangement_preview":{"const":true},"mixer_preview":{"const":true},"explicit_audio_accept_required":{"const":true},"discard":{"const":true},"native_mix_audition":{"const":true},"direct_blueprint_mutation":{"const":false},"recording":{"const":false},"realtime_device_engine":{"const":false},"plugin_hosting":{"const":false},"resampling":{"const":false}
+      }
+    }
+  },
+  "$defs": {
+    "id": {"type":"string","minLength":1,"maxLength":128},
+    "mixer": {
+      "type":"object","additionalProperties":false,
+      "required":["gain_db","pan","mute","solo"],
+      "properties":{"gain_db":{"type":"number","minimum":-60,"maximum":12},"pan":{"type":"number","minimum":-1,"maximum":1},"mute":{"type":"boolean"},"solo":{"type":"boolean"}}
+    },
+    "clip": {
+      "type":"object","additionalProperties":false,
+      "required":["clip_id","asset_id","timeline_start_seconds","source_in_seconds","source_out_seconds","gain_db"],
+      "properties":{"clip_id":{"$ref":"#/$defs/id"},"asset_id":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},"timeline_start_seconds":{"type":"number","minimum":0},"source_in_seconds":{"type":"number","minimum":0},"source_out_seconds":{"type":"number","exclusiveMinimum":0},"gain_db":{"type":"number","minimum":-60,"maximum":12}}
+    },
+    "track": {
+      "type":"object","additionalProperties":false,
+      "required":["track_id","order","name","mixer","clips"],
+      "properties":{"track_id":{"$ref":"#/$defs/id"},"order":{"type":"integer","minimum":0},"name":{"type":"string","minLength":1,"maxLength":256},"mixer":{"$ref":"#/$defs/mixer"},"clips":{"type":"array","items":{"$ref":"#/$defs/clip"}}}
+    },
+    "audition": {
+      "type":"object","additionalProperties":false,
+      "required":["available","source_kind","mix_sample_rate_hz","mix_plan_sha256","wav_sha256","wav_size_bytes","rendered_audio_is_canonical","error"],
+      "properties": {
+        "available":{"type":"boolean"},
+        "source_kind":{"enum":["accepted","preview"]},
+        "mix_sample_rate_hz":{"type":["integer","null"]},
+        "mix_plan_sha256":{"type":["string","null"],"pattern":"^[0-9a-f]{64}$"},
+        "wav_sha256":{"type":["string","null"],"pattern":"^[0-9a-f]{64}$"},
+        "wav_size_bytes":{"type":["integer","null"],"minimum":0},
+        "rendered_audio_is_canonical":{"const":false},
+        "error":{"type":["string","null"]}
+      }
+    },
+    "preview": {
+      "type":"object","additionalProperties":false,
+      "required":["preview_id","candidate_revision_id","candidate_kind","candidate_id","tracks","material_diff","authority_result","audition"],
+      "properties": {
+        "preview_id":{"$ref":"#/$defs/id"},"candidate_revision_id":{"$ref":"#/$defs/id"},"candidate_kind":{"enum":["arrangement","mixer"]},"candidate_id":{"$ref":"#/$defs/id"},"tracks":{"type":"array","items":{"$ref":"#/$defs/track"}},"material_diff":{"type":"array"},"authority_result":{"type":"object"},"audition":{"$ref":"#/$defs/audition"}
+      }
+    }
+  }
+}

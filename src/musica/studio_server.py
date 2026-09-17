@@ -9,7 +9,7 @@ import webbrowser
 from pathlib import Path
 
 from .studio import StudioService
-from .studio_http import DEFAULT_HOST, create_local_server
+from .studio_http_r3 import DEFAULT_HOST, create_local_server
 
 DEFAULT_PORT = 8765
 DEFAULT_WORKSPACE = Path.home() / "MUSICA-Workspace"

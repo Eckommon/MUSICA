@@ -1,0 +1,25 @@
+.r3-audio-card { margin-top: 1rem; }
+.r3-audio-heading { align-items: flex-start; }
+.r3-audio-status { margin: .75rem 0; padding: .65rem .8rem; border: 1px solid var(--line, #4b5563); border-radius: .5rem; }
+.r3-audio-status.success { border-color: #2f855a; }
+.r3-audio-status.error { border-color: #c53030; }
+.r3-audio-unavailable { padding: 1rem; border: 1px dashed var(--line, #4b5563); border-radius: .5rem; color: var(--muted, #9ca3af); }
+.r3-audio-toolbar, .r3-audition, .r3-track-heading, .r3-mixer-row, .r3-clip, .r3-audio-actions { display: flex; align-items: center; gap: .65rem; }
+.r3-audio-toolbar { justify-content: space-between; margin-bottom: .75rem; }
+.r3-audition { justify-content: space-between; flex-wrap: wrap; padding: .8rem; border: 1px solid var(--line, #374151); border-radius: .6rem; margin-bottom: .9rem; }
+.r3-audition audio { width: min(100%, 520px); }
+.r3-track-list { display: grid; gap: .8rem; }
+.r3-track { border: 1px solid var(--line, #374151); border-radius: .65rem; padding: .8rem; }
+.r3-track-heading { justify-content: space-between; margin-bottom: .65rem; }
+.r3-mixer-row { flex-wrap: wrap; padding-bottom: .65rem; border-bottom: 1px solid var(--line, #374151); }
+.r3-mixer-row label, .r3-clip label, .r3-create-grid label { display: grid; gap: .25rem; font-size: .78rem; }
+.r3-mixer-row input[type="number"], .r3-clip input[type="number"] { width: 7rem; }
+.r3-mixer-row input[type="checkbox"] { width: 1.15rem; height: 1.15rem; }
+.r3-clips { display: grid; gap: .55rem; margin-top: .65rem; }
+.r3-clip { flex-wrap: wrap; padding: .6rem; background: color-mix(in srgb, currentColor 4%, transparent); border-radius: .45rem; }
+.r3-clip-id { display: grid; min-width: 17rem; gap: .15rem; }
+.r3-clip-id code { font-size: .65rem; overflow-wrap: anywhere; max-width: 30rem; }
+.r3-create-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; margin-top: .9rem; }
+.r3-create-grid fieldset { display: grid; gap: .55rem; border: 1px solid var(--line, #374151); border-radius: .65rem; padding: .8rem; }
+.r3-inline-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
+@media (max-width: 900px) { .r3-create-grid { grid-template-columns: 1fr; } .r3-clip-id { min-width: 100%; } }

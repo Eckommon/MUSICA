@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/native-mix-plan-v0.schema.json",
+  "title": "MUSICA Native Mix Plan v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["plan_version","engine_id","source","mix_sample_rate_hz","duration_frames","policy","tracks","mix_plan_sha256"],
+  "properties": {
+    "plan_version": {"const": "0"},
+    "engine_id": {"const": "musica-native-offline-mixer-v0"},
+    "source": {"type":"object","additionalProperties":false,"required":["project_id","revision_id","blueprint_sha256","audio_material_sha256"],"properties":{"project_id":{"type":"string","minLength":1},"revision_id":{"type":"string","minLength":1},"blueprint_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"audio_material_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}},
+    "mix_sample_rate_hz":{"type":"integer","minimum":8000,"maximum":192000},
+    "duration_frames":{"type":"integer","minimum":1},
+    "policy":{"type":"object","additionalProperties":false,"required":["time_quantization","source_rate_policy","channel_policy","internal_precision","pan_law","mute_solo_precedence","summing_order","clipping","output_format"],"properties":{"time_quantization":{"const":"nonnegative_round_half_up_to_frame"},"source_rate_policy":{"const":"exact_match_required_no_resampling"},"channel_policy":{"const":"mono_or_stereo_to_stereo"},"internal_precision":{"const":"float64"},"pan_law":{"const":"linear_balance"},"mute_solo_precedence":{"const":"mute_wins_then_solo_isolates"},"summing_order":{"const":"track_order_track_id_then_timeline_clip_id"},"clipping":{"const":"hard_clip_unit_range_before_pcm16"},"output_format":{"const":"wav_pcm16_stereo_little_endian"}}},
+    "tracks":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["track_id","order","mixer","clips"],"properties":{"track_id":{"type":"string","minLength":1},"order":{"type":"integer","minimum":0},"mixer":{"type":"object","additionalProperties":false,"required":["gain_db","gain_linear","pan","left_coefficient","right_coefficient","mute","solo","audible"],"properties":{"gain_db":{"type":"number"},"gain_linear":{"type":"number","minimum":0},"pan":{"type":"number","minimum":-1,"maximum":1},"left_coefficient":{"type":"number","minimum":0,"maximum":1},"right_coefficient":{"type":"number","minimum":0,"maximum":1},"mute":{"type":"boolean"},"solo":{"type":"boolean"},"audible":{"type":"boolean"}}},"clips":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["clip_id","asset_id","object_sha256","descriptor_sha256","channels","sample_rate_hz","sample_width_bytes","timeline_start_frame","source_start_frame","source_end_frame","gain_db","gain_linear"],"properties":{"clip_id":{"type":"string","minLength":1},"asset_id":{"type":"string","pattern":"^sha256:[0-9a-f]{64}$"},"object_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"descriptor_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"channels":{"enum":[1,2]},"sample_rate_hz":{"type":"integer","minimum":8000,"maximum":192000},"sample_width_bytes":{"enum":[1,2,3,4]},"timeline_start_frame":{"type":"integer","minimum":0},"source_start_frame":{"type":"integer","minimum":0},"source_end_frame":{"type":"integer","minimum":1},"gain_db":{"type":"number"},"gain_linear":{"type":"number","minimum":0}}}}}}},
+    "mix_plan_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}
+  }
+}

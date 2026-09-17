@@ -1,0 +1,45 @@
+name: ATCM-R2 Native Mixer Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  atcm-r2-native-mixer-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA / MUSICA 설치
+        run: python -m pip install -e '.[dev]'
+      - name: Run ATCM-R2 regressions / ATCM-R2 회귀 테스트
+        run: >-
+          pytest -q
+          tests/test_atcm_r2_native_mixer.py
+          tests/test_atcm_r1_audio_authority.py
+          tests/test_atcm_r0_audio_assets.py
+          tests/test_m2_project.py
+          tests/test_contracts.py
+      - name: Generate ATCM-R2 evidence A / ATCM-R2 근거 A 생성
+        env:
+          MUSICA_ATCM_R2_EVIDENCE_OUT: artifacts/atcm-r2-native-mixer-evidence-a
+        run: python -m musica.atcm_r2_evidence
+      - name: Generate ATCM-R2 evidence B / ATCM-R2 근거 B 생성
+        env:
+          MUSICA_ATCM_R2_EVIDENCE_OUT: artifacts/atcm-r2-native-mixer-evidence-b
+        run: python -m musica.atcm_r2_evidence
+      - name: Prove byte-reproducible ATCM-R2 evidence / ATCM-R2 근거 byte 재현성 증명
+        run: diff -qr artifacts/atcm-r2-native-mixer-evidence-a artifacts/atcm-r2-native-mixer-evidence-b
+      - name: Upload ATCM-R2 evidence / ATCM-R2 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-atcm-r2-native-mixer-evidence
+          path: artifacts/atcm-r2-native-mixer-evidence-a
+          if-no-files-found: error

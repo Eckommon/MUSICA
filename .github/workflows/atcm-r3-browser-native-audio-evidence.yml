@@ -1,0 +1,60 @@
+name: ATCM-R3 Browser Native Audio Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  atcm-r3-browser-native-audio-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA + browser evidence dependencies / MUSICA + Browser 근거 의존성 설치
+        run: python -m pip install -e '.[dev,e2e]'
+      - name: Install Chromium / Chromium 설치
+        run: python -m playwright install --with-deps chromium
+      - name: Run bounded R3/R2/R1 regressions / R3·R2·R1 회귀 테스트
+        run: >-
+          pytest -q
+          tests/test_atcm_r3_studio_audio.py
+          tests/test_atcm_r3_no_audio_projection.py
+          tests/test_atcm_r2_native_mixer.py
+          tests/test_atcm_r1_audio_authority.py
+          tests/test_atcm_r0_audio_assets.py
+          tests/test_m4_studio.py
+          tests/test_m4_browser_ui.py
+      - name: Run real-Chromium R3 lifecycle A / 실제 Chromium R3 lifecycle A
+        run: python -m musica.atcm_r3_e2e --out artifacts/atcm-r3-browser-audio-a
+      - name: Run real-Chromium R3 lifecycle B / 실제 Chromium R3 lifecycle B
+        run: python -m musica.atcm_r3_e2e --out artifacts/atcm-r3-browser-audio-b
+      - name: Prove deterministic machine-readable lifecycle / machine-readable lifecycle 재현성 증명
+        run: diff -u artifacts/atcm-r3-browser-audio-a/proof.json artifacts/atcm-r3-browser-audio-b/proof.json
+      - name: Build inspectable artifact manifest / 검증 가능한 artifact manifest 생성
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root = Path('artifacts/atcm-r3-browser-audio-a')
+          files = []
+          for path in sorted(p for p in root.rglob('*') if p.is_file() and '.musica/' not in p.as_posix() and '/workspace/' not in p.as_posix()):
+              data = path.read_bytes()
+              files.append({'path': path.relative_to(root).as_posix(), 'sha256': hashlib.sha256(data).hexdigest(), 'size_bytes': len(data)})
+          (root / 'manifest.json').write_text(json.dumps({'manifest_version':'0','files':files}, sort_keys=True, separators=(',',':')) + '\n', encoding='utf-8')
+          PY
+      - name: Upload ATCM-R3 Browser native-audio evidence / ATCM-R3 Browser native-audio 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-atcm-r3-browser-native-audio-evidence
+          path: |
+            artifacts/atcm-r3-browser-audio-a/proof.json
+            artifacts/atcm-r3-browser-audio-a/manifest.json
+            artifacts/atcm-r3-browser-audio-a/*.png
+          if-no-files-found: error

@@ -2,305 +2,273 @@
 
 ## Exact resume point / 정확한 재개점
 
-**ISSUE #115 — MIXER ROUTING & AUTOMATION FOUNDATION v0**
+**MRAM-R1 — TRUSTED ROUTING PREVIEW→ACCEPT + DETERMINISTIC ROUTED OFFLINE MIXER**
 
-The bounded Audio Track / Clip / Mixer Foundation v0 is validated end-to-end through ATCM-R4. This state-only closure authorizes closing parent Issue `#95` after the state record itself is green and merged.
+Parent mission: Issue `#115` — **Mixer Routing & Automation Foundation v0 — OPEN**
 
-The next dependency-safe commercial-workstation mission is explicit mixer routing plus supported programmable mixer automation.
+MRAM-R0 Issue `#118` is validated, merged and completed. The next dependency-safe step is to open accepted routing authority through the same fail-closed source-bound Preview→explicit Accept model already proven elsewhere, then make the deterministic native mixer consume that accepted routing graph.
 
-Do **not** jump directly to recording, low-latency device I/O or third-party plugin hosting before the routing substrate is trustworthy.
+Do **not** introduce mixer automation, Browser routing UI, recording, low-latency device I/O or plugin hosting in R1.
 
 ## Canonical base / 공식 기준점
 
-- parent Issue `#95` — bounded closure criteria **SATISFIED; close after state-only merge**
-- ATCM-R0 `#97` — **COMPLETED / VALIDATED**
-- ATCM-R1 `#99` — **COMPLETED / VALIDATED**
-- ATCM-R2 `#102` — **COMPLETED / VALIDATED**
-- ATCM-R3 `#105` — **COMPLETED / VALIDATED**
-- ATCM-R4 `#111` — **COMPLETED / VALIDATED**
-- ATCM-R4 PR `#114` — **MERGED**
-- R4 merge/main: `e19c8ebf81b1dc37a03493458abb180adf48e9c7`
-- R4 pre-validation exact head `2062c6e778b4cd7c726644550ca3917e4c102275` — **20/20 SUCCESS**
-- R4 validation-record successor head `714769e2cedaa545512b8763066ef11fb9a594d1` — **20/20 SUCCESS**
-- durable R4 validation: `evidence/ATCM_R4_VALIDATION.md`
-- exact successor Issue `#115` — **OPEN**
+- canonical main after MRAM-R0 implementation merge:
+  `7e5da8b558c0c4b980f7b6e3061eca9873e65513`
+- parent Issue `#115` — **OPEN**
+- MRAM-R0 Issue `#118` — **COMPLETED**
+- MRAM-R0 PR `#119` — **MERGED**
+- R0 pre-validation exact head:
+  `1d7c310ba02ef651927ad65cc58f782b1f1b34b6` — **21/21 SUCCESS**
+- R0 validation-record successor:
+  `50701b45fd4c2cb9f95a01c8ec9a8b7d8ccb9956` — **21/21 SUCCESS**
+- durable validation: `evidence/MRAM_R0_VALIDATION.md`
+- dedicated artifact ZIP SHA:
+  `bfe38c8d8794e98a904155ee2f31353fe585fddeef3faeeaae2b98a17224b923`
+- routing plan self-hash from R0 evidence:
+  `4d756500bb806be98b25f3c7f2e21cb3b08b36ea652795002a89edcdedbe46e8`
+
+Permanent workflow count at the R0 validated state: **21**.
 
 ## Inherited authority / 상속 권한
 
-Issue #115 inherits a validated native-audio substrate:
+R1 inherits:
 
 ```text
-immutable audio asset
-→ accepted track / clip state
-→ Preview → explicit Accept
-→ accepted per-track mixer state
-→ deterministic offline mix
-→ truthful Browser interaction
-→ deterministic persistence / fresh reopen
+ATCM:
+immutable audio assets
+→ accepted audio tracks/clips
+→ accepted static per-track mixer
+→ deterministic flat native mix
+→ Browser truth
+→ restart/reopen
+
+MRAM-R0:
+explicit bounded routing graph contract
+→ DAG/cycle/target validation
+→ deterministic derived signal-flow plan
+→ non-empty accepted routing still fail-closed
 ```
 
-Routing and automation must extend that substrate without creating a second source of creative authority.
-
-## Core invariant / 핵심 불변식
-
-```text
-accepted tracks + clips + mixer state
-+ accepted explicit routing graph
-+ accepted supported automation
-→ deterministic signal-flow plan
-→ deterministic derived routed mix
-≠ reverse creative authority
-```
-
-Browser state, runtime graph objects, meters and rendered audio remain derived unless explicitly accepted through the trusted authority path.
+R1 opens only the missing trusted accepted-routing boundary and routed deterministic mixer execution.
 
 ## Exact implementation order / 정확한 구현 순서
 
-### 1. Re-ground the completed native-audio foundation
+### 1. Inspect the actual protected native-audio authority path
 
-Inspect at minimum:
+Before writing routing acceptance code, inspect:
 
-- `docs/COMMERCIAL_WORKSTATION_TARGET.md`;
-- `evidence/ATCM_R2_VALIDATION.md`;
-- `evidence/ATCM_R3_VALIDATION.md`;
-- `evidence/ATCM_R4_VALIDATION.md`;
-- `schemas/audio-material-v0.schema.json`;
-- native mixer contracts/schemas;
+- `src/musica/project.py`;
 - `src/musica/audio_edit.py`;
 - `src/musica/audio_mixer_edit.py`;
+- `src/musica/audio_contracts.py`;
+- `src/musica/routing_contracts.py`;
 - `src/musica/native_mixer.py`;
-- Studio/Browser native-audio projection and E2E code;
-- existing automation contract/runtime/lowering modules.
+- R1/R2 native-audio authority tests;
+- `evidence/MRAM_R0_VALIDATION.md`.
 
-Do not fork accepted-state authority or duplicate the automation system.
+Identify the exact internal mechanism by which generic project commit is prevented from mutating native-audio accepted state and how the trusted audio accept path receives narrow authorization.
 
-### 2. Freeze routing topology v0 before implementation
+Do **not** authorize routing merely by adding a provenance string.
 
-Define a small explicit acyclic graph with stable identities.
+### 2. Freeze routing edit candidate v0
 
-At minimum decide and version:
+Add a source-bound candidate contract containing at least:
 
-- master/output sink identity;
-- bus/group/return node identity and ordering;
-- track output target semantics;
-- send identity;
-- send gain range/unit;
-- one exact send tap position for v0 unless pre/post semantics are fully contracted;
-- deterministic node/edge ordering;
-- summing order;
-- graph validation and cycle policy;
-- missing target behavior;
-- unsupported topology behavior.
+- candidate ID/version;
+- exact project ID;
+- exact source revision ID;
+- source Blueprint SHA;
+- source routing-material SHA;
+- actor/reason;
+- ordered operation list;
+- `preview_only: true`.
 
-Prefer a narrow DAG over an under-specified general graph.
+Recommended minimum operations:
 
-### 3. Define canonical routing contract
+- `ADD_NODE` for bus/group/return;
+- `REMOVE_NODE`;
+- `SET_NODE_OUTPUT`;
+- `SET_TRACK_OUTPUT`;
+- `ADD_SEND`;
+- `REMOVE_SEND`;
+- `SET_SEND_GAIN`;
+- static `SET_NODE_GAIN`, `SET_NODE_PAN`, `SET_NODE_MUTE` if those operations remain fully bounded.
 
-The accepted routing representation must bind at least:
+Do not add automation points in this contract.
 
-- routing version;
-- stable node IDs;
-- node kind;
-- explicit output target;
-- ordered sends;
-- exact source/target IDs;
-- accepted gain/pan/mute/solo where applicable;
-- one master sink;
-- canonical ordering rules.
+### 3. Build routing Preview
 
-Reject:
+The Preview builder must:
 
-- duplicate node/send IDs;
-- unknown targets;
-- cycles;
-- missing master;
-- ambiguous multiple masters;
-- invalid gains/parameters;
-- routes that violate the bounded topology.
+1. validate the candidate schema;
+2. load the exact source accepted revision;
+3. re-check project ID / source revision / source Blueprint SHA / routing-material SHA;
+4. apply operations only to a copy;
+5. validate exact current audio track identities;
+6. validate resulting routing material/DAG;
+7. validate missing/corrupt asset/project constraints as needed;
+8. construct a candidate Blueprint;
+9. keep accepted HEAD unchanged;
+10. return machine-readable changed node/send/track-route IDs and hashes.
 
-### 4. Extend Preview→Accept authority for routing edits
+Blocked candidates must not produce accepted state.
 
-Routing state changes must be source-bound candidates.
+### 4. Add a trusted Project Engine routing commit boundary
 
-At minimum support:
+Generic `project.commit_revision(...)` must continue failing on a non-empty routing change.
 
-- add bus/group;
-- set track output target;
-- add/remove bounded send;
-- set send gain;
-- set bounded bus mixer state where contracted.
+Implement a narrow internal path callable only by the trusted routing acceptance function.
 
-Required authority behavior:
+The trusted path must:
+
+- revalidate current HEAD equals Preview source;
+- revalidate source Blueprint/routing hashes;
+- revalidate the candidate graph against current accepted audio track IDs;
+- revalidate project integrity/assets;
+- reject stale Preview;
+- advance exactly once;
+- write normal durable revision/audit state;
+- not grant future Browser/runtime callers generic routing authority.
+
+### 5. Explicit Accept / discard behavior
+
+Required:
 
 ```text
-accepted source revision
-→ routing candidate
-→ validate graph + project binding
-→ Preview; accepted HEAD unchanged
-→ explicit Accept
-→ revalidate source/head/graph
+Preview
+→ accepted HEAD unchanged
+→ discard: no mutation
+
+Preview
+→ explicit trusted Accept
+→ exact source revalidation
 → exactly one accepted revision advance
 ```
 
-Stale Preview must fail closed.
+A second Accept of the same stale Preview must fail closed.
 
-### 5. Build deterministic signal-flow plan
+### 6. Extend deterministic native mixer for accepted routing
 
-Lower exact accepted state into an inspectable plan that records:
+Do not replace R2 numeric semantics.
 
-- source revision / Blueprint hashes;
-- routing contract version;
-- ordered graph nodes and edges;
-- track/clip source bindings;
-- resolved output targets;
-- resolved send gains;
-- mixer parameter values;
-- automation bindings where supported;
-- deterministic plan SHA-256.
+Build a routed plan that binds:
 
-### 6. Extend the deterministic offline mixer
+- accepted project/revision/Blueprint;
+- accepted audio material;
+- accepted routing material;
+- exact immutable audio assets;
+- R0 deterministic routing-plan hash;
+- ordered track sources;
+- node topology;
+- node static mixer values;
+- post-fader sends;
+- exact summing/application order;
+- master sink;
+- output format/policy.
 
-The routed renderer must inherit existing explicit R2 numeric/output semantics unless a versioned change is necessary.
+Recommended bounded execution order:
 
-Prove at minimum:
+```text
+clip gain
+→ track gain/pan/mute/solo using inherited R2 rules
+→ track primary output + post-fader sends
+→ node input sum
+→ node static gain/pan/mute
+→ node primary output
+→ unique master
+→ inherited hard clip → PCM16 stereo WAV
+```
 
-- direct track→master;
-- two or more tracks→bus→master;
-- send contribution;
-- deterministic summing order;
-- mute/solo interactions where applicable;
-- exact byte-reproducible output;
-- invalid graph cannot render.
+Freeze any subtle send/pan semantics explicitly in the plan before claiming routed render support.
 
-Do not introduce hidden resampling, limiter or dynamic routing.
+### 7. Fail-closed routed execution
 
-### 7. Bind supported mixer automation
-
-Reuse the existing typed automation authority/lowering family.
-
-Start with a bounded parameter map, preferably:
-
-- track gain;
-- track pan;
-- bus/group gain;
-- bus/group pan where the node contract supports it;
-- send gain only if interpolation/execution semantics can be specified exactly.
-
-Each automatable parameter must declare:
-
-- stable target identity;
-- parameter identity;
-- unit/range;
-- interpolation semantics;
-- time/sample lowering rule;
-- fail-closed unsupported mapping behavior.
-
-Do not guess plugin/device parameter semantics.
-
-### 8. Browser inspection and edit surface
-
-Expose the accepted routing graph and bounded mixer automation truthfully in Browser Studio.
-
-Browser operations must:
-
-- show accepted vs Preview state;
-- use source-bound candidate endpoints;
-- never directly mutate accepted routing;
-- show exact route target/send identity;
-- truthfully label accepted/preview-derived audition;
-- keep meters/runtime transport derived.
-
-### 9. Persistence / reopen
-
-Prove accepted routing and supported automation survive deterministic export/import and fresh reopen with exact stable IDs and graph structure.
-
-Regenerated signal-flow plan and routed WAV must match before/after reopen.
-
-### 10. Negative matrix
-
-At minimum fail closed on:
+Reject at least:
 
 - routing cycle;
-- unknown output target;
-- unknown send target;
-- duplicate IDs;
+- unknown node;
+- unknown track route;
+- duplicate identity;
 - missing/ambiguous master;
-- invalid gain/pan/send values;
+- unsupported node/send state;
+- missing/corrupt audio asset;
+- source sample-rate mismatch under existing no-resampling v0 policy;
+- invalid source/head binding;
 - stale Preview;
-- unsupported automation target/parameter;
-- missing/corrupt referenced audio asset;
-- Browser/API direct accepted-state mutation attempt.
+- direct generic commit bypass.
 
-### 11. Dedicated evidence
+### 8. Deterministic evidence
 
-Construct deterministic evidence such as:
+Evidence should prove:
 
 ```text
-accepted native-audio project
-→ Preview bus + route + send
-→ accepted HEAD unchanged
+accepted flat native-audio source
+→ routing candidate
+→ Preview
+→ HEAD unchanged
+→ deterministic preview graph identity
 → explicit Accept
-→ deterministic routed plan A + WAV A
-→ independent plan B + WAV B
-→ byte equality
-→ Preview supported mixer automation
-→ explicit Accept
-→ exact documented routed-audio difference
-→ fresh reopen
-→ same graph/automation IDs + same derived hashes
-→ invalid cycle/missing target/stale Preview fail closed
-→ real Browser projection remains non-canonical
+→ exactly one HEAD advance
+→ accepted routing graph exact
+→ routed plan A + WAV A
+→ independent routed plan B + WAV B
+→ exact plan/WAV equality
+→ controlled routing change causes exact documented output change
+→ reopen project
+→ same accepted routing + plan/WAV hashes
+→ stale Preview / cycle / missing target / generic commit bypass fail closed
 ```
 
-### 12. Permanent CI and promotion
+Rendered WAV remains derived/non-canonical.
 
-Issue #115 must add its own dedicated permanent gate without weakening the existing **20** permanent workflows.
+### 9. Permanent gate
 
-Promotion requires:
+Add a dedicated MRAM-R1 permanent workflow without weakening the existing **21** gates.
 
-- implementation and deterministic evidence complete;
-- all permanent workflows green on exact evidence-bearing head;
-- independently inspected artifact manifest/hashes;
-- durable routing/automation validation record;
-- successor exact-head full rerun;
-- expected-head merge;
-- Issue #115 completion;
-- separate state-only closure.
+Expected total after R1: **22**.
 
-## Explicit non-goals / 비목표
+### 10. Promotion
 
-Do not widen Issue #115 into:
+R1 promotion requires:
 
-- ASIO/CoreAudio/WASAPI callback engine;
-- microphone/line recording;
-- low-latency monitoring guarantee;
+- implementation/evidence complete;
+- dedicated MRAM-R1 gate green;
+- all 22 permanent workflows green on exact evidence-bearing head;
+- independent artifact digest/manifest/hash inspection;
+- durable `evidence/MRAM_R1_VALIDATION.md`;
+- all 22 workflows green again on exact validation-record successor head;
+- expected-head squash merge;
+- R1 Issue completed;
+- separate state-only closure that points to MRAM-R2.
+
+## MRAM-R1 non-goals / 비목표
+
+Do not implement or claim in R1:
+
+- automation lanes mapped to audio tracks/buses/sends;
+- Browser routing editing;
+- sidechains;
+- realtime callbacks or device transport;
+- recording/monitoring;
 - VST3/AU/CLAP hosting;
-- arbitrary plugin sidechains;
 - plugin-delay compensation;
-- implicit sample-rate conversion;
+- resampling;
 - warp/time-stretch/pitch shift;
-- mastering-grade processing;
-- cloud/multi-user authority;
-- generalized commercial release qualification.
+- mastering;
+- generalized commercial release readiness.
 
-## Dependency path / 의존 경로
+## Successor after R1
 
-```text
-Audio Track / Clip / Mixer Foundation v0      VALIDATED
-→ Mixer Routing & Automation Foundation v0    CURRENT / Issue #115
-→ real-time engine + devices
-→ recording / monitoring
-→ plugin hosting + latency compensation
-→ deeper audio editing
-→ release hardening
-```
+If R1 validates cleanly, exact next rung:
 
-The exact later order remains evidence-driven.
+> **MRAM-R2 — extend the existing typed automation authority/lowering model to supported native mixer targets, starting with track and routing-node gain/pan under explicit stable target identity, units/ranges and interpolation/lowering semantics.**
 
-## Maximum intended outcome / 최대 의도 결과
+Do not retrofit automation scope casually. The current automation model is `project|part`; MRAM-R2 must version or safely extend target semantics with backward-compatible evidence.
 
-> **MUSICA can represent, edit through Preview/Accept, persist, inspect and deterministically render a bounded explicit mixer routing graph with supported programmable mixer automation, without allowing routing runtime or rendered audio to become reverse creative authority.**
+## Maximum intended R1 outcome
 
-This remains a target claim until Issue `#115` is implemented, evidenced, merged and state-closed.
+> **MUSICA can edit bounded explicit routing through source-bound Preview/Accept authority, persist that accepted DAG as creative state, and deterministically render the exact accepted track→node→master signal flow into a byte-reproducible derived offline mix while generic commit paths, stale Previews and invalid topology remain fail-closed.**
+
+This remains a target claim until R1 is implemented, evidenced, merged and state-closed.
 
 **Repository evidence remains authoritative over conversation/model memory.**

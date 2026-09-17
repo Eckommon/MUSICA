@@ -2,321 +2,270 @@
 
 ## Exact resume point / 정확한 재개점
 
-**ISSUE #95 — AUDIO TRACK / CLIP / MIXER FOUNDATION v0**
+**ISSUE #99 — ATCM-R1 — ACCEPTED AUDIO TRACK / CLIP AUTHORITY & ASSET BINDING v0**
 
-The post-Compare successor review is complete on this planning branch. The selected bounded mission is the first native audio-production substrate for MUSICA's long-term general-purpose/commercial workstation objective.
+ATCM-R0 is validated and merged. The exact next rung is to open a trusted canonical path from immutable in-project audio assets into accepted audio track/clip state through source-bound Preview → explicit Accept authority.
 
-Do **not** infer `M8` or widen this mission into recording/plugin hosting/real-time audio by default.
+Do **not** widen this rung into deterministic multitrack mixing, Browser arrangement, recording, real-time audio or plugin hosting.
 
-Implementation begins only after the planning/ratification PR containing this record is merged and the resulting canonical main is re-grounded.
+## Canonical base / 공식 기준점
 
-## Canonical planning base / 공식 계획 기준점
+- ATCM-R0 implementation merge/main: `f3c5c5d9cc8289dcdb88a420dea8db29d14f74dc`
+- ATCM-R0 Issue `#97` — **COMPLETED**
+- ATCM-R0 PR `#98` — **MERGED**
+- ATCM-R0 durable validation: `evidence/ATCM_R0_VALIDATION.md`
+- R0 validation-record exact head: `dfb8e9cce1d4044fc249d5dba80583eff678b12b` — **16/16 permanent workflows SUCCESS**
+- parent Issue `#95` — **OPEN**
+- exact next Issue `#99` — **OPEN**
 
-- pre-selection canonical main: `f6128a8b5dcaae5f4cb4e05ad21da415b34afaa5`
-- Compare Issue `#89` — **COMPLETED**
-- Compare PR `#91` — **MERGED**
-- Compare closure PR `#94` — **MERGED**
-- selected successor Issue `#95` — **OPEN**
-- long-term target: `docs/COMMERCIAL_WORKSTATION_TARGET.md`
-- selection record: `docs/POST_COMPARE_SUCCESSOR_SELECTION.md`
+## R0 authority inherited by R1 / R1이 상속하는 R0 권한
 
-## Selected mission / 선정 미션
-
-Build a bounded native audio domain:
+R0 validates:
 
 ```text
-WAV/PCM source bytes
-→ immutable content-addressed project asset
-→ accepted audio track + clip references
-→ source-bound non-destructive edit candidate
-→ Preview · NOT ACCEPTED
-→ explicit Accept
-→ accepted audio material
-→ deterministic mix plan
-→ deterministic stereo mixdown
-→ Browser arrangement/mixer inspection + audition
+bounded PCM WAV bytes
+→ immutable SHA-256 project object
+→ exact audio asset descriptor
+→ descriptor/object/audit integrity
+→ deterministic project export/import
 ```
 
-## Authority invariant / 권한 불변식
+R0 deliberately blocks non-empty native audio material from canonical acceptance because no trusted audio edit authority existed yet.
 
-### Allowed canonical/accepted state
+R1 must preserve that fail-closed property except through its own explicitly source-bound acceptance path.
 
-- audio asset identity/reference metadata required to bind exact immutable bytes;
-- stable track IDs/order/names;
-- stable clip IDs;
-- clip asset reference;
-- timeline position;
-- source in/out range;
-- bounded clip gain;
-- bounded track gain/pan/mute/solo;
-- accepted revision/source provenance.
-
-### Derived only
-
-- decoded PCM buffers;
-- waveform caches;
-- meters;
-- deterministic mix plan/execution package;
-- rendered track/stereo audio;
-- Browser selection/drag state;
-- transport/runtime state.
-
-Derived state has no reverse-promotion authority.
-
-## Exact implementation order / 정확한 구현 순서
-
-Proceed in this order unless repository evidence requires a narrower correction.
-
-### 1. Re-ground after planning merge
-
-Before code changes:
-
-- verify canonical `main` and planning merge SHA;
-- confirm Issue `#95` is the only selected implementation mission;
-- inspect current permanent workflow count;
-- inspect `music-blueprint-v0`, project/version authority, render/renderer, DAWproject, Studio and Browser patterns;
-- identify the least invasive additive extension point for native audio material.
-
-Do not assume the schema shape from conversation context.
-
-### 2. Authority and contract design first
-
-Define machine-valid versioned contracts before UI/runtime implementation.
-
-At minimum evaluate/add bounded contracts equivalent to:
-
-```text
-audio-asset-v0
-audio-material-v0
-audio-edit-candidate-v0
-audio-edit-authority-result-v0
-audio-mix-plan-v0
-```
-
-Exact filenames may change for repository reasons.
-
-The design must explicitly answer:
-
-- whether audio material is embedded in the accepted Blueprint extension or referenced through another accepted project object;
-- how immutable asset bytes are stored and addressed;
-- how asset identity survives project export/reopen;
-- exact supported WAV/PCM boundary;
-- time unit and sample/timeline conversion policy;
-- track/clip uniqueness and ordering;
-- gain/pan ranges and laws;
-- mute/solo precedence;
-- source-bound stale-revision semantics;
-- lock/constraint interaction;
-- deterministic mix identity.
-
-### 3. Immutable audio asset store
-
-Implement a project-confined asset boundary with:
-
-- validated WAV/PCM import;
-- content SHA-256;
-- byte length and source format metadata;
-- content-addressed immutable storage;
-- duplicate-identical content deduplication policy;
-- safe filenames/paths independent of untrusted user filenames;
-- no path traversal;
-- integrity verification on read/use;
-- missing/tampered asset fail-closed.
-
-Importing bytes alone must not silently change an accepted creative revision unless the accepted project state is explicitly changed through authority.
-
-### 4. Trusted audio material runtime
-
-Implement accepted audio material with:
-
-- ordered stable audio tracks;
-- clips bound to exact assets;
-- explicit project timeline position;
-- exact source in/out bounds;
-- bounded clip gain;
-- bounded track gain/pan/mute/solo;
-- duplicate-ID and invalid-range rejection.
-
-All reads must be deterministic and integrity checked.
-
-### 5. Source-bound edit authority
-
-Minimum candidate operations:
-
-- add/reference imported clip;
-- add audio track;
-- move clip;
-- trim source in/out;
-- set clip gain;
-- set track gain;
-- set track pan;
-- set mute;
-- set solo.
-
-Required behavior:
+## R1 exact authority model / R1 정확한 권한 모델
 
 ```text
 accepted source revision
-→ source-bound edit candidate
-→ validate asset/material/ranges/locks
++ immutable in-project audio asset
+→ source-bound audio edit candidate
+→ project-bound asset/material validation
 → READY_FOR_PREVIEW or BLOCKED
 → install Preview only
 → accepted HEAD unchanged
 → explicit Accept only
-→ one accepted revision advance
+→ revalidate source + asset integrity + material
+→ exactly one accepted revision advance
 ```
 
-Stale source and authority bypass must fail closed.
+Derived buffers, waveform state, rendered audio, Browser/runtime state and future mixer state have no reverse-promotion authority.
 
-### 6. Deterministic offline mixer
+## Exact implementation order / 정확한 구현 순서
 
-Specify and implement explicitly:
+Proceed in this order unless repository evidence proves a narrower correction is required.
 
-- supported input channel layouts;
-- source sample-rate policy;
-- clip/timeline sample alignment;
-- source-range slicing;
-- clip gain;
-- track gain;
-- pan law;
-- mute/solo precedence;
-- overlapping clip summation;
-- headroom/clipping policy;
-- project output channels/sample rate/PCM encoding;
-- mix-plan SHA/provenance.
+### 1. Re-ground exact authority primitives
 
-For the supported evidence path, same accepted state + same immutable assets + same declared toolchain must produce byte-identical mix evidence where the implementation claims determinism.
+Inspect and reuse the existing Preview/Accept lifecycle rather than creating a second acceptance subsystem.
 
-### 7. Studio service and localhost API
+At minimum inspect:
 
-Expose only bounded project-confined operations:
+- `src/musica/audio_assets.py`
+- `src/musica/audio_contracts.py`
+- `src/musica/project.py`
+- `src/musica/contracts.py`
+- current semantic/exact-note/automation Preview/Accept implementation
+- source-bound stale-revision tests
+- `schemas/audio-material-v0.schema.json`
+- `evidence/ATCM_R0_VALIDATION.md`
 
-- audio material view;
-- asset import/reference operation under explicit authority semantics;
-- audio edit Preview;
-- existing explicit Accept/Discard lifecycle;
-- accepted/pending mix audition route;
-- exact asset/mix provenance inspection.
+### 2. Add project-bound audio material validation
 
-Do not create a second acceptance system.
+Generic structural validation is not sufficient for accepted audio references.
 
-### 8. Browser arrangement + mixer surface
+Add a project-aware validator that proves for every clip:
 
-Add the minimum useful real Browser workflow:
+- `asset_id` is syntactically valid;
+- descriptor exists in this exact project;
+- underlying immutable object exists and matches exact SHA/size;
+- descriptor audit binding remains valid;
+- `source_in_seconds >= 0`;
+- `source_out_seconds > source_in_seconds`;
+- `source_out_seconds <= exact referenced asset duration`;
+- project timeline end stays within project duration;
+- stable track/clip IDs and canonical ordering remain valid.
 
-- audio track rows;
-- clip timeline representation;
-- exact clip/asset provenance inspection;
-- bounded move/trim/gain interaction;
-- track gain/pan/mute/solo controls;
-- clear ACCEPTED vs PREVIEW state;
-- explicit Accept/Discard using existing authority;
-- accepted/pending mix audition;
-- no hidden project write from simple selection/drag audition state.
+Unknown, cross-project, missing, corrupt or out-of-range references must fail closed.
 
-A waveform visualization may be derived if helpful but is not itself canonical and is not required for v0 acceptance.
+### 3. Define source-bound audio edit candidate/result contracts
 
-### 9. Persistence and restart/reopen
+Add versioned contracts for the minimum trusted R1 edit authority.
+
+Candidate must bind at least:
+
+- project ID;
+- source revision ID;
+- operation type;
+- stable target IDs;
+- exact requested parameters;
+- referenced asset ID where applicable;
+- deterministic candidate/result identity if repository patterns support it.
+
+Result must distinguish bounded states such as:
+
+```text
+READY_FOR_PREVIEW
+BLOCKED
+```
+
+Do not claim acceptance at candidate-generation time.
+
+### 4. Implement minimum R1 operations
+
+Trusted operations:
+
+- add audio track;
+- add/reference imported clip;
+- move clip;
+- trim source in/out;
+- set bounded clip gain.
+
+The material schema already contains track mixer fields for the parent mission, but R1 should keep them at canonical defaults and must not expose track gain/pan/mute/solo as validated audible edits yet.
+
+### 5. Preview lifecycle
+
+For every supported operation:
+
+```text
+accepted source revision
+→ generate candidate
+→ validate candidate/material/project-bound assets
+→ install Preview
+→ accepted HEAD remains unchanged
+```
+
+Preview must be disposable and non-canonical.
+
+### 6. Explicit Accept lifecycle
+
+Accept must:
+
+- bind to the exact preview/source revision;
+- reject stale source HEAD;
+- revalidate all referenced audio assets and source ranges;
+- produce one valid candidate Blueprint revision;
+- remove the temporary R0 non-empty-audio acceptance block only through the trusted R1 authorization path;
+- commit exactly one immutable accepted revision;
+- leave no hidden secondary authority state.
+
+Direct `commit_revision()` or equivalent bypass with non-empty audio material must remain blocked unless the call is carrying the explicit trusted R1 authorization mechanism.
+
+### 7. Discard and stale-source behavior
 
 Prove:
 
-- accepted audio tracks/clips survive restart;
-- exact asset references/hashes survive restart;
-- no asset is rewritten during open/audition;
-- deterministic accepted mix identity is reproduced after reopen;
-- missing/corrupt media is surfaced truthfully and blocks invalid mix claims.
+- Discard leaves accepted HEAD unchanged;
+- stale candidate Preview/Accept fails closed;
+- asset mutation/corruption between Preview and Accept blocks Accept;
+- importing a new asset alone never advances accepted HEAD.
 
-### 10. Deterministic test matrix
+### 8. Persistence / reopen
+
+Accepted R1 state must survive project export/import and reopen with:
+
+- same accepted revision identity semantics;
+- exact `asset_id` references;
+- stable track IDs;
+- stable clip IDs;
+- exact timeline/source ranges;
+- exact clip gain;
+- project-bound asset validation still PASS.
+
+### 9. Deterministic test matrix
 
 At minimum:
 
-- valid supported WAV import;
-- unsupported WAV/codec fail closed;
-- duplicate identical asset policy;
-- tampered asset fail closed;
-- missing asset fail closed;
-- path traversal rejection;
-- valid track/clip material;
-- duplicate IDs rejected;
-- clip source overrun rejected;
-- move/trim/gain/mixer Preview leaves HEAD unchanged;
-- stale candidate blocked;
-- explicit Accept advances once;
-- mute/solo precedence exact;
-- pan/gain exact within declared policy;
-- overlapping clip summing exact;
-- deterministic mix repeatability;
-- restart/reopen identity;
-- previous note/automation/Compare semantics unchanged.
+- valid in-project asset reference PASS;
+- unknown asset FAIL;
+- cross-project asset FAIL;
+- corrupt/missing asset FAIL;
+- source overrun FAIL;
+- duplicate/canonical-order violations FAIL;
+- add-track Preview leaves HEAD unchanged;
+- add-clip Preview leaves HEAD unchanged;
+- move/trim/clip-gain Preview leaves HEAD unchanged;
+- Discard leaves HEAD unchanged;
+- explicit Accept advances exactly once;
+- direct-commit bypass remains blocked;
+- stale source FAIL;
+- corruption after Preview blocks Accept;
+- reopen preserves accepted material + exact asset binding;
+- R0 import/export tests remain green;
+- previous note/automation/Compare semantics remain green.
 
-### 11. Real-Chromium evidence
+### 10. Dedicated deterministic evidence
 
-Prove a visible end-to-end path:
+Generate a deterministic R1 evidence package using a generated bounded PCM WAV fixture.
+
+Required evidence path:
 
 ```text
-open project
-→ inspect/import bounded audio asset
-→ create/reference audio track + clip through Preview
-→ audition pending mix
+create project
+→ import exact audio asset
+→ prove HEAD unchanged
+→ create add-track/add-clip candidate
+→ Preview
+→ prove HEAD unchanged
 → Accept
-→ move/trim or mixer change through Preview
+→ prove exactly one revision advance
+→ create move/trim/clip-gain candidate
+→ Preview
 → Accept or Discard
-→ reopen
-→ verify accepted arrangement + mixer + exact mix provenance
+→ export/import or reopen
+→ verify accepted track/clip + exact asset identity
+→ prove stale/out-of-range/cross-project/corrupt cases fail closed
 ```
 
-Record console/page/request failures explicitly.
+Run evidence independently at least twice and compare all claimed deterministic outputs byte-for-byte where appropriate.
 
-### 12. Permanent CI and promotion
+### 11. Permanent CI and promotion
 
-Add one dedicated permanent evidence workflow without weakening prior gates.
+Add one dedicated permanent R1 workflow without weakening prior gates.
 
 Promotion requires:
 
-- all Issue #95 contract/runtime/browser/evidence tests green;
-- all existing permanent M0→Compare workflows green on the exact evidence-bearing head;
-- deterministic evidence package and manifest;
-- durable validation record;
-- successor exact-head rerun after validation-record commit;
+- dedicated R1 tests/evidence green;
+- all existing permanent workflows green on the exact evidence-bearing head;
+- deterministic evidence package + manifest;
+- durable R1 validation record;
+- successor exact-head full rerun after validation-record commit;
 - expected-head squash merge;
-- Issue #95 completed only after implementation/evidence merge;
+- Issue `#99` completed;
 - separate state-only closure.
 
-## Explicit non-goals for this mission / 이번 미션 비목표
+## Explicit R1 non-goals / R1 비목표
 
-Do not implement by scope creep:
+Do not implement in R1:
 
+- deterministic multitrack summing or stereo mixdown;
+- trusted track gain/pan/mute/solo audible semantics;
+- Browser arrangement/mixer UI;
 - microphone/line recording;
-- audio-device drivers or low-latency guarantees;
-- VST3/AU/CLAP hosting;
-- latency compensation;
-- arbitrary routing/buses/sends/sidechains;
-- time-stretch/warp/pitch shifting;
-- destructive editing;
-- take lanes/comping;
-- mastering suite;
-- cloud collaboration;
-- installer/signing/commercial release qualification.
+- ASIO/CoreAudio/WASAPI device engine;
+- low-latency guarantees;
+- plugin hosting;
+- buses/sends/sidechains;
+- warp/time-stretch/pitch shift;
+- destructive waveform editing;
+- DAW audio round-trip reconciliation;
+- commercial release qualification.
 
-These are later commercial-workstation missions.
+## Parent Issue #95 rung sequence / 상위 미션 순서
 
-## Deferred missions preserved / 보류 미션 유지
+```text
+ATCM-R0 immutable asset + authority contracts        VALIDATED
+→ ATCM-R1 accepted track/clip Preview→Accept        CURRENT / Issue #99
+→ ATCM-R2 deterministic multitrack mixer semantics
+→ ATCM-R3 Studio/Browser arrangement + mixer
+→ ATCM-R4 restart/reopen + real-browser lifecycle
+→ Issue #95 closure
+```
 
-Still valid after Issue #95:
+## R1 maximum intended outcome / R1 최대 의도 결과
 
-- `LIVE_PROVIDER_EVIDENCE`;
-- automation renderer mapping expansion;
-- automation-aware DAW interchange;
-- real-time device/recording engine;
-- third-party plugin hosting;
-- deeper waveform/warp editing;
-- production release hardening;
-- human usability/perceptual evaluation where claims require it.
+> **MUSICA can bind immutable in-project audio assets into stable accepted audio tracks/clips through source-bound Preview/Accept authority, preserve exact source ranges and clip gain, reject stale/missing/corrupt/out-of-range references, and reopen the accepted arrangement without granting derived audio or runtime state reverse authority.**
 
-## Maximum intended outcome / 최대 의도 결과
-
-> **MUSICA can own immutable imported audio assets as explicit project references, arrange them as accepted audio clips on stable audio tracks, apply bounded mixer state, edit them through Preview/Accept authority, and deterministically reproduce the resulting multitrack mix without granting rendered audio or Browser state reverse authority.**
-
-This remains a target claim until Issue `#95` is implemented, evidenced, merged and state-closed.
+This remains a target claim until Issue `#99` is implemented, evidenced, merged and state-closed.
 
 **Repository evidence remains authoritative over conversation/model memory.**

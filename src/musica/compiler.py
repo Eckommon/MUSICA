@@ -231,7 +231,11 @@ def _compile_bass(blueprint: dict[str, Any], total_beats: float, bpm: float) -> 
 def compile_blueprint(blueprint: dict[str, Any]) -> dict[str, Any]:
     """Compile a validated Blueprint into deterministic Music IR v0."""
 
-    validate_contract(blueprint, "music-blueprint-v0.schema.json")
+    validate_contract(
+        blueprint,
+        "music-blueprint-v0.schema.json",
+        allow_nonempty_routing=True,
+    )
     bpm = float(blueprint["musical_context"]["tempo"]["bpm"])
     duration_seconds = float(blueprint["project"]["duration_seconds"])
     total_beats = duration_seconds * bpm / 60.0

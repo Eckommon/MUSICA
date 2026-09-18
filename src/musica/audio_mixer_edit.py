@@ -70,7 +70,11 @@ def _revision_id(parent: dict[str, Any], candidate: dict[str, Any]) -> str:
 
 def build_audio_mixer_edit_preview(project: Any, parent_blueprint: dict[str, Any], candidate: dict[str, Any], *, branch: str | None = None, revision_id: str | None = None) -> AudioEditPreview:
     """Build a non-canonical track-mixer Preview using the existing R1 accept type."""
-    validate_contract(parent_blueprint, "music-blueprint-v0.schema.json")
+    validate_contract(
+        parent_blueprint,
+        "music-blueprint-v0.schema.json",
+        allow_nonempty_routing=True,
+    )
     validate_contract(candidate, "audio-mixer-edit-candidate-v0.schema.json")
     validate_project_blueprint_audio(project, parent_blueprint)
 
@@ -131,12 +135,20 @@ def build_audio_mixer_edit_preview(project: Any, parent_blueprint: dict[str, Any
     provenance["selected_mechanisms"] = selected
 
     try:
-        validate_contract(working, "music-blueprint-v0.schema.json")
+        validate_contract(
+            working,
+            "music-blueprint-v0.schema.json",
+            allow_nonempty_routing=True,
+        )
         validate_project_blueprint_audio(project, working)
     except ContractError as exc:
         return _blocked(parent_blueprint, candidate, [_conflict(1, "UNREPRESENTABLE_EDIT", str(exc))])
 
-    revision_conflicts = validate_revision(parent_blueprint, working)
+    revision_conflicts = validate_revision(
+        parent_blueprint,
+        working,
+        allow_nonempty_routing=True,
+    )
     blocking = [item for item in revision_conflicts if item.status == "BLOCKED"]
     if blocking:
         mapped: list[dict[str, Any]] = []

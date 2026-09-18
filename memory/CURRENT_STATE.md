@@ -2,7 +2,7 @@
 
 ## Project phase / 프로젝트 단계
 
-**CORE PRODUCT LOOP BOUNDEDLY VALIDATED → NATIVE AUDIO FOUNDATION VALIDATED → COMMERCIAL WORKSTATION EXPANSION CONTINUES**
+**CORE PRODUCT LOOP BOUNDEDLY VALIDATED → NATIVE AUDIO FOUNDATION VALIDATED → MIXER ROUTING & AUTOMATION EXPANSION IN PROGRESS**
 
 Long-term governing target:
 
@@ -14,7 +14,7 @@ This remains a product target, not a claim that MUSICA is already a complete com
 
 ### Audio Track / Clip / Mixer Foundation v0
 
-Parent Issue `#95` has now met its bounded closure criteria in repository evidence. The state-only closure is being finalized; after that merge, Issue `#95` may be closed as **COMPLETED — BOUNDED FOUNDATION ONLY**.
+Parent Issue `#95` — **COMPLETED — BOUNDED FOUNDATION ONLY**
 
 Validated ATCM rungs:
 
@@ -22,119 +22,132 @@ Validated ATCM rungs:
 - R1 Issue `#99` / PR `#101` — **COMPLETED / MERGED / VALIDATED**
 - R2 Issue `#102` / PR `#104` — **COMPLETED / MERGED / VALIDATED**
 - R3 Issue `#105` / PR `#107` — **COMPLETED / MERGED / VALIDATED**
-- R4 Issue `#111` — **COMPLETED**
-- R4 PR `#114` — **MERGED**
-- R4 merge/main: `e19c8ebf81b1dc37a03493458abb180adf48e9c7`
-- R4 pre-validation exact head: `2062c6e778b4cd7c726644550ca3917e4c102275` — **20/20 permanent workflows SUCCESS**
-- R4 validation-record successor head: `714769e2cedaa545512b8763066ef11fb9a594d1` — **20/20 SUCCESS**
-- durable validation: `evidence/ATCM_R4_VALIDATION.md`
+- R4 Issue `#111` / PR `#114` — **COMPLETED / MERGED / VALIDATED**
+- R4 implementation merge: `e19c8ebf81b1dc37a03493458abb180adf48e9c7`
+- R4 state-only closure PR `#117` — **MERGED**
+- R4/native-audio foundation state merge: `712769f2ec469083d5c08fca8006a4b6e419a4d0`
 
-One successor-head Compare run initially failed only because Chromium emitted one transient HTTP 400 console resource error; all semantic assertions had passed. Re-running the failed Compare job on the same exact head succeeded through regression, real-Chromium lifecycle, deterministic A/B evidence and upload. No code or claim boundary was weakened.
+The bounded native-audio foundation has durable end-to-end evidence for immutable assets, accepted track/clip authority, deterministic multitrack mix, truthful Browser interaction and restart/reopen persistence/integrity.
 
-## Validated native-audio foundation / 검증된 네이티브 오디오 기반
+## Current commercial-workstation mission
 
-The bounded foundation now has end-to-end evidence for:
+Parent Issue `#115` — **Mixer Routing & Automation Foundation v0 — OPEN**
 
-```text
-immutable native audio asset
-→ stable accepted track / clip state
-→ source-bound Preview
-→ explicit Accept only
-→ bounded accepted mixer state
-→ deterministic offline multitrack mix
-→ truthful Browser arrangement/mixer interaction
-→ deterministic persistence/export/import
-→ fresh Studio + fresh Chromium reopen
-→ exact accepted state + exact derived mix reproduction
-```
-
-### R0 — immutable asset boundary
-
-Validated bounded PCM WAV import, content-address identity, descriptor/audit binding, project integrity and deterministic export/import. Imported bytes do not become creative authority by import alone.
-
-### R1 — accepted track/clip authority
-
-Validated stable tracks/clips and move/trim/clip-gain editing through source-bound Preview → explicit Accept, including stale/missing/corrupt/out-of-range rejection.
-
-### R2 — deterministic native mixer
-
-Validated exact accepted arrangement/mixer → deterministic mix plan → byte-reproducible stereo PCM16 WAV with explicit sample-rate/channel, gain, pan, mute/solo, summing and clipping semantics. Rendered audio remains derived/non-canonical.
-
-### R3 — Browser arrangement/mixer authority surface
-
-Validated real-Chromium projection, arrangement/mixer Preview, accepted-vs-preview distinction, derived audition, discard, explicit trusted Accept, restart/reopen and stale Preview rejection without direct Browser mutation authority.
-
-### R4 — restart/reopen lifecycle
-
-Validated:
-
-- exact accepted revision and Blueprint survive deterministic Project Bundle export/import;
-- immutable audio asset identity survives and revalidates;
-- arrangement and mixer state reopen exactly;
-- fresh Studio + fresh Chromium project the same accepted state;
-- R2 mix-plan SHA and WAV SHA reproduce exactly after reopen;
-- pending Preview is not silently promoted across restart;
-- fresh Browser runtime authority state starts empty;
-- generic post-reopen native-audio commit bypass remains blocked;
-- corrupted persisted audio fails project integrity closed.
-
-Independent R4 artifact verification matched the GitHub artifact digest and all manifest **5/5** payload SHA-256 values and byte sizes.
-
-### Maximum validated bounded foundation claim
-
-> **MUSICA can own immutable imported audio assets as explicit project references, arrange them as accepted audio clips on stable tracks, edit arrangement and mixer state through Preview/Accept authority, deterministically reproduce the bounded multitrack mix, project that truthfully in the Browser, and persist/reopen the exact accepted state and derived mix without granting runtime, Browser or rendered audio reverse authority.**
-
-## Parent Issue #95 closure decision / 상위 미션 종결 판단
-
-Repository evidence satisfies all bounded closure criteria defined by Issues `#95` and `#111`:
-
-- immutable native audio asset boundary — **VALIDATED**;
-- accepted audio track/clip authority — **VALIDATED**;
-- deterministic bounded multitrack mixer — **VALIDATED**;
-- truthful Browser arrangement/mixer workflow — **VALIDATED**;
-- restart/reopen persistence and fail-closed integrity — **VALIDATED**;
-- permanent regression preservation — **20/20 SUCCESS on R4 validation successor head**.
-
-Therefore the state-only closure authorizes closing Issue `#95` after this state record itself passes the permanent exact-head gate and is merged.
-
-Closing `#95` means only **Audio Track / Clip / Mixer Foundation v0 is complete**. It does not claim the long-term commercial workstation is complete.
-
-## Next commercial-workstation mission / 다음 상용 워크스테이션 미션
-
-Issue `#115` — **Mixer Routing & Automation Foundation v0 — OPEN**
-
-Selected because the governing dependency chain is:
+Selected bounded rung sequence:
 
 ```text
-native audio foundation
-→ richer routing + mixer automation
-→ real-time engine + devices
-→ recording / monitoring
-→ plugin hosting + latency compensation
-→ deeper audio editing
-→ release hardening
+MRAM-R0 routing contracts + deterministic graph lowering      VALIDATED
+→ MRAM-R1 trusted routing Preview→Accept + routed mixer       CURRENT
+→ MRAM-R2 track/bus gain/pan automation mapping
+→ MRAM-R3 Browser routing/automation + reopen lifecycle
+→ Issue #115 bounded closure evaluation
 ```
 
-Issue `#115` will establish a bounded explicit routing graph, buses/groups/returns/sends, deterministic routed mix execution, source-bound routing Preview→Accept, and supported programmable mixer automation without introducing a second authority model.
+## MRAM-R0 — validated routing substrate
+
+Issue `#118` — **COMPLETED**
+
+Implementation PR `#119` — **MERGED**
+
+Canonical implementation merge/main:
+
+> **`7e5da8b558c0c4b980f7b6e3061eca9873e65513`**
+
+Durable validation:
+
+- `evidence/MRAM_R0_VALIDATION.md`
+- implementation/pre-validation exact head:
+  `1d7c310ba02ef651927ad65cc58f782b1f1b34b6` — **21/21 permanent workflows SUCCESS**
+- validation-record successor exact head:
+  `50701b45fd4c2cb9f95a01c8ec9a8b7d8ccb9956` — **21/21 SUCCESS**
+- dedicated workflow: **MRAM-R0 Routing Graph Evidence**
+- dedicated pre-validation run: `35283452173` — **SUCCESS**
+- artifact ID: `10522966682`
+- artifact ZIP SHA-256:
+  `bfe38c8d8794e98a904155ee2f31353fe585fddeef3faeeaae2b98a17224b923`
+- independently verified manifest payloads: **4/4 exact SHA-256 + byte size PASS**
+- routing plan self-hash independently recomputed:
+  `4d756500bb806be98b25f3c7f2e21cb3b08b36ea652795002a89edcdedbe46e8`
+
+One pre-validation Compare browser run encountered a transient BrokenPipe / HTTP 400 after its regression stage passed. The same failed job was rerun on the same exact head without code changes and passed regression, real Chromium Compare, deterministic evidence A/B and upload. The successor validation head completed all 21 workflows successfully.
+
+### Validated MRAM-R0 behavior
+
+MRAM-R0 establishes:
+
+- optional additive `materials.routing` Blueprint shape;
+- stable `bus / group / return / master` routing-node identities;
+- exact per-track output targets;
+- bounded stable post-fader sends;
+- exactly one master sink for non-empty graphs;
+- canonical node/output/send ordering;
+- fail-closed missing node/track references;
+- fail-closed cycles;
+- deterministic topological signal-flow lowering;
+- exact derived routing-plan SHA;
+- absent/empty routing backward compatibility.
+
+The central R0 authority boundary remains:
+
+```text
+routing contract
+→ structural validation
+→ deterministic derived signal-flow plan
+≠ accepted non-empty routing mutation authority
+≠ routed-audio render authority
+≠ Browser/runtime reverse authority
+```
+
+Non-empty routing may be structurally inspected with an explicit analysis allowance, but generic Blueprint validation still rejects it as accepted creative state. A later trusted routing accept boundary must explicitly authorize it.
+
+### Maximum validated MRAM-R0 claim
+
+> **MUSICA can validate a bounded explicit acyclic routing graph and deterministically lower it into an exact provenance-bearing signal-flow plan while non-empty accepted routing remains fail-closed and no routing runtime/rendered output gains reverse creative authority.**
+
+## Exact current rung / 현재 정확한 단계
+
+The next rung is **MRAM-R1 — trusted routing Preview→Accept + deterministic routed offline mixer**.
+
+R1 must reuse the existing authority architecture rather than trusting a provenance marker alone.
+
+Required authority invariant:
+
+```text
+exact accepted revision
+→ source-bound routing edit candidate
+→ validate project + exact source + routing DAG
+→ Preview only; accepted HEAD unchanged
+→ explicit trusted Accept
+→ source/head/graph/assets revalidated
+→ exactly one accepted revision advance
+```
+
+The Project Engine must gain a narrow internal routing-authorized commit boundary analogous in spirit to the existing protected native-audio acceptance path. Generic `commit_revision` must remain unable to accept routing changes.
+
+R1 must then derive and render exact accepted routing through the native offline mixer without allowing the plan or rendered WAV to become canonical authority.
 
 ## Current important non-claims / 현재 주요 비주장
 
 Until separately validated, do not claim:
 
+- accepted routing edits or routed audio rendering beyond MRAM-R0;
+- mixer automation mapped to native track/bus parameters;
+- Browser routing editing;
+- generalized sidechains;
 - low-latency ASIO/CoreAudio/WASAPI device operation;
 - microphone/line recording or monitoring;
 - VST3/AU/CLAP hosting;
-- generalized sidechains or plugin-delay compensation;
+- plugin-delay compensation;
 - implicit sample-rate conversion;
 - warp/time-stretch/pitch shift or destructive waveform editing;
 - mastering-grade processing;
-- commercial release readiness or supported production SLA;
+- generalized commercial release readiness or production SLA;
 - cloud/multi-user creative authority;
 - perceptual superiority.
 
 ## Exact next phase / 다음 단계
 
-> **Issue #115 — define and validate a bounded explicit mixer routing graph and supported mixer automation on top of the completed native-audio foundation, preserving Preview/Accept authority and deterministic derived execution.**
+> **Open and implement MRAM-R1 from canonical main `7e5da8b558c0c4b980f7b6e3061eca9873e65513`: create a source-bound routing candidate/Preview/Accept authority path with a protected Project Engine routing commit boundary, then extend the deterministic native mixer to execute exact accepted DAG routing and prove byte-reproducible routed mix output.**
 
 See `memory/NEXT_ACTION.md` for the exact execution order.
 

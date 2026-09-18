@@ -212,7 +212,9 @@ def _validate_exact_note_blueprint_invariants(
     _require_unique(note_lock_ids, "exact note lock_id")
 
 
-def _validate_blueprint_invariants(blueprint: dict[str, Any]) -> None:
+def _validate_blueprint_invariants(
+    blueprint: dict[str, Any], *, allow_nonempty_routing: bool = False
+) -> None:
     """Validate cross-field rules JSON Schema alone cannot express clearly."""
 
     duration = float(blueprint["project"]["duration_seconds"])
@@ -301,11 +303,21 @@ def _validate_blueprint_invariants(blueprint: dict[str, Any]) -> None:
     # Later trusted Preview→Accept authority must explicitly open this boundary.
     from .routing_contracts import validate_blueprint_routing
 
-    validate_blueprint_routing(blueprint)
+    validate_blueprint_routing(blueprint, allow_nonempty=allow_nonempty_routing)
 
 
-def validate_contract(instance: dict[str, Any], schema_name: str) -> None:
-    """Validate one object against a MUSICA JSON Schema and v0 invariants."""
+def validate_contract(
+    instance: dict[str, Any],
+    schema_name: str,
+    *,
+    allow_nonempty_routing: bool = False,
+) -> None:
+    """Validate one object against a MUSICA JSON Schema and v0 invariants.
+
+    ``allow_nonempty_routing`` is an internal structural-validation escape hatch.
+    The public/default contract remains fail-closed for non-empty routing; trusted
+    routing acceptance must still pass the Project Engine routing delta gate.
+    """
 
     schema = _load_schema(schema_name)
     validator = Draft202012Validator(schema)
@@ -317,7 +329,9 @@ def validate_contract(instance: dict[str, Any], schema_name: str) -> None:
             details.append(f"{pointer or '/'}: {err.message}")
         raise ContractError("schema validation failed: " + " | ".join(details))
     if schema_name == "music-blueprint-v0.schema.json":
-        _validate_blueprint_invariants(instance)
+        _validate_blueprint_invariants(
+            instance, allow_nonempty_routing=allow_nonempty_routing
+        )
 
 
 def _hard_locks(blueprint: dict[str, Any]) -> list[dict[str, Any]]:
@@ -386,7 +400,12 @@ def _note_lock_value(blueprint: dict[str, Any], lock: dict[str, Any]) -> Any:
     return note[str(selector["property"])]
 
 
-def validate_revision(parent: dict[str, Any], candidate: dict[str, Any]) -> list[RevisionConflict]:
+def validate_revision(
+    parent: dict[str, Any],
+    candidate: dict[str, Any],
+    *,
+    allow_nonempty_routing: bool = False,
+) -> list[RevisionConflict]:
     """Validate a candidate Blueprint revision against its parent.
 
     HARD locks fail closed. SOFT rules are represented as acceptance-required conflicts.
@@ -394,8 +413,16 @@ def validate_revision(parent: dict[str, Any], candidate: dict[str, Any]) -> list
     is intentionally out of scope until evidence-backed identity metrics exist.
     """
 
-    validate_contract(parent, "music-blueprint-v0.schema.json")
-    validate_contract(candidate, "music-blueprint-v0.schema.json")
+    validate_contract(
+        parent,
+        "music-blueprint-v0.schema.json",
+        allow_nonempty_routing=allow_nonempty_routing,
+    )
+    validate_contract(
+        candidate,
+        "music-blueprint-v0.schema.json",
+        allow_nonempty_routing=allow_nonempty_routing,
+    )
 
     conflicts: list[RevisionConflict] = []
     parent_revision = parent["project"]["revision_id"]

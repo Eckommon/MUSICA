@@ -250,3 +250,28 @@ def test_cycle_and_stale_routing_preview_fail_closed(tmp_path: Path) -> None:
     accept_audio_edit_preview(project, audio_preview)
     with pytest.raises(ContractError, match="stale|HEAD changed"):
         accept_routing_edit_preview(project, good)
+
+
+def test_existing_audio_edit_authority_remains_usable_after_routing_accept(tmp_path: Path) -> None:
+    project, routed = _accept_routing(tmp_path)
+    before_routing = routing_material_from_blueprint(routed)
+    assert before_routing is not None
+    candidate = _audio_candidate(
+        routed,
+        "R1-POST-ROUTING-AUDIO",
+        [
+            {
+                "operation_id": "A-POST-GAIN",
+                "op": "SET_CLIP_GAIN",
+                "target": {"track_id": "AT-001", "clip_id": "AC-001"},
+                "gain_db": -2.0,
+            }
+        ],
+    )
+    preview = build_audio_edit_preview(project, routed, candidate)
+    assert preview.ready and preview.blueprint is not None
+    assert routing_material_from_blueprint(preview.blueprint) == before_routing
+    record = accept_audio_edit_preview(project, preview)
+    accepted = project.read_revision(record["revision_id"])
+    assert routing_material_from_blueprint(accepted) == before_routing
+    assert project.verify_integrity()["status"] == "PASS"

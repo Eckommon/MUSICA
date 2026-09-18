@@ -1,0 +1,44 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://eckommon.github.io/MUSICA/schemas/routed-mix-plan-v0.schema.json",
+  "title":"MUSICA Routed Native Mix Plan v0",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["plan_version","engine_id","classification","source","mix_sample_rate_hz","duration_frames","policy","native_tracks","routing","routed_mix_plan_sha256"],
+  "properties":{
+    "plan_version":{"const":"0"},
+    "engine_id":{"const":"musica-routed-native-offline-mixer-v0"},
+    "classification":{"const":"derived_noncanonical"},
+    "source":{
+      "type":"object","additionalProperties":false,
+      "required":["project_id","revision_id","blueprint_sha256","audio_material_sha256","routing_material_sha256","native_mix_plan_sha256","routing_plan_sha256"],
+      "properties":{
+        "project_id":{"type":"string","minLength":1},
+        "revision_id":{"type":"string","minLength":1},
+        "blueprint_sha256":{"$ref":"#/$defs/sha256"},
+        "audio_material_sha256":{"$ref":"#/$defs/sha256"},
+        "routing_material_sha256":{"$ref":"#/$defs/sha256"},
+        "native_mix_plan_sha256":{"$ref":"#/$defs/sha256"},
+        "routing_plan_sha256":{"$ref":"#/$defs/sha256"}
+      }
+    },
+    "mix_sample_rate_hz":{"type":"integer","minimum":8000,"maximum":192000},
+    "duration_frames":{"type":"integer","minimum":1},
+    "policy":{
+      "type":"object","additionalProperties":false,
+      "required":["send_tap","node_processing","pan_law","internal_precision","clipping","output_format"],
+      "properties":{
+        "send_tap":{"const":"post_fader"},
+        "node_processing":{"const":"input_sum_then_static_gain_pan_mute_then_primary_output_and_sends"},
+        "pan_law":{"const":"linear_balance"},
+        "internal_precision":{"const":"float64"},
+        "clipping":{"const":"hard_clip_unit_range_before_pcm16"},
+        "output_format":{"const":"wav_pcm16_stereo_little_endian"}
+      }
+    },
+    "native_tracks":{"type":"array","items":{"type":"object","additionalProperties":true}},
+    "routing":{"type":"object","additionalProperties":true},
+    "routed_mix_plan_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

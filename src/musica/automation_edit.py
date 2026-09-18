@@ -202,7 +202,11 @@ def build_automation_edit_preview(
 ) -> AutomationEditPreview:
     """Resolve one typed AutomationEditCandidate into a non-canonical Blueprint preview."""
 
-    validate_contract(parent_blueprint, "music-blueprint-v0.schema.json")
+    validate_contract(
+        parent_blueprint,
+        "music-blueprint-v0.schema.json",
+        allow_nonempty_routing=True,
+    )
     validate_contract(candidate, "automation-edit-candidate-v0.schema.json")
 
     source = candidate["source"]
@@ -328,7 +332,11 @@ def build_automation_edit_preview(
     section_ids = [str(section["section_id"]) for section in working["form"]["sections"]]
     try:
         validate_blueprint_automation(working, part_ids=part_ids, section_ids=section_ids)
-        validate_contract(working, "music-blueprint-v0.schema.json")
+        validate_contract(
+            working,
+            "music-blueprint-v0.schema.json",
+            allow_nonempty_routing=True,
+        )
     except ContractError as exc:
         return _blocked_preview(parent_blueprint, candidate, [_conflict(1, "UNREPRESENTABLE_EDIT", str(exc))])
 
@@ -346,7 +354,11 @@ def build_automation_edit_preview(
         ]
         return _blocked_preview(parent_blueprint, candidate, mapped)
 
-    revision_conflicts = validate_revision(parent_blueprint, working)
+    revision_conflicts = validate_revision(
+        parent_blueprint,
+        working,
+        allow_nonempty_routing=True,
+    )
     blocking = [item for item in revision_conflicts if item.status == "BLOCKED"]
     if blocking:
         mapped: list[dict[str, Any]] = []

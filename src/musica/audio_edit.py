@@ -254,7 +254,11 @@ def build_audio_edit_preview(
 ) -> AudioEditPreview:
     """Resolve one typed source-bound candidate into a non-canonical audio preview."""
 
-    validate_contract(parent_blueprint, "music-blueprint-v0.schema.json")
+    validate_contract(
+        parent_blueprint,
+        "music-blueprint-v0.schema.json",
+        allow_nonempty_routing=True,
+    )
     validate_contract(candidate, "audio-edit-candidate-v0.schema.json")
     validate_project_blueprint_audio(project, parent_blueprint)
 
@@ -460,7 +464,11 @@ def build_audio_edit_preview(
     provenance["selected_mechanisms"] = selected
 
     try:
-        validate_contract(working, "music-blueprint-v0.schema.json")
+        validate_contract(
+            working,
+            "music-blueprint-v0.schema.json",
+            allow_nonempty_routing=True,
+        )
         validate_project_blueprint_audio(project, working)
     except ContractError as exc:
         return _blocked_preview(
@@ -469,7 +477,11 @@ def build_audio_edit_preview(
             [_conflict(1, "UNREPRESENTABLE_EDIT", str(exc))],
         )
 
-    revision_conflicts = validate_revision(parent_blueprint, working)
+    revision_conflicts = validate_revision(
+        parent_blueprint,
+        working,
+        allow_nonempty_routing=True,
+    )
     blocking = [item for item in revision_conflicts if item.status == "BLOCKED"]
     if blocking:
         mapped: list[dict[str, Any]] = []
@@ -532,7 +544,11 @@ def accept_audio_edit_preview(
     if audio_material_sha256(preview.blueprint) != preview.candidate_audio_material_sha256:
         raise ContractError("audio Preview candidate material hash changed")
 
-    validate_contract(preview.blueprint, "music-blueprint-v0.schema.json")
+    validate_contract(
+        preview.blueprint,
+        "music-blueprint-v0.schema.json",
+        allow_nonempty_routing=True,
+    )
     validate_project_blueprint_audio(project, preview.blueprint)
     if preview.blueprint["project"].get("parent_revision_id") != preview.source_revision_id:
         raise ContractError("audio Preview candidate parent_revision_id is stale")

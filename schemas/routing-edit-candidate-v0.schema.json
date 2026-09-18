@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/routing-edit-candidate-v0.schema.json",
+  "title": "MUSICA Routing Edit Candidate v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["candidate_version","candidate_id","authority_target","source","actor","reason","operations","preview_only"],
+  "properties": {
+    "candidate_version": {"const":"0"},
+    "candidate_id": {"$ref":"#/$defs/stableId"},
+    "authority_target": {"const":"blueprint_routing_material"},
+    "source": {
+      "type":"object","additionalProperties":false,
+      "required":["project_id","revision_id","blueprint_sha256","audio_material_sha256","routing_material_sha256"],
+      "properties":{
+        "project_id":{"type":"string","minLength":1},
+        "revision_id":{"type":"string","minLength":1},
+        "blueprint_sha256":{"$ref":"#/$defs/sha256"},
+        "audio_material_sha256":{"$ref":"#/$defs/sha256"},
+        "routing_material_sha256":{"$ref":"#/$defs/sha256"}
+      }
+    },
+    "actor":{
+      "type":"object","additionalProperties":false,
+      "required":["kind","actor_id"],
+      "properties":{
+        "kind":{"enum":["user","system"]},
+        "actor_id":{"type":"string","minLength":1,"maxLength":128}
+      }
+    },
+    "reason":{"type":"string","minLength":1,"maxLength":1000},
+    "operations":{"type":"array","minItems":1,"maxItems":1024,"items":{"$ref":"#/$defs/operation"}},
+    "preview_only":{"const":true}
+  },
+  "$defs":{
+    "sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "stableId":{"type":"string","minLength":1,"maxLength":128,"pattern":"^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+    "gainDb":{"type":"number","minimum":-60.0,"maximum":12.0},
+    "nodeMixer":{
+      "type":"object","additionalProperties":false,
+      "required":["gain_db","pan","mute"],
+      "properties":{
+        "gain_db":{"$ref":"#/$defs/gainDb"},
+        "pan":{"type":"number","minimum":-1.0,"maximum":1.0},
+        "mute":{"type":"boolean"}
+      }
+    },
+    "node":{
+      "type":"object","additionalProperties":false,
+      "required":["node_id","order","name","node_type","mixer","output_node_id"],
+      "properties":{
+        "node_id":{"$ref":"#/$defs/stableId"},
+        "order":{"type":"integer","minimum":0},
+        "name":{"type":"string","minLength":1,"maxLength":256},
+        "node_type":{"enum":["bus","group","return","master"]},
+        "mixer":{"$ref":"#/$defs/nodeMixer"},
+        "output_node_id":{"type":["string","null"],"minLength":1,"maxLength":128,"pattern":"^[A-Za-z0-9][A-Za-z0-9._:-]*$"}
+      }
+    },
+    "send":{
+      "type":"object","additionalProperties":false,
+      "required":["send_id","source","target_node_id","gain_db","tap"],
+      "properties":{
+        "send_id":{"$ref":"#/$defs/stableId"},
+        "source":{
+          "type":"object","additionalProperties":false,
+          "required":["kind","source_id"],
+          "properties":{
+            "kind":{"enum":["track","node"]},
+            "source_id":{"$ref":"#/$defs/stableId"}
+          }
+        },
+        "target_node_id":{"$ref":"#/$defs/stableId"},
+        "gain_db":{"$ref":"#/$defs/gainDb"},
+        "tap":{"const":"post_fader"}
+      }
+    },
+    "operation":{
+      "oneOf":[
+        {
+          "type":"object","additionalProperties":false,
+          "required":["operation_id","op","node"],
+          "properties":{"operation_id":{"$ref":"#/$defs/stableId"},"op":{"const":"ADD_NODE"},"node":{"$ref":"#/$defs/node"}}
+        },
+        {
+          "type":"object","additionalProperties":false,
+          "required":["operation_id","op","track_id","target_node_id"],
+          "properties":{"operation_id":{"$ref":"#/$defs/stableId"},"op":{"const":"SET_TRACK_OUTPUT"},"track_id":{"$ref":"#/$defs/stableId"},"target_node_id":{"$ref":"#/$defs/stableId"}}
+        },
+        {
+          "type":"object","additionalProperties":false,
+          "required":["operation_id","op","send"],
+          "properties":{"operation_id":{"$ref":"#/$defs/stableId"},"op":{"const":"ADD_SEND"},"send":{"$ref":"#/$defs/send"}}
+        },
+        {
+          "type":"object","additionalProperties":false,
+          "required":["operation_id","op","send_id"],
+          "properties":{"operation_id":{"$ref":"#/$defs/stableId"},"op":{"const":"REMOVE_SEND"},"send_id":{"$ref":"#/$defs/stableId"}}
+        },
+        {
+          "type":"object","additionalProperties":false,
+          "required":["operation_id","op","send_id","gain_db"],
+          "properties":{"operation_id":{"$ref":"#/$defs/stableId"},"op":{"const":"SET_SEND_GAIN"},"send_id":{"$ref":"#/$defs/stableId"},"gain_db":{"$ref":"#/$defs/gainDb"}}
+        },
+        {
+          "type":"object","additionalProperties":false,
+          "required":["operation_id","op","node_id","mixer"],
+          "properties":{"operation_id":{"$ref":"#/$defs/stableId"},"op":{"const":"SET_NODE_MIXER"},"node_id":{"$ref":"#/$defs/stableId"},"mixer":{"$ref":"#/$defs/nodeMixer"}}
+        }
+      ]
+    }
+  }
+}

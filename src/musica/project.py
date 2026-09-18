@@ -215,7 +215,11 @@ class MusicaProject:
         record = self.read_revision_record(revision_id)
         path = self._revision_dir(revision_id) / "blueprint.json"
         blueprint = _read_json(path)
-        validate_contract(blueprint, "music-blueprint-v0.schema.json")
+        validate_contract(
+            blueprint,
+            "music-blueprint-v0.schema.json",
+            allow_nonempty_routing=True,
+        )
         from .audio_contracts import validate_project_blueprint_audio
 
         validate_project_blueprint_audio(self, blueprint)
@@ -249,6 +253,7 @@ class MusicaProject:
             actor=actor,
             reason=reason,
             allow_audio_material_change=False,
+            allow_routing_material_change=False,
         )
 
     def _commit_revision(
@@ -259,16 +264,20 @@ class MusicaProject:
         actor: str | None = None,
         reason: str | None = None,
         allow_audio_material_change: bool = False,
+        allow_routing_material_change: bool = False,
     ) -> dict[str, Any]:
         """Internal immutable commit boundary.
 
-        Native audio material changes are denied by default. The ATCM-R1 trusted
-        Preview/Accept path may opt in only after it has revalidated source binding,
-        exact in-project assets and source ranges. A provenance marker alone never
-        grants this permission.
+        Native audio and routing material changes are denied independently by default.
+        Trusted Preview/Accept paths may opt in only after exact source/material/project
+        revalidation. A provenance marker alone never grants either permission.
         """
 
-        validate_contract(blueprint, "music-blueprint-v0.schema.json")
+        validate_contract(
+            blueprint,
+            "music-blueprint-v0.schema.json",
+            allow_nonempty_routing=True,
+        )
         from .audio_contracts import (
             audio_material_from_blueprint,
             empty_audio_material,
@@ -295,7 +304,11 @@ class MusicaProject:
             parent_revision_id = str(ref["revision_id"])
             parent_record_sha = str(ref["revision_record_sha256"])
             parent_blueprint = self.read_revision(parent_revision_id)
-            conflicts = validate_revision(parent_blueprint, blueprint)
+            conflicts = validate_revision(
+                parent_blueprint,
+                blueprint,
+                allow_nonempty_routing=True,
+            )
             blocking = [conflict for conflict in conflicts if conflict.status == "BLOCKED"]
             if blocking:
                 details = " | ".join(f"{c.rule_id}: {c.reason}" for c in blocking)
@@ -313,6 +326,25 @@ class MusicaProject:
         if before_audio != after_audio and not allow_audio_material_change:
             raise ContractError(
                 "native audio material changes require trusted audio Preview/Accept authority"
+            )
+
+        from .routing_contracts import (
+            empty_routing_material,
+            routing_material_from_blueprint,
+            validate_blueprint_routing,
+        )
+
+        before_routing = (
+            routing_material_from_blueprint(parent_blueprint)
+            if parent_blueprint is not None
+            else empty_routing_material()
+        )
+        after_routing = routing_material_from_blueprint(blueprint)
+        assert before_routing is not None and after_routing is not None
+        validate_blueprint_routing(blueprint, allow_nonempty=True)
+        if before_routing != after_routing and not allow_routing_material_change:
+            raise ContractError(
+                "routing material changes require trusted routing Preview/Accept authority"
             )
 
         if parent_revision_id != blueprint["project"].get("parent_revision_id"):
@@ -460,7 +492,11 @@ class MusicaProject:
                 diff_path = self._revision_dir(revision_id) / "diff.json"
                 blueprint = _read_json(blueprint_path)
                 diff = _read_json(diff_path)
-                validate_contract(blueprint, "music-blueprint-v0.schema.json")
+                validate_contract(
+                    blueprint,
+                    "music-blueprint-v0.schema.json",
+                    allow_nonempty_routing=True,
+                )
                 from .audio_contracts import validate_project_blueprint_audio
 
                 validate_project_blueprint_audio(self, blueprint)
@@ -505,7 +541,11 @@ class MusicaProject:
                 if record.get("parent_record_sha256") != record_hashes[parent_id]:
                     errors.append(f"parent record hash mismatch: {revision_id}")
                 try:
-                    conflicts = validate_revision(blueprints[parent_id], blueprint)
+                    conflicts = validate_revision(
+                        blueprints[parent_id],
+                        blueprint,
+                        allow_nonempty_routing=True,
+                    )
                     if any(conflict.status == "BLOCKED" for conflict in conflicts):
                         errors.append(f"stored revision violates inherited rules: {revision_id}")
                 except ContractError as exc:

@@ -24,6 +24,8 @@ from .audio_mixer_edit import build_audio_mixer_edit_preview
 from .contracts import ContractError, validate_contract
 from .diff import structured_diff
 from .native_mixer import NativeMixRender, render_native_mix
+from .routed_mixer import RoutedMixRender, render_routed_mix
+from .routing_contracts import routing_material_from_blueprint
 from .studio import StudioService, StudioServiceError, _PendingPreview
 
 
@@ -72,7 +74,7 @@ class StudioAudioSurface:
 
     def __init__(self, service: StudioService) -> None:
         self.service = service
-        self._render_cache: dict[tuple[str, str, str, int], NativeMixRender] = {}
+        self._render_cache: dict[tuple[str, str, str, int], NativeMixRender | RoutedMixRender] = {}
 
     def _render_blueprint(
         self,
@@ -81,7 +83,7 @@ class StudioAudioSurface:
         blueprint: dict[str, Any],
         *,
         source_kind: str,
-    ) -> NativeMixRender:
+    ) -> NativeMixRender | RoutedMixRender:
         rate = _mix_rate(project, blueprint)
         digest = blueprint_sha256(blueprint)
         key = (session_id, source_kind, digest, rate)
@@ -89,11 +91,20 @@ class StudioAudioSurface:
         if cached is not None:
             return cached
         revision_id = str(blueprint["project"]["revision_id"])
-        if revision_id == project.head_revision_id(project.current_branch()):
-            rendered = render_native_mix(project, revision_id, mix_sample_rate_hz=rate)
+        routing = routing_material_from_blueprint(blueprint)
+        assert routing is not None
+        routed = bool(routing["nodes"] or routing["track_outputs"] or routing["sends"])
+        source_project = project
+        if revision_id != project.head_revision_id(project.current_branch()):
+            source_project = _BlueprintProjectProxy(project, blueprint)
+        if routed:
+            rendered = render_routed_mix(
+                source_project, revision_id, mix_sample_rate_hz=rate
+            )
         else:
-            proxy = _BlueprintProjectProxy(project, blueprint)
-            rendered = render_native_mix(proxy, revision_id, mix_sample_rate_hz=rate)
+            rendered = render_native_mix(
+                source_project, revision_id, mix_sample_rate_hz=rate
+            )
         self._render_cache[key] = rendered
         return rendered
 
@@ -113,7 +124,10 @@ class StudioAudioSurface:
                 "available": True,
                 "source_kind": source_kind,
                 "mix_sample_rate_hz": int(rendered.plan["mix_sample_rate_hz"]),
-                "mix_plan_sha256": str(rendered.plan["mix_plan_sha256"]),
+                "mix_plan_sha256": str(
+                    rendered.plan.get("mix_plan_sha256")
+                    or rendered.plan["routed_mix_plan_sha256"]
+                ),
                 "wav_sha256": str(rendered.wav_sha256),
                 "wav_size_bytes": len(rendered.wav_bytes),
                 "rendered_audio_is_canonical": False,

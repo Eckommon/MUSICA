@@ -541,7 +541,11 @@ class MusicaProject:
                 if record.get("parent_record_sha256") != record_hashes[parent_id]:
                     errors.append(f"parent record hash mismatch: {revision_id}")
                 try:
-                    conflicts = validate_revision(blueprints[parent_id], blueprint)
+                    conflicts = validate_revision(
+                        blueprints[parent_id],
+                        blueprint,
+                        allow_nonempty_routing=True,
+                    )
                     if any(conflict.status == "BLOCKED" for conflict in conflicts):
                         errors.append(f"stored revision violates inherited rules: {revision_id}")
                 except ContractError as exc:

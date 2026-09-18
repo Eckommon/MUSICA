@@ -37,6 +37,7 @@ CONTRACT_PATHS = [
     ROOT / "schemas" / "routing-authority-result-v0.schema.json",
     ROOT / "schemas" / "routed-mix-plan-v0.schema.json",
     ROOT / "src" / "musica" / "contracts.py",
+    ROOT / "src" / "musica" / "compiler.py",
     ROOT / "src" / "musica" / "project.py",
     ROOT / "src" / "musica" / "routing_contracts.py",
     ROOT / "src" / "musica" / "routing_edit.py",

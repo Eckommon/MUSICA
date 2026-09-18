@@ -26,6 +26,7 @@ from musica.routing_edit import (
     accept_routing_edit_preview,
     build_routing_edit_preview,
 )
+from musica.studio_audio import StudioAudioSurface
 
 ROOT = Path(__file__).resolve().parents[1]
 INTENT = ROOT / "examples" / "intents" / "dark-electronic-12s.json"
@@ -275,3 +276,21 @@ def test_existing_audio_edit_authority_remains_usable_after_routing_accept(tmp_p
     accepted = project.read_revision(record["revision_id"])
     assert routing_material_from_blueprint(accepted) == before_routing
     assert project.verify_integrity()["status"] == "PASS"
+
+
+def test_studio_audio_audition_uses_routed_mixer_when_routing_is_accepted(tmp_path: Path) -> None:
+    project, routed = _accept_routing(tmp_path)
+    surface = StudioAudioSurface(object())  # _render_blueprint needs only its render cache.
+    rendered = surface._render_blueprint(
+        "mram-r1-test-session",
+        project,
+        routed,
+        source_kind="accepted",
+    )
+    assert "routed_mix_plan_sha256" in rendered.plan
+    direct = render_routed_mix(
+        project,
+        routed["project"]["revision_id"],
+        mix_sample_rate_hz=8000,
+    )
+    assert rendered.wav_sha256 == direct.wav_sha256

@@ -1,0 +1,44 @@
+name: MRAM-R1 Routing Authority & Routed Mixer Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mram-r1-routing-authority-mixer-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA / MUSICA 설치
+        run: python -m pip install -e '.[dev]'
+      - name: Run MRAM-R1 regressions / MRAM-R1 회귀 테스트
+        run: >-
+          pytest -q
+          tests/test_mram_r1_routing_authority_mixer.py
+          tests/test_mram_r0_routing.py
+          tests/test_atcm_r2_native_mixer.py
+          tests/test_atcm_r1_audio_authority.py
+      - name: Generate MRAM-R1 evidence A / MRAM-R1 근거 A 생성
+        env:
+          MUSICA_MRAM_R1_EVIDENCE_OUT: artifacts/mram-r1-routing-authority-mixer-a
+        run: python -m musica.mram_r1_evidence
+      - name: Generate MRAM-R1 evidence B / MRAM-R1 근거 B 생성
+        env:
+          MUSICA_MRAM_R1_EVIDENCE_OUT: artifacts/mram-r1-routing-authority-mixer-b
+        run: python -m musica.mram_r1_evidence
+      - name: Prove byte-reproducible MRAM-R1 evidence / MRAM-R1 근거 byte 재현성 증명
+        run: diff -qr artifacts/mram-r1-routing-authority-mixer-a artifacts/mram-r1-routing-authority-mixer-b
+      - name: Upload MRAM-R1 evidence / MRAM-R1 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-mram-r1-routing-authority-mixer-evidence
+          path: artifacts/mram-r1-routing-authority-mixer-a
+          if-no-files-found: error

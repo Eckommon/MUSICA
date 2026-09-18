@@ -14,6 +14,7 @@ from musica.audio_edit import (
     blueprint_sha256,
     build_audio_edit_preview,
 )
+from musica.compiler import compile_blueprint
 from musica.contracts import ContractError
 from musica.creative import compose_blueprint
 from musica.project import MusicaProject, create_project
@@ -294,3 +295,17 @@ def test_studio_audio_audition_uses_routed_mixer_when_routing_is_accepted(tmp_pa
         mix_sample_rate_hz=8000,
     )
     assert rendered.wav_sha256 == direct.wav_sha256
+
+
+def test_symbolic_compiler_ignores_native_routing_without_losing_determinism(tmp_path: Path) -> None:
+    project, accepted_audio = _accept_audio(tmp_path)
+    before_ir = compile_blueprint(accepted_audio)
+    candidate = _routing_candidate(accepted_audio, "R1-COMPILER-ROUTING", _initial_routing_ops())
+    preview = build_routing_edit_preview(project, accepted_audio, candidate)
+    assert preview.ready
+    record = accept_routing_edit_preview(project, preview)
+    routed = project.read_revision(record["revision_id"])
+    after_ir = compile_blueprint(routed)
+    assert after_ir["timing"] == before_ir["timing"]
+    assert after_ir["tempo_events"] == before_ir["tempo_events"]
+    assert after_ir["tracks"] == before_ir["tracks"]

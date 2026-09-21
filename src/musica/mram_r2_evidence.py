@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import os
@@ -205,6 +206,23 @@ def generate_mram_r2_evidence(output_dir: str | Path) -> dict[str, Any]:
         audio_record = accept_audio_edit_preview(project, audio_preview)
         accepted_audio = project.read_revision(audio_record["revision_id"])
 
+        audio_only_lane = _lane(
+            "AUTO-AUDIO-ONLY",
+            scope="audio_track",
+            owner_id="AT-001",
+            parameter_id="mixer.gain_db",
+            points=[("PAO1", 0.0, -3.0, "hold")],
+        )
+        audio_only_native_preview = build_automation_edit_preview(
+            accepted_audio,
+            _candidate(
+                accepted_audio,
+                "MRAM-R2-AUDIO-ONLY",
+                _add_lane_ops([audio_only_lane], "AO"),
+            ),
+            project=project,
+        )
+
         routing_preview = build_routing_edit_preview(
             project,
             accepted_audio,
@@ -214,6 +232,26 @@ def generate_mram_r2_evidence(output_dir: str | Path) -> dict[str, Any]:
             raise RuntimeError("MRAM-R2 evidence routing fixture Preview was blocked")
         routing_record = accept_routing_edit_preview(project, routing_preview)
         routed = project.read_revision(routing_record["revision_id"])
+
+        forged = copy.deepcopy(routed)
+        forged["project"]["title"] = str(forged["project"]["title"]) + " forged"
+        forged_lane = _lane(
+            "AUTO-FORGED",
+            scope="audio_track",
+            owner_id="AT-001",
+            parameter_id="mixer.pan",
+            points=[("PF1", 0.0, 0.25, "hold")],
+        )
+        forged_source_preview = build_automation_edit_preview(
+            forged,
+            _candidate(
+                forged,
+                "MRAM-R2-FORGED-SOURCE",
+                _add_lane_ops([forged_lane], "F"),
+            ),
+            project=project,
+        )
+
         baseline = render_routed_mix(
             project, routed["project"]["revision_id"], mix_sample_rate_hz=8000
         )
@@ -398,6 +436,9 @@ def generate_mram_r2_evidence(output_dir: str | Path) -> dict[str, Any]:
             "source_head_before_preview": source_head,
             "native_preview_ready": native_preview.ready,
             "native_preview_head_unchanged": preview_head_unchanged,
+            "audio_only_native_automation_blocked_without_routing": not audio_only_native_preview.ready,
+            "forged_same_revision_parent_blocked_by_persisted_source_binding": not forged_source_preview.ready
+            and forged_source_preview.authority_result["conflicts"][0]["code"] == "STALE_SOURCE",
             "generic_commit_native_automation_bypass_blocked": generic_commit_blocked,
             "native_accept_advanced_exactly_once": native_record["parent_revision_id"] == source_head,
             "same_preview_second_accept_blocked": stale_reaccept_blocked,

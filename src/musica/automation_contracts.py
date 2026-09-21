@@ -20,6 +20,12 @@ EMPTY_AUTOMATION_MATERIAL: dict[str, Any] = {
     "lanes": [],
 }
 
+NATIVE_MIXER_AUTOMATION_SCOPES = {"audio_track", "routing_node"}
+NATIVE_MIXER_PARAMETER_SPECS: dict[str, tuple[str, float, float]] = {
+    "mixer.gain_db": ("decibel", -60.0, 12.0),
+    "mixer.pan": ("normalized", -1.0, 1.0),
+}
+
 
 def empty_automation_material() -> dict[str, Any]:
     """Return the canonical empty material used for legacy/no-automation source binding."""
@@ -63,6 +69,7 @@ def validate_automation_material(material: dict[str, Any]) -> None:
     for lane in lanes:
         lane_id = str(lane["lane_id"])
         target = lane["target"]
+        _validate_native_mixer_target(lane)
         minimum = float(target["minimum"])
         maximum = float(target["maximum"])
         if minimum >= maximum:
@@ -120,6 +127,50 @@ def automation_material_from_blueprint(
     if not isinstance(value, dict):
         raise ContractError("materials.automation must be an object")
     return value
+
+
+def native_mixer_automation_lanes(blueprint: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return only canonical native mixer automation lanes in lane_id order."""
+
+    material = automation_material_from_blueprint(blueprint)
+    assert material is not None
+    return [
+        copy.deepcopy(lane)
+        for lane in material["lanes"]
+        if str(lane["target"]["scope"]) in NATIVE_MIXER_AUTOMATION_SCOPES
+    ]
+
+
+def _validate_native_mixer_target(lane: dict[str, Any]) -> None:
+    target = lane["target"]
+    scope = str(target["scope"])
+    if scope not in NATIVE_MIXER_AUTOMATION_SCOPES:
+        return
+    if lane.get("section_id") is not None:
+        raise ContractError(
+            f"native mixer automation lane {lane['lane_id']} must use section_id=null"
+        )
+    parameter_id = str(target["parameter_id"])
+    spec = NATIVE_MIXER_PARAMETER_SPECS.get(parameter_id)
+    if spec is None:
+        raise ContractError(
+            f"native mixer automation lane {lane['lane_id']} uses unsupported parameter: "
+            f"{parameter_id}"
+        )
+    expected_unit, expected_minimum, expected_maximum = spec
+    if str(target["unit"]) != expected_unit:
+        raise ContractError(
+            f"native mixer automation {parameter_id} requires unit {expected_unit}"
+        )
+    if float(target["minimum"]) != expected_minimum or float(target["maximum"]) != expected_maximum:
+        raise ContractError(
+            f"native mixer automation {parameter_id} requires range "
+            f"[{expected_minimum}, {expected_maximum}]"
+        )
+    if not isinstance(target.get("owner_id"), str) or not str(target["owner_id"]):
+        raise ContractError(
+            f"native mixer automation lane {lane['lane_id']} requires stable owner_id"
+        )
 
 
 def automation_locks_from_blueprint(blueprint: dict[str, Any]) -> list[dict[str, Any]]:
@@ -249,11 +300,30 @@ def validate_blueprint_automation(
     part_set = set(part_ids)
     section_set = set(section_ids)
 
+    from .audio_contracts import audio_material_from_blueprint
+    from .routing_contracts import routing_material_from_blueprint
+
+    audio = audio_material_from_blueprint(blueprint)
+    routing = routing_material_from_blueprint(blueprint)
+    assert audio is not None and routing is not None
+    audio_track_ids = {str(track["track_id"]) for track in audio["tracks"]}
+    routing_node_ids = {str(node["node_id"]) for node in routing["nodes"]}
+
     for lane in actual["lanes"]:
         target = lane["target"]
-        if target["scope"] == "part" and str(target["owner_id"]) not in part_set:
+        scope = str(target["scope"])
+        owner_id = target.get("owner_id")
+        if scope == "part" and str(owner_id) not in part_set:
             raise ContractError(
-                f"automation lane {lane['lane_id']} references unknown part_id: {target['owner_id']}"
+                f"automation lane {lane['lane_id']} references unknown part_id: {owner_id}"
+            )
+        if scope == "audio_track" and str(owner_id) not in audio_track_ids:
+            raise ContractError(
+                f"automation lane {lane['lane_id']} references unknown audio track_id: {owner_id}"
+            )
+        if scope == "routing_node" and str(owner_id) not in routing_node_ids:
+            raise ContractError(
+                f"automation lane {lane['lane_id']} references unknown routing node_id: {owner_id}"
             )
         section_id = lane.get("section_id")
         if section_id is not None and str(section_id) not in section_set:

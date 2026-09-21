@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 
 import pytest
@@ -20,7 +21,7 @@ from musica.routing_contracts import (
     routing_material_from_blueprint,
     routing_material_sha256,
 )
-from test_mram_r1_routing_authority_mixer import _accept_routing
+from test_mram_r1_routing_authority_mixer import _accept_audio, _accept_routing
 
 
 def _source(parent: dict) -> dict:
@@ -310,3 +311,52 @@ def test_native_automation_reopen_preserves_lowering_plan_and_wav(tmp_path: Path
     assert render_after.plan == render_before.plan
     assert render_after.wav_bytes == render_before.wav_bytes
     assert reopened.verify_integrity()["status"] == "PASS"
+
+
+def test_native_preview_requires_persisted_source_and_routed_execution_context(
+    tmp_path: Path,
+) -> None:
+    project, audio_only = _accept_audio(tmp_path / "audio-only")
+    lane = _lane(
+        "AUTO-AUDIO-ONLY",
+        scope="audio_track",
+        owner_id="AT-001",
+        parameter_id="mixer.gain_db",
+        points=[("PAO1", 0.0, -3.0, "hold")],
+    )
+    audio_only_preview = build_automation_edit_preview(
+        audio_only,
+        _candidate(audio_only, "R2-AUDIO-ONLY", [lane]),
+        project=project,
+    )
+    assert not audio_only_preview.ready
+    assert "requires accepted non-empty routing" in (
+        audio_only_preview.authority_result["conflicts"][0]["reason"]
+    )
+
+    routed_project, routed = _accept_routing(tmp_path / "routed")
+    forged = copy.deepcopy(routed)
+    forged["project"]["title"] = str(forged["project"]["title"]) + " forged"
+    forged_candidate = _candidate(
+        forged,
+        "R2-FORGED-SOURCE",
+        [
+            _lane(
+                "AUTO-FORGED",
+                scope="audio_track",
+                owner_id="AT-001",
+                parameter_id="mixer.pan",
+                points=[("PF1", 0.0, 0.25, "hold")],
+            )
+        ],
+    )
+    forged_preview = build_automation_edit_preview(
+        forged,
+        forged_candidate,
+        project=routed_project,
+    )
+    assert not forged_preview.ready
+    assert forged_preview.authority_result["conflicts"][0]["code"] == "STALE_SOURCE"
+    assert "persisted source Blueprint hash mismatch" in (
+        forged_preview.authority_result["conflicts"][0]["reason"]
+    )

@@ -308,6 +308,15 @@ def validate_blueprint_automation(
     assert audio is not None and routing is not None
     audio_track_ids = {str(track["track_id"]) for track in audio["tracks"]}
     routing_node_ids = {str(node["node_id"]) for node in routing["nodes"]}
+    native_lanes = [
+        lane
+        for lane in actual["lanes"]
+        if str(lane["target"]["scope"]) in NATIVE_MIXER_AUTOMATION_SCOPES
+    ]
+    if native_lanes and not routing["nodes"]:
+        raise ContractError(
+            "MRAM-R2 native mixer automation requires accepted non-empty routing"
+        )
 
     for lane in actual["lanes"]:
         target = lane["target"]

@@ -235,7 +235,11 @@ def build_note_edit_preview(
 ) -> NoteEditPreview:
     """Resolve one typed NoteEditCandidate into a non-canonical Blueprint preview."""
 
-    validate_contract(parent_blueprint, "music-blueprint-v0.schema.json")
+    validate_contract(
+        parent_blueprint,
+        "music-blueprint-v0.schema.json",
+        allow_nonempty_routing=True,
+    )
     validate_contract(candidate, "note-edit-candidate-v0.schema.json")
     source_hash = blueprint_sha256(parent_blueprint)
     source = candidate["source"]
@@ -367,7 +371,11 @@ def build_note_edit_preview(
     provenance["selected_mechanisms"] = selected
 
     try:
-        validate_contract(working, "music-blueprint-v0.schema.json")
+        validate_contract(
+            working,
+            "music-blueprint-v0.schema.json",
+            allow_nonempty_routing=True,
+        )
     except ContractError as exc:
         return _blocked_preview(
             parent_blueprint,
@@ -375,7 +383,11 @@ def build_note_edit_preview(
             [_conflict(1, "INVALID_NOTE", str(exc))],
         )
 
-    revision_conflicts = validate_revision(parent_blueprint, working)
+    revision_conflicts = validate_revision(
+        parent_blueprint,
+        working,
+        allow_nonempty_routing=True,
+    )
     blocking = [conflict for conflict in revision_conflicts if conflict.status == "BLOCKED"]
     if blocking:
         converted: list[dict[str, Any]] = []

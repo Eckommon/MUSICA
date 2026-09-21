@@ -19,7 +19,9 @@
         "audio_material_sha256":{"$ref":"#/$defs/sha256"},
         "routing_material_sha256":{"$ref":"#/$defs/sha256"},
         "native_mix_plan_sha256":{"$ref":"#/$defs/sha256"},
-        "routing_plan_sha256":{"$ref":"#/$defs/sha256"}
+        "routing_plan_sha256":{"$ref":"#/$defs/sha256"},
+        "automation_material_sha256":{"$ref":"#/$defs/sha256"},
+        "native_mixer_automation_plan_sha256":{"$ref":"#/$defs/sha256"}
       }
     },
     "mix_sample_rate_hz":{"type":"integer","minimum":8000,"maximum":192000},
@@ -29,7 +31,7 @@
       "required":["send_tap","node_processing","pan_law","internal_precision","clipping","output_format"],
       "properties":{
         "send_tap":{"const":"post_fader"},
-        "node_processing":{"const":"input_sum_then_static_gain_pan_mute_then_primary_output_and_sends"},
+        "node_processing":{"enum":["input_sum_then_static_gain_pan_mute_then_primary_output_and_sends","input_sum_then_automated_or_static_gain_pan_then_static_mute_then_primary_output_and_sends"]},
         "pan_law":{"const":"linear_balance"},
         "internal_precision":{"const":"float64"},
         "clipping":{"const":"hard_clip_unit_range_before_pcm16"},
@@ -38,6 +40,7 @@
     },
     "native_tracks":{"type":"array","items":{"type":"object","additionalProperties":true}},
     "routing":{"type":"object","additionalProperties":true},
+    "native_mixer_automation":{"type":"object","additionalProperties":true},
     "routed_mix_plan_sha256":{"$ref":"#/$defs/sha256"}
   },
   "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}

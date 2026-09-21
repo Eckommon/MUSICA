@@ -284,8 +284,19 @@ def build_automation_edit_preview(
             stale_reasons.append("native mixer automation Preview requires Project Engine context")
         else:
             selected_branch = branch or project.current_branch()
-            if project.head_revision_id(selected_branch) != str(parent_blueprint["project"]["revision_id"]):
+            source_revision_id = str(parent_blueprint["project"]["revision_id"])
+            if project.head_revision_id(selected_branch) != source_revision_id:
                 stale_reasons.append("project branch HEAD no longer equals source revision")
+            else:
+                persisted = project.read_revision(source_revision_id)
+                if blueprint_sha256(persisted) != source_blueprint_hash:
+                    stale_reasons.append("persisted source Blueprint hash mismatch")
+                if automation_material_sha256(persisted) != source_material_hash:
+                    stale_reasons.append("persisted source automation_material_sha256 mismatch")
+                if audio_material_sha256(persisted) != source_audio_hash:
+                    stale_reasons.append("persisted source audio_material_sha256 mismatch")
+                if _routing_hash(persisted) != source_routing_hash:
+                    stale_reasons.append("persisted source routing_material_sha256 mismatch")
         if source.get("audio_material_sha256") != source_audio_hash:
             stale_reasons.append("audio_material_sha256 mismatch")
         if source.get("routing_material_sha256") != source_routing_hash:

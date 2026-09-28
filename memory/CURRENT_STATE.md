@@ -2,7 +2,7 @@
 
 ## Project phase / 프로젝트 단계
 
-**CORE PRODUCT LOOP BOUNDEDLY VALIDATED → NATIVE AUDIO FOUNDATION VALIDATED → MIXER ROUTING & AUTOMATION EXPANSION IN PROGRESS**
+**CORE PRODUCT LOOP BOUNDEDLY VALIDATED → NATIVE AUDIO FOUNDATION VALIDATED → MIXER ROUTING & AUTOMATION FOUNDATION IN FINAL BROWSER/LIFECYCLE RUNG**
 
 Long-term governing target:
 
@@ -36,8 +36,8 @@ Selected bounded rung sequence:
 ```text
 MRAM-R0 routing contracts + deterministic graph lowering      VALIDATED
 → MRAM-R1 trusted routing Preview→Accept + routed mixer       VALIDATED
-→ MRAM-R2 track/routing-node gain/pan automation mapping      CURRENT
-→ MRAM-R3 Browser routing/automation + reopen lifecycle
+→ MRAM-R2 track/routing-node gain/pan automation mapping      VALIDATED
+→ MRAM-R3 Browser routing/automation + reopen lifecycle       CURRENT
 → Issue #115 bounded closure evaluation
 ```
 
@@ -51,12 +51,6 @@ Canonical implementation merge/main:
 
 Durable validation: `evidence/MRAM_R0_VALIDATION.md`
 
-Key promotion facts:
-
-- pre-validation head `1d7c310ba02ef651927ad65cc58f782b1f1b34b6` — **21/21 SUCCESS**
-- validation successor `50701b45fd4c2cb9f95a01c8ec9a8b7d8ccb9956` — **21/21 SUCCESS**
-- artifact ZIP SHA-256 `bfe38c8d8794e98a904155ee2f31353fe585fddeef3faeeaae2b98a17224b923`
-
 R0 established explicit bounded routing contracts, stable bus/group/return/master identities, deterministic DAG validation/lowering and fail-closed non-empty accepted routing authority.
 
 ## MRAM-R1 — validated trusted routing authority + routed mixer
@@ -69,95 +63,132 @@ Canonical implementation merge/main:
 
 > **`422f30f78b39b333dd970bf3a20e94e1ba64e7fb`**
 
+Durable validation: `evidence/MRAM_R1_VALIDATION.md`
+
+Key validated behavior includes source-bound routing Preview→Accept, protected Project Engine routing authority, generic-commit bypass rejection, stale Preview rejection, accepted bus/group/return/master routing, post-fader sends, deterministic routed plan/WAV, reopen exactness and truthful Studio routed audition.
+
+## MRAM-R2 — validated native mixer automation target mapping
+
+Issue `#124` — **COMPLETED**
+
+Implementation PR `#125` — **MERGED**
+
+Canonical implementation merge/main:
+
+> **`932b98e64f6e6d0b5464023b79973b1a5b33b65c`**
+
 Durable validation:
 
-- `evidence/MRAM_R1_VALIDATION.md`
+- `evidence/MRAM_R2_VALIDATION.md`
 - implementation/evidence exact head:
-  `91d9629b4b017a70f30bb53d273890e22cd87734` — **22/22 permanent workflows SUCCESS**
+  `6fdc2a38b59886ebd41fe38d2f293363d3bbec77` — **23/23 permanent workflows SUCCESS**
 - validation-record successor exact head:
-  `009db978aab242525e20db4677083201c7af645f` — **22/22 SUCCESS**
-- dedicated workflow: **MRAM-R1 Routing Authority & Routed Mixer Evidence**
-- dedicated pre-validation run: `35307240384` — **SUCCESS**
-- artifact ID: `10532212394`
+  `7432b2a2c1ee3e4d6fe031ef36cbd8206ace6b11` — **23/23 SUCCESS**
+- dedicated workflow: **MRAM-R2 Native Mixer Automation Evidence**
+- dedicated run: `35615197638` — **SUCCESS**
+- artifact ID: `10646022648`
 - artifact ZIP SHA-256:
-  `4a59898baf16af1d7f26d14a3f31868fc573ee028d996f5c62ba5a8881be6da0`
-- independently verified manifest payloads: **9/9 exact SHA-256 + byte size PASS**
-- exact Git contract inventory independently checked: **20/20 file hashes PASS**
-- accepted routed-mix plan self-hash independently recomputed:
-  `a4a67b79a2a402b08280b7f9c39d291f7b669800be39d558e9a1bc9fed2bb74e`
-- controlled-change routed-mix plan self-hash:
-  `5d7aeab03126aab73ff14c38bf5018a692951c2ff656d6909dba1c9219d77e88`
+  `03b13c8a2c1bc1c84ed248b8891ae3626532723197359509273de56967f2abb0`
+- artifact ZIP size: **39,017 bytes**
+- manifest-declared payloads: **12/12 exact SHA-256 + byte size PASS**
+- exact Git contract/source/test/workflow inventory: **14/14 SHA-256 + byte size PASS**
+- nested project object store: **19/19 object hashes PASS**
+- accepted native automation plan self-hash:
+  `f711be1003c24ed287f1dda0178e2d1ce7e26758f1d59a874a3fdc6162912e73`
+- controlled-change native automation plan self-hash:
+  `734b2c9dd93b5b363b357b65703def65de38c098b88e50fe42cff84ac3b84798`
+- accepted routed mix plan self-hash:
+  `1b8b6468c1f7e4800ca4c63e3f9dc204119b9a3f343b29b4bacff062284b90ac`
+- controlled-change routed mix plan self-hash:
+  `01255b1ac5ea7b980666081ce0e1db6440ffa599321efb2ab78def4b568d2970`
 - accepted routed WAV:
-  `49dbffcab7ee805083bd622959be232d356f730167e52e1ee3edeb6dbddba2a4`
+  `adf6c52671404161d9b456e1f580feb11ad832baed4aa86c86b916e6a38f8a33`
 - controlled-change routed WAV:
-  `2ab53f16ab6f73ffc70dd92bd29abc767bce3176105efbfad8a5f617b74f2630`
+  `3d75ff486f45fdd7d84c80064141faa7d016434b1d239fb832548dc04e889354`
 
-### Validated MRAM-R1 behavior
+### Validated MRAM-R2 behavior
 
-MRAM-R1 establishes:
-
-- source-bound routing edit candidates;
-- Preview without accepted HEAD mutation;
-- explicit trusted Accept with source/head/graph/asset revalidation;
-- protected Project Engine routing commit authority;
-- generic commit routing bypass rejection;
-- stale Preview and second-Accept rejection;
-- accepted bus/group/return/master routing;
-- exact track primary output routing;
-- bounded post-fader sends;
-- deterministic routed mix plan;
-- deterministic stereo PCM16 routed WAV;
-- inherited ATCM-R2 gain/pan/mute/solo/clipping semantics;
-- cycle and missing-target fail-closed behavior;
-- accepted routing persistence across export/import and reopen;
-- repeat-exact routing/plan/WAV after reopen;
-- compatibility with existing audio, note and automation edits;
-- truthful Studio audition through the routed mixer rather than a flat fallback.
-
-The controlled evidence changes only:
+MRAM-R2 establishes a backward-compatible additive extension of the existing M7 automation family for:
 
 ```text
-SEND-001 gain_db: -12.0 → -3.0
+audio_track / stable track_id / mixer.gain_db
+audio_track / stable track_id / mixer.pan
+routing_node / stable node_id / mixer.gain_db
+routing_node / stable node_id / mixer.pan
 ```
 
-and proves corresponding routed-plan and WAV identity changes.
+The validated authority/execution chain is:
 
-### Maximum validated MRAM-R1 claim
+```text
+exact accepted routed revision
+→ source-bound native automation candidate
+→ Preview / accepted HEAD unchanged
+→ persisted source + Blueprint/automation/audio/routing hash validation
+→ explicit Accept
+→ protected native-automation Project Engine commit
+→ accepted automation revision
+→ deterministic beat→frame lowering
+→ routed mixer track/node gain+pan execution
+→ deterministic derived routed plan/WAV
+```
 
-> **MUSICA can edit bounded explicit routing through source-bound Preview/Accept authority, persist that accepted DAG as creative state, and deterministically render the exact accepted track→node→master signal flow into a byte-reproducible derived offline mix while generic commit paths, stale Previews and invalid topology remain fail-closed.**
+Additional validated fail-closed behavior:
+
+- generic commit cannot introduce/change native mixer automation;
+- same Preview cannot be accepted twice;
+- stale Preview after HEAD advance is rejected;
+- forged same-revision parent objects are rejected by persisted-source binding;
+- missing track/node identities are rejected;
+- unsupported unit/range/parameter combinations are rejected;
+- native mixer automation without accepted non-empty routing is rejected;
+- generic M7 lowering remains explicitly `UNMAPPED`;
+- export/import reopen reproduces automation identity, native lowering, routed plan and WAV exactly.
+
+Controlled evidence changes exactly one canonical point:
+
+```text
+AUTO-AT001-GAIN / P1: -3.0 dB → -12.0 dB
+```
+
+and proves corresponding native-plan, routed-plan and WAV identity changes.
+
+### Maximum validated MRAM-R2 claim
+
+> **MUSICA can bind accepted typed automation to stable native audio-track and routing-node gain/pan targets, lower that automation deterministically into routed mixer execution, and reproduce the resulting routed plan/WAV exactly while generic commit bypass, stale or forged source state, unsupported configuration, missing targets and unrouted native automation remain fail-closed.**
 
 ## Exact current rung / 현재 정확한 단계
 
-The next rung is **MRAM-R2 — native mixer automation target mapping**.
+The current rung is:
 
-R2 must extend the already validated typed automation authority/lowering family rather than creating a separate mixer-automation state machine.
+> **Issue #126 — MRAM-R3: Browser Routing & Native Automation Surface + Reopen Lifecycle v0**
 
-The key design problem is target identity and backward compatibility:
+R3 must project the already validated routing + native automation authority into a real Browser/Studio surface without creating a Browser-only source of truth.
+
+Required direction:
 
 ```text
-existing project|part automation semantics
-→ versioned/safely extended native mixer target identity
-→ source-bound Preview/Accept remains authoritative
-→ deterministic automation lowering
-→ deterministic routed mixer execution
-→ derived plan/WAV only
+accepted routing + native automation
+→ derived Browser inspection
+→ typed Browser edit proposal
+→ existing routing/automation Preview engines
+→ PREVIEW / HEAD unchanged
+→ explicit Accept
+→ existing trusted Project Engine boundary
+→ exact accepted routed audition
+→ process/service restart
+→ reopen
+→ same routing/automation identities + plan/WAV hashes
 ```
 
-Initial bounded target scope should begin with stable native identities and parameters that can be specified exactly:
-
-- audio track gain;
-- audio track pan;
-- routing-node gain;
-- routing-node pan.
-
-Send gain or mute automation should remain outside R2 unless exact interpolation/execution semantics are separately frozen and evidenced.
+R3 should prefer the smallest complete truthful surface and reuse existing candidate/Preview/Accept engines.
 
 ## Current important non-claims / 현재 주요 비주장
 
 Until separately validated, do not claim:
 
-- native mixer automation mapping beyond existing project/part automation;
-- Browser routing or native mixer automation editing;
+- Browser routing/native mixer automation editing;
+- send-gain automation beyond the current static routing send control;
+- mute/solo automation;
 - sidechains;
 - realtime ASIO/CoreAudio/WASAPI device operation;
 - microphone/line recording or monitoring;
@@ -172,7 +203,7 @@ Until separately validated, do not claim:
 
 ## Exact next phase / 다음 단계
 
-> **Open and implement MRAM-R2 from canonical main `422f30f78b39b333dd970bf3a20e94e1ba64e7fb`: inspect the existing automation contract/authority/lowering stack, freeze a backward-compatible stable target model for native track and routing-node gain/pan, then prove source-bound accepted automation deterministically changes the routed mix without granting runtime or rendered output reverse authority.**
+> **Implement Issue #126 from canonical main `932b98e64f6e6d0b5464023b79973b1a5b33b65c`: re-ground the current Studio/Browser routing and automation projection paths, add the smallest truthful stable-ID inspection/edit surface that delegates to existing routing/automation Preview→Accept authority, prove exact routed audition plus restart/reopen lifecycle in real Chromium, then evaluate parent Issue #115 for bounded closure.**
 
 See `memory/NEXT_ACTION.md` for the exact execution order.
 

@@ -2,299 +2,281 @@
 
 ## Exact resume point / 정확한 재개점
 
-**MRAM-R2 — NATIVE MIXER AUTOMATION TARGET MAPPING v0**
+**MRAM-R3 — BROWSER ROUTING & NATIVE AUTOMATION SURFACE + REOPEN LIFECYCLE v0**
+
+Issue `#126` — **OPEN**
 
 Parent mission: Issue `#115` — **Mixer Routing & Automation Foundation v0 — OPEN**
 
-MRAM-R1 Issue `#121` is validated, merged and completed. The next dependency-safe step is to extend MUSICA's existing typed automation authority/lowering model to stable native mixer targets without introducing a second automation authority model.
+MRAM-R2 Issue `#124` is validated, merged and completed. The next dependency-safe step is to expose the already accepted routing graph and native mixer gain/pan automation through a truthful real-Browser/Studio inspection/edit surface, then prove fresh restart/reopen lifecycle exactness.
 
-Do **not** add Browser routing/automation UI, realtime device I/O, recording, plugin hosting, sidechains or generalized parameter automation in R2.
+Do **not** add realtime device I/O, recording, plugin hosting, sidechains, generalized parameter automation, send automation, mute/solo automation or mastering scope in R3.
 
 ## Canonical base / 공식 기준점
 
-- canonical main after MRAM-R1 implementation merge:
-  `422f30f78b39b333dd970bf3a20e94e1ba64e7fb`
+- canonical main after MRAM-R2 implementation merge:
+  `932b98e64f6e6d0b5464023b79973b1a5b33b65c`
 - parent Issue `#115` — **OPEN**
-- MRAM-R1 Issue `#121` — **COMPLETED**
-- MRAM-R1 PR `#122` — **MERGED**
-- R1 pre-validation exact head:
-  `91d9629b4b017a70f30bb53d273890e22cd87734` — **22/22 SUCCESS**
-- R1 validation-record successor:
-  `009db978aab242525e20db4677083201c7af645f` — **22/22 SUCCESS**
-- durable validation: `evidence/MRAM_R1_VALIDATION.md`
-- dedicated artifact ID: `10532212394`
-- dedicated artifact ZIP SHA:
-  `4a59898baf16af1d7f26d14a3f31868fc573ee028d996f5c62ba5a8881be6da0`
-- accepted routed-mix plan SHA:
-  `a4a67b79a2a402b08280b7f9c39d291f7b669800be39d558e9a1bc9fed2bb74e`
-- accepted routed WAV SHA:
-  `49dbffcab7ee805083bd622959be232d356f730167e52e1ee3edeb6dbddba2a4`
-
-Permanent workflow count at the R1 validated state: **22**.
+- MRAM-R2 Issue `#124` — **COMPLETED**
+- MRAM-R2 PR `#125` — **MERGED**
+- R2 implementation/evidence exact head:
+  `6fdc2a38b59886ebd41fe38d2f293363d3bbec77` — **23/23 SUCCESS**
+- R2 validation-record successor:
+  `7432b2a2c1ee3e4d6fe031ef36cbd8206ace6b11` — **23/23 SUCCESS**
+- durable validation: `evidence/MRAM_R2_VALIDATION.md`
+- dedicated artifact ID: `10646022648`
+- artifact ZIP SHA:
+  `03b13c8a2c1bc1c84ed248b8891ae3626532723197359509273de56967f2abb0`
+- permanent workflow count at validated R2 state: **23**
 
 ## Inherited authority / 상속 권한
 
-R2 inherits:
+R3 inherits:
 
 ```text
 ATCM:
 immutable audio assets
-→ accepted audio tracks/clips
-→ accepted static per-track mixer
+→ accepted tracks/clips/static mixer
 → deterministic native mix
-→ Browser truth + reopen
+→ Browser native-audio truth + reopen
 
-M7 automation:
+M7:
 typed automation material
-→ source-bound edit candidate / Preview / explicit Accept
-→ deterministic lowering/runtime evidence
-→ accepted automation as creative state
+→ source-bound Preview / explicit Accept
+→ deterministic generic lowering
+→ Browser automation inspection/edit authority patterns
 
 MRAM-R0/R1:
 explicit routing DAG
 → trusted routing Preview / Accept
 → accepted routing state
-→ deterministic routed offline mixer
+→ deterministic routed mixer
+
+MRAM-R2:
+stable audio_track|routing_node gain/pan automation
+→ trusted native automation Preview / Accept
+→ deterministic beat→frame lowering
+→ deterministic routed execution
 ```
 
-R2 must connect the already accepted automation state to the already accepted native mixer/routing identities. It must not create a parallel automation store, generic runtime write-back path or Browser-only authority.
+R3 must connect the real Browser/Studio surface to these existing authorities. It must not create a parallel routing/automation store, direct Browser commit path or runtime write-back authority.
 
 ## Exact implementation order / 정확한 구현 순서
 
-### 1. Re-ground the existing automation stack before changing schemas
+### 1. Re-ground Browser/Studio architecture before changing UI
 
 Inspect at minimum:
 
-- automation schemas and target identity fields;
+- `src/musica/studio_service.py` and related session/project lifecycle code;
+- `src/musica/studio_http.py` routes;
+- `src/musica/studio_audio.py` routed audition path;
+- `src/musica/studio_web/*` current Browser UI;
+- existing M6/M7 real-browser edit/Preview/Accept implementations and tests;
+- accepted revision Compare Browser projection;
+- `src/musica/routing_edit.py`;
 - `src/musica/automation_edit.py`;
-- automation validation/lowering/runtime modules;
-- M7-R0/R1/R2/R3/R4/R5/R6 tests and durable validation records;
-- `src/musica/audio_mixer_edit.py`;
 - `src/musica/routing_contracts.py`;
+- `src/musica/native_mixer_automation.py`;
 - `src/musica/routed_mixer.py`;
-- `evidence/MRAM_R1_VALIDATION.md`.
+- `evidence/MRAM_R1_VALIDATION.md`;
+- `evidence/MRAM_R2_VALIDATION.md`.
 
-Determine exactly how current `project|part` target scope is represented, hashed, previewed, accepted, lowered and consumed.
+Determine the narrowest existing service/API/UI extension that can project exact accepted routing + native automation and delegate edits to current authority engines.
 
-Do not retrofit native mixer targets until backward compatibility and authority boundaries are explicit.
+### 2. Freeze the Browser projection contract
 
-### 2. Freeze native mixer automation target identity v0
+The Browser-visible derived projection should bind at least:
 
-Prefer a versioned target shape that can distinguish legacy targets from native mixer targets without changing the meaning of existing accepted automation.
+- session ID;
+- accepted revision ID;
+- Blueprint SHA;
+- audio material SHA;
+- routing material SHA;
+- automation material SHA;
+- exact stable track IDs;
+- exact stable routing node/send IDs;
+- exact native automation lane/point IDs;
+- explicit authority flags showing Browser projection is non-canonical.
 
-Initial supported target identities:
+Prefer a typed projection object rather than reconstructing authority from DOM state.
 
-```text
-audio_track:<track_id>:gain_db
-audio_track:<track_id>:pan
-routing_node:<node_id>:gain_db
-routing_node:<node_id>:pan
-```
+### 3. Implement truthful routing inspection
 
-Equivalent structured fields are acceptable if they are schema-versioned and canonical.
+At minimum make the Browser/Studio able to inspect:
 
-Each target must bind:
+- each accepted audio track's primary routing target;
+- bus/group/return/master node identity and type;
+- node output target;
+- post-fader sends and send gain;
+- node static gain/pan/mute;
+- exact master sink;
+- accepted revision/source hashes.
 
+The Browser must never infer identity from display name or array position.
+
+### 4. Implement truthful native automation inspection
+
+Expose accepted R2 lanes with:
+
+- lane ID;
 - target kind;
 - stable target ID;
 - parameter ID;
-- unit;
-- numeric range;
-- interpolation policy;
-- exact source accepted revision/Blueprint;
-- exact referenced audio/routing identity where needed.
+- unit/range;
+- points;
+- interpolation;
+- exact accepted revision/source hashes.
 
-Do not support wildcard, name-only or position-only addressing.
+Do not display generic M7 `UNMAPPED` lowering as if it were separate canonical mixer authority.
 
-### 3. Freeze bounded parameter semantics
+### 5. Reuse existing typed edit engines
 
-For R2, prefer only:
+Browser routing edits must produce existing routing edit candidate operations.
 
-- gain in dB with the already validated native mixer gain rule;
-- pan with the already validated native mixer pan range/law.
-
-Explicitly define:
-
-- accepted min/max range;
-- value normalization policy;
-- interpolation mode;
-- time domain and conversion to sample/frame positions;
-- endpoint behavior;
-- duplicate-time-point policy;
-- out-of-range behavior;
-- missing target behavior.
-
-Keep mute/solo/send-gain automation out unless they can be specified without ambiguous event semantics.
-
-### 4. Preserve source-bound Preview→Accept authority
-
-Native mixer automation edits must continue through the existing trusted automation candidate path.
+Browser native automation edits must produce existing automation edit candidate operations.
 
 Required invariant:
 
 ```text
-exact accepted revision
-→ source-bound automation candidate
-→ validate target identity + source hashes
-→ Preview only; accepted HEAD unchanged
-→ explicit trusted Accept
-→ revalidate source/head/target/routing/audio
+Browser input
+→ typed non-canonical candidate
+→ existing source-bound Preview engine
+→ READY_FOR_PREVIEW or BLOCKED
+→ accepted HEAD unchanged
+→ explicit Accept
+→ existing trusted authority
 → exactly one accepted revision advance
 ```
 
-Generic project commit and runtime objects must remain unable to introduce or change accepted automation.
+Do not add a direct Project Engine commit endpoint for Browser edits.
 
-### 5. Extend validation for current native identities
+### 6. Bound the first Browser edit surface
 
-Preview and Accept must reject:
+Prefer only operations already contracted and evidenced.
 
-- missing track ID;
-- missing routing-node ID;
-- target kind/ID mismatch;
-- unsupported parameter;
-- out-of-range value;
-- stale source revision;
+Routing candidates may include a small subset such as:
+
+- change track primary output;
+- adjust an existing send gain;
+- adjust existing node static mixer values.
+
+Native automation candidates may include:
+
+- add one bounded gain/pan lane where absent;
+- insert/move/delete automation point under existing rules;
+- set point value;
+- set interpolation.
+
+Do not broaden the underlying authority model merely to make UI implementation easier.
+
+### 7. Preview truthfulness and stale-state protection
+
+Preview responses should bind exact source hashes and expose:
+
+- candidate diff;
+- changed stable IDs;
+- authority status/conflicts;
+- accepted HEAD unchanged;
+- whether the audition is accepted or Preview state.
+
+Reject at minimum:
+
+- stale accepted revision;
+- stale session/reopen source;
 - stale Blueprint/audio/routing/automation hashes;
-- target removed after Preview;
-- routing change that invalidates target identity before Accept;
-- duplicate/ambiguous target identity;
-- unsupported interpolation or unit.
+- missing track/node/lane/point IDs;
+- malformed target identity;
+- unsupported operation/parameter/unit/range;
+- Browser request attempting direct accepted-state mutation.
 
-Validation must use exact stable IDs, not UI names.
+### 8. Audition the exact routing + automation state
 
-### 6. Deterministic automation lowering for native mixer targets
+Accepted audition must use the MRAM-R1/R2 routed mixer path.
 
-Lower accepted automation into a deterministic derived representation that binds:
+If Preview audition is exposed, it must render the exact candidate state without silently accepting it.
 
-- exact accepted revision;
-- automation material SHA;
-- audio material SHA;
-- routing material SHA;
-- exact target identity;
-- parameter/unit/range;
-- ordered automation points;
-- interpolation;
-- deterministic frame/sample positions;
-- lowering policy/version;
-- derived lowering SHA.
+At minimum prove the Browser does not fall back to:
 
-The lowering representation remains derived/non-canonical.
+- flat native mix when accepted routing exists;
+- static gain/pan when accepted native automation exists.
 
-### 7. Apply lowered automation inside the routed mixer
+### 9. Fresh restart/reopen lifecycle
 
-Integrate automation without replacing MRAM-R1 routing or ATCM-R2 numeric semantics.
+Use a real process/service restart, not merely a second object reference.
 
-Recommended execution model:
+Prove:
 
 ```text
-accepted automation
-→ deterministic per-target lowering
-→ per-frame/per-segment gain/pan value resolution
-→ track processing
-→ primary output + post-fader sends
-→ node input sum
-→ node gain/pan automation
-→ node output/sends
-→ master
-→ inherited hard clip
-→ PCM16 stereo WAV
+accepted routed+automated revision
+→ export/persist
+→ stop service/process
+→ start fresh service/process
+→ reopen project
+→ same accepted revision
+→ same routing identities
+→ same automation lane/point identities
+→ same derived native automation plan SHA
+→ same routed mix plan SHA
+→ same routed WAV SHA
 ```
 
-Freeze the exact point at which track and node automation is sampled/applied.
+Browser-local UI state must not be required to reconstruct accepted creative state.
 
-### 8. Controlled audible/output proof
+### 10. Real Chromium evidence
 
-Build evidence with a small accepted routed project.
+Add a dedicated real-browser E2E covering at minimum:
 
-At minimum prove independently:
+1. open routed+automated project;
+2. inspect exact routing graph;
+3. inspect exact native automation;
+4. propose one bounded Browser edit;
+5. observe Preview and unchanged HEAD;
+6. explicitly Accept;
+7. observe one revision advance and updated exact projection;
+8. audition exact routed result;
+9. restart/reopen fresh service;
+10. observe exact restored identities and media hashes;
+11. stale/unknown-ID negative paths fail closed;
+12. no console/page/request errors beyond explicitly documented expected media aborts.
 
-1. accepted static routed baseline → plan/WAV A;
-2. Preview track gain automation → HEAD unchanged;
-3. explicit Accept → exactly one revision advance;
-4. routed plan/WAV B changes exactly as documented;
-5. track pan automation produces deterministic stereo change;
-6. routing-node gain automation produces deterministic downstream change;
-7. routing-node pan automation produces deterministic stereo change;
-8. independent rerun reproduces exact lowering/plan/WAV hashes.
+### 11. Deterministic evidence and permanent gate
 
-Use at least one change where the output difference is numerically inspectable, not only hash-different.
+Add a dedicated MRAM-R3 permanent workflow without weakening existing gates.
 
-### 9. Reopen and compatibility proof
+Expected permanent workflow count after adding a dedicated R3 gate: **24**, unless a repository-native consolidation is deliberately justified and evidenced.
 
-Export/import or reopen must preserve:
+Evidence should bind exact source hashes and prove deterministic Browser/API payloads where appropriate, real-browser screenshots/interaction evidence, accepted revision identities, restart/reopen hashes and fail-closed paths.
 
-- accepted automation target kind/ID/parameter;
-- accepted points/interpolation;
-- accepted audio/routing state;
-- deterministic lowering SHA;
-- deterministic routed plan SHA;
-- deterministic routed WAV SHA.
+### 12. Parent Issue #115 closure evaluation
 
-Also prove legacy existing `project|part` automation examples remain valid and deterministic.
+After R3 validates, evaluate every required capability in parent Issue #115 against repository evidence.
 
-### 10. Fail-closed negative matrix
+Do not close #115 merely because R3 merged. Close it only if all bounded v0 requirements are directly evidenced.
 
-Reject at least:
+If a genuine gap remains, open the smallest dependency-safe successor rung instead of broadening R3 retroactively.
 
-- unsupported native target kind;
-- missing target ID;
-- removed track/node;
-- stale Preview;
-- generic commit bypass;
-- invalid parameter/unit/range;
-- malformed/non-canonical target identity;
-- unsupported interpolation;
-- duplicate/conflicting identity where the contract forbids it;
-- missing/corrupt audio asset;
-- invalid routing DAG;
-- source sample-rate mismatch under the existing no-resampling policy.
+### 13. Promotion
 
-### 11. Dedicated evidence and permanent gate
-
-Add a dedicated MRAM-R2 workflow without weakening the existing **22** gates.
-
-Expected total after R2: **23** permanent workflows.
-
-Evidence should bind exact source hashes and prove:
-
-```text
-accepted routed source
-→ native mixer automation candidate
-→ Preview
-→ HEAD unchanged
-→ explicit Accept
-→ exact accepted target identity
-→ deterministic lowering A/B
-→ deterministic routed plan/WAV A/B
-→ controlled audible/output change
-→ reopen exactness
-→ legacy automation compatibility
-→ stale/missing/unsupported/bypass paths fail closed
-```
-
-### 12. Promotion
-
-R2 promotion requires:
+R3 promotion requires:
 
 - implementation/evidence complete;
-- dedicated MRAM-R2 gate green;
-- all 23 permanent workflows green on exact evidence-bearing head;
+- dedicated MRAM-R3 gate green;
+- all permanent workflows green on exact evidence-bearing head;
 - independent artifact digest/manifest/hash inspection;
-- durable `evidence/MRAM_R2_VALIDATION.md`;
-- all 23 workflows green again on exact validation-record successor head;
+- durable MRAM-R3 validation record;
+- all workflows green again on exact validation-record successor head;
 - expected-head squash merge;
-- R2 Issue completed;
-- separate state-only closure pointing to MRAM-R3.
+- Issue #126 completed;
+- separate state-only closure evaluating Issue #115.
 
-## MRAM-R2 non-goals / 비목표
+## MRAM-R3 non-goals / 비목표
 
-Do not implement or claim in R2:
+Do not implement or claim in R3:
 
-- Browser routing/automation editing;
-- send-gain automation unless separately frozen;
-- mute/solo event automation unless separately frozen;
 - sidechains;
-- realtime callbacks/device transport;
+- send-gain automation beyond existing static send edit semantics;
+- mute/solo automation;
+- realtime callback/device transport;
 - recording/monitoring;
 - VST3/AU/CLAP hosting;
 - plugin-delay compensation;
@@ -303,16 +285,10 @@ Do not implement or claim in R2:
 - mastering;
 - generalized commercial release readiness.
 
-## Successor after R2
+## Maximum intended R3 outcome
 
-If R2 validates cleanly, exact next rung:
+> **MUSICA can truthfully inspect and edit its bounded accepted routing and native mixer gain/pan automation through a real Browser/Studio Preview→Accept surface, audition the exact accepted routed result, and recover the same accepted identities and deterministic routed output after fresh restart/reopen without Browser/runtime reverse authority.**
 
-> **MRAM-R3 — truthful Browser editing/inspection for accepted routing and native mixer automation, plus fresh restart/reopen lifecycle proof without Browser/runtime reverse authority.**
-
-## Maximum intended R2 outcome
-
-> **MUSICA can bind accepted typed automation to stable native audio-track and routing-node gain/pan targets, lower that automation deterministically into routed mixer execution, and reproduce the resulting routed plan/WAV exactly while stale, unsupported, missing-target and bypass paths remain fail-closed.**
-
-This remains a target claim until R2 is implemented, evidenced, merged and state-closed.
+This remains a target claim until R3 is implemented, evidenced, merged and state-closed.
 
 **Repository evidence remains authoritative over conversation/model memory.**

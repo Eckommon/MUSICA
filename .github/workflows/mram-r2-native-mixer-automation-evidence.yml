@@ -1,0 +1,45 @@
+name: MRAM-R2 Native Mixer Automation Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mram-r2-native-mixer-automation-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA / MUSICA 설치
+        run: python -m pip install -e '.[dev]'
+      - name: Run MRAM-R2 regressions / MRAM-R2 회귀 테스트
+        run: >-
+          pytest -q
+          tests/test_mram_r2_native_mixer_automation.py
+          tests/test_mram_r1_routing_authority_mixer.py
+          tests/test_m7_r1_automation_edit.py
+          tests/test_m7_r3_automation_lowering.py
+          tests/test_atcm_r2_native_mixer.py
+      - name: Generate MRAM-R2 evidence A / MRAM-R2 근거 A 생성
+        env:
+          MUSICA_MRAM_R2_EVIDENCE_OUT: artifacts/mram-r2-native-mixer-automation-a
+        run: python -m musica.mram_r2_evidence
+      - name: Generate MRAM-R2 evidence B / MRAM-R2 근거 B 생성
+        env:
+          MUSICA_MRAM_R2_EVIDENCE_OUT: artifacts/mram-r2-native-mixer-automation-b
+        run: python -m musica.mram_r2_evidence
+      - name: Prove byte-reproducible MRAM-R2 evidence / MRAM-R2 근거 byte 재현성 증명
+        run: diff -qr artifacts/mram-r2-native-mixer-automation-a artifacts/mram-r2-native-mixer-automation-b
+      - name: Upload MRAM-R2 evidence / MRAM-R2 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-mram-r2-native-mixer-automation-evidence
+          path: artifacts/mram-r2-native-mixer-automation-a
+          if-no-files-found: error

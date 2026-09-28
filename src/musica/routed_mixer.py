@@ -26,6 +26,11 @@ from .native_mixer import (
     _pcm16_sample,
     build_native_mix_plan,
 )
+from .native_mixer_automation import (
+    automation_lane_map,
+    build_native_mixer_automation_plan,
+    value_at_frame,
+)
 from .routing_contracts import (
     build_routing_plan,
     routing_material_from_blueprint,
@@ -67,6 +72,12 @@ def build_routed_mix_plan(
         mix_sample_rate_hz=mix_sample_rate_hz,
     )
     routing_plan = build_routing_plan(routing, track_ids=track_ids)
+    automation_plan = build_native_mixer_automation_plan(
+        project,
+        revision_id,
+        mix_sample_rate_hz=mix_sample_rate_hz,
+    )
+    native_automation_present = bool(automation_plan["lanes"])
 
     plan_base: dict[str, Any] = {
         "plan_version": "0",
@@ -85,7 +96,11 @@ def build_routed_mix_plan(
         "duration_frames": int(native["duration_frames"]),
         "policy": {
             "send_tap": "post_fader",
-            "node_processing": "input_sum_then_static_gain_pan_mute_then_primary_output_and_sends",
+            "node_processing": (
+                "input_sum_then_automated_or_static_gain_pan_then_static_mute_then_primary_output_and_sends"
+                if native_automation_present
+                else "input_sum_then_static_gain_pan_mute_then_primary_output_and_sends"
+            ),
             "pan_law": "linear_balance",
             "internal_precision": "float64",
             "clipping": "hard_clip_unit_range_before_pcm16",
@@ -94,6 +109,14 @@ def build_routed_mix_plan(
         "native_tracks": native["tracks"],
         "routing": routing_plan,
     }
+    if native_automation_present:
+        plan_base["source"]["automation_material_sha256"] = str(
+            automation_plan["source"]["automation_material_sha256"]
+        )
+        plan_base["source"]["native_mixer_automation_plan_sha256"] = str(
+            automation_plan["native_mixer_automation_plan_sha256"]
+        )
+        plan_base["native_mixer_automation"] = automation_plan
     plan = dict(plan_base)
     plan["routed_mix_plan_sha256"] = _sha256(canonical_json_bytes(plan_base))
     validate_contract(plan, "routed-mix-plan-v0.schema.json")
@@ -122,12 +145,16 @@ def _track_buffer(
     track: dict[str, Any],
     duration_frames: int,
     decoded_cache: dict[str, tuple[int, int, int, list[tuple[float, ...]]]],
+    automation: dict[tuple[str, str, str], dict[str, Any]],
 ) -> tuple[list[float], list[float]]:
     left, right = _empty_buffer(duration_frames)
     mixer = track["mixer"]
     if not bool(mixer["audible"]):
         return left, right
 
+    track_id = str(track["track_id"])
+    gain_lane = automation.get(("audio_track", track_id, "mixer.gain_db"))
+    pan_lane = automation.get(("audio_track", track_id, "mixer.pan"))
     track_gain = float(mixer["gain_linear"])
     left_coeff = float(mixer["left_coefficient"])
     right_coeff = float(mixer["right_coefficient"])
@@ -148,31 +175,72 @@ def _track_buffer(
         source_start = int(clip["source_start_frame"])
         source_end = int(clip["source_end_frame"])
         timeline_start = int(clip["timeline_start_frame"])
-        combined_gain = track_gain * float(clip["gain_linear"])
+        clip_gain = float(clip["gain_linear"])
+        combined_gain = track_gain * clip_gain
         for offset, source_index in enumerate(range(source_start, source_end)):
             destination = timeline_start + offset
             frame = frames[source_index]
-            if channels == 1:
-                mono = frame[0] * combined_gain
-                left[destination] += mono * left_coeff
-                right[destination] += mono * right_coeff
+            if gain_lane is None and pan_lane is None:
+                gain = combined_gain
+                frame_left_coeff = left_coeff
+                frame_right_coeff = right_coeff
             else:
-                left[destination] += frame[0] * combined_gain * left_coeff
-                right[destination] += frame[1] * combined_gain * right_coeff
+                gain_db = (
+                    value_at_frame(gain_lane, destination)
+                    if gain_lane is not None
+                    else float(mixer["gain_db"])
+                )
+                pan = (
+                    value_at_frame(pan_lane, destination)
+                    if pan_lane is not None
+                    else float(mixer["pan"])
+                )
+                gain = _gain_linear(gain_db) * clip_gain
+                frame_left_coeff, frame_right_coeff = _pan_coefficients(pan)
+            if channels == 1:
+                mono = frame[0] * gain
+                left[destination] += mono * frame_left_coeff
+                right[destination] += mono * frame_right_coeff
+            else:
+                left[destination] += frame[0] * gain * frame_left_coeff
+                right[destination] += frame[1] * gain * frame_right_coeff
     return left, right
 
 
 def _process_node(
     source: tuple[list[float], list[float]],
     mixer: dict[str, Any],
+    *,
+    node_id: str,
+    automation: dict[tuple[str, str, str], dict[str, Any]],
 ) -> tuple[list[float], list[float]]:
     left = list(source[0])
     right = list(source[1])
     if bool(mixer["mute"]):
         return [0.0] * len(left), [0.0] * len(right)
-    gain = _gain_linear(float(mixer["gain_db"]))
-    left_coeff, right_coeff = _pan_coefficients(float(mixer["pan"]))
+    gain_lane = automation.get(("routing_node", node_id, "mixer.gain_db"))
+    pan_lane = automation.get(("routing_node", node_id, "mixer.pan"))
+    if gain_lane is None and pan_lane is None:
+        gain = _gain_linear(float(mixer["gain_db"]))
+        left_coeff, right_coeff = _pan_coefficients(float(mixer["pan"]))
+        for index in range(len(left)):
+            left[index] *= gain * left_coeff
+            right[index] *= gain * right_coeff
+        return left, right
+
     for index in range(len(left)):
+        gain_db = (
+            value_at_frame(gain_lane, index)
+            if gain_lane is not None
+            else float(mixer["gain_db"])
+        )
+        pan = (
+            value_at_frame(pan_lane, index)
+            if pan_lane is not None
+            else float(mixer["pan"])
+        )
+        gain = _gain_linear(gain_db)
+        left_coeff, right_coeff = _pan_coefficients(pan)
         left[index] *= gain * left_coeff
         right[index] *= gain * right_coeff
     return left, right
@@ -228,10 +296,15 @@ def render_routed_mix(
         for node in routing["nodes"]
     }
     decoded_cache: dict[str, tuple[int, int, int, list[tuple[float, ...]]]] = {}
+    automation = (
+        automation_lane_map(plan["native_mixer_automation"])
+        if "native_mixer_automation" in plan
+        else {}
+    )
 
     for track in plan["native_tracks"]:
         track_id = str(track["track_id"])
-        buffer = _track_buffer(project, track, frame_count, decoded_cache)
+        buffer = _track_buffer(project, track, frame_count, decoded_cache, automation)
         _add_scaled(node_inputs[track_output[track_id]], buffer)
         for send in track_sends.get(track_id, []):
             _add_scaled(
@@ -244,7 +317,12 @@ def render_routed_mix(
     master_output: tuple[list[float], list[float]] | None = None
     for node in routing["nodes"]:
         node_id = str(node["node_id"])
-        output = _process_node(node_inputs[node_id], node["mixer"])
+        output = _process_node(
+            node_inputs[node_id],
+            node["mixer"],
+            node_id=node_id,
+            automation=automation,
+        )
 
         for send in node_sends.get(node_id, []):
             _add_scaled(

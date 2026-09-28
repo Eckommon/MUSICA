@@ -254,6 +254,7 @@ class MusicaProject:
             reason=reason,
             allow_audio_material_change=False,
             allow_routing_material_change=False,
+            allow_native_automation_change=False,
         )
 
     def _commit_revision(
@@ -265,12 +266,15 @@ class MusicaProject:
         reason: str | None = None,
         allow_audio_material_change: bool = False,
         allow_routing_material_change: bool = False,
+        allow_native_automation_change: bool = False,
     ) -> dict[str, Any]:
         """Internal immutable commit boundary.
 
-        Native audio and routing material changes are denied independently by default.
-        Trusted Preview/Accept paths may opt in only after exact source/material/project
-        revalidation. A provenance marker alone never grants either permission.
+        Native audio, routing, and native-mixer automation changes are denied
+        independently by default. Trusted Preview/Accept paths may opt in only after
+        exact source/material/project revalidation. A provenance marker alone never
+        grants permission. Legacy project/part automation retains its existing M7
+        authority behavior; this gate is intentionally limited to native mixer lanes.
         """
 
         validate_contract(
@@ -345,6 +349,22 @@ class MusicaProject:
         if before_routing != after_routing and not allow_routing_material_change:
             raise ContractError(
                 "routing material changes require trusted routing Preview/Accept authority"
+            )
+
+        from .automation_contracts import native_mixer_automation_lanes
+
+        before_native_automation = (
+            native_mixer_automation_lanes(parent_blueprint)
+            if parent_blueprint is not None
+            else []
+        )
+        after_native_automation = native_mixer_automation_lanes(blueprint)
+        if (
+            before_native_automation != after_native_automation
+            and not allow_native_automation_change
+        ):
+            raise ContractError(
+                "native mixer automation changes require trusted automation Preview/Accept authority"
             )
 
         if parent_revision_id != blueprint["project"].get("parent_revision_id"):

@@ -18,7 +18,9 @@
         "project_id": {"type": "string", "minLength": 1, "maxLength": 128},
         "revision_id": {"type": "string", "minLength": 1, "maxLength": 128},
         "blueprint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-        "automation_material_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        "automation_material_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "audio_material_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "routing_material_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
       }
     },
     "actor": {
@@ -67,8 +69,47 @@
         "interpolation": {"enum": ["hold", "linear"]}
       }
     },
+    "nativeLaneTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["parameter_id", "scope", "owner_id", "unit", "minimum", "maximum"],
+      "properties": {
+        "parameter_id": {"enum": ["mixer.gain_db", "mixer.pan"]},
+        "scope": {"enum": ["audio_track", "routing_node"]},
+        "owner_id": {"$ref": "#/$defs/stableId"},
+        "unit": {"enum": ["decibel", "normalized"]},
+        "minimum": {"type": "number"},
+        "maximum": {"type": "number"}
+      }
+    },
+    "nativeLane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lane_id", "target", "section_id", "points"],
+      "properties": {
+        "lane_id": {"$ref": "#/$defs/stableId"},
+        "target": {"$ref": "#/$defs/nativeLaneTarget"},
+        "section_id": {"const": null},
+        "points": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100000,
+          "items": {"$ref": "#/$defs/pointValue"}
+        }
+      }
+    },
     "operation": {
       "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["operation_id", "op", "lane"],
+          "properties": {
+            "operation_id": {"$ref": "#/$defs/stableId"},
+            "op": {"const": "ADD_LANE"},
+            "lane": {"$ref": "#/$defs/nativeLane"}
+          }
+        },
         {
           "type": "object",
           "additionalProperties": false,

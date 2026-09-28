@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/native-mixer-automation-plan-v0.schema.json",
+  "title": "MUSICA Native Mixer Automation Plan v0",
+  "description": "Derived, non-canonical frame-domain lowering for accepted native audio-track and routing-node gain/pan automation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["plan_version", "compiler_id", "classification", "source", "mix_sample_rate_hz", "duration_frames", "policy", "lanes", "native_mixer_automation_plan_sha256"],
+  "properties": {
+    "plan_version": {"const": "0"},
+    "compiler_id": {"const": "musica-native-mixer-automation-lowering-v0"},
+    "classification": {"const": "derived_noncanonical"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_id", "revision_id", "blueprint_sha256", "automation_material_sha256", "audio_material_sha256", "routing_material_sha256"],
+      "properties": {
+        "project_id": {"type": "string", "minLength": 1},
+        "revision_id": {"type": "string", "minLength": 1},
+        "blueprint_sha256": {"$ref": "#/$defs/sha256"},
+        "automation_material_sha256": {"$ref": "#/$defs/sha256"},
+        "audio_material_sha256": {"$ref": "#/$defs/sha256"},
+        "routing_material_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "mix_sample_rate_hz": {"type": "integer", "minimum": 8000, "maximum": 192000},
+    "duration_frames": {"type": "integer", "minimum": 1},
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["time_base", "frame_quantization", "endpoint_behavior", "segment_interpolation", "parameter_application"],
+      "properties": {
+        "time_base": {"const": "quarter_note_beat_fixed_tempo"},
+        "frame_quantization": {"const": "decimal_nearest_half_up_nonnegative"},
+        "endpoint_behavior": {"const": "hold_first_before_first_hold_last_after_last"},
+        "segment_interpolation": {"const": "outgoing_point_hold_or_linear"},
+        "parameter_application": {"const": "absolute_replaces_static_gain_db_or_pan_when_lane_present"}
+      }
+    },
+    "lanes": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {"$ref": "#/$defs/lane"}
+    },
+    "native_mixer_automation_plan_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "stableId": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+    "point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["point_id", "beat", "frame", "value", "interpolation"],
+      "properties": {
+        "point_id": {"$ref": "#/$defs/stableId"},
+        "beat": {"type": "number", "minimum": 0},
+        "frame": {"type": "integer", "minimum": 0},
+        "value": {"type": "number"},
+        "interpolation": {"enum": ["hold", "linear"]}
+      }
+    },
+    "segment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_point_id", "end_point_id", "start_frame", "end_frame", "start_value", "end_value", "interpolation"],
+      "properties": {
+        "start_point_id": {"$ref": "#/$defs/stableId"},
+        "end_point_id": {"$ref": "#/$defs/stableId"},
+        "start_frame": {"type": "integer", "minimum": 0},
+        "end_frame": {"type": "integer", "minimum": 0},
+        "start_value": {"type": "number"},
+        "end_value": {"type": "number"},
+        "interpolation": {"enum": ["hold", "linear"]}
+      }
+    },
+    "lane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lane_id", "target_kind", "target_id", "parameter_id", "unit", "minimum", "maximum", "points", "segments"],
+      "properties": {
+        "lane_id": {"$ref": "#/$defs/stableId"},
+        "target_kind": {"enum": ["audio_track", "routing_node"]},
+        "target_id": {"$ref": "#/$defs/stableId"},
+        "parameter_id": {"enum": ["mixer.gain_db", "mixer.pan"]},
+        "unit": {"enum": ["decibel", "normalized"]},
+        "minimum": {"type": "number"},
+        "maximum": {"type": "number"},
+        "points": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/point"}},
+        "segments": {"type": "array", "items": {"$ref": "#/$defs/segment"}}
+      }
+    }
+  }
+}

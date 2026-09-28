@@ -164,7 +164,11 @@ def lower_automation_execution(blueprint: dict[str, Any]) -> dict[str, Any]:
     renderer state, or canonical automation material is mutated.
     """
 
-    validate_contract(blueprint, "music-blueprint-v0.schema.json")
+    validate_contract(
+        blueprint,
+        "music-blueprint-v0.schema.json",
+        allow_nonempty_routing=True,
+    )
     explicit = automation_material_from_blueprint(blueprint, materialize_empty=False)
     explicit_present = explicit is not None
     material = explicit if explicit is not None else empty_automation_material()

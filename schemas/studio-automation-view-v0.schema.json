@@ -4,7 +4,7 @@
   "title": "MUSICA Studio Automation View v0",
   "type": "object",
   "additionalProperties": false,
-  "required": ["view_version", "automation_editing_available", "project_id", "revision_id", "blueprint_sha256", "automation_material_sha256", "branch", "timing", "lanes", "automation_locks", "preview", "capabilities"],
+  "required": ["view_version", "automation_editing_available", "project_id", "revision_id", "blueprint_sha256", "automation_material_sha256", "audio_material_sha256", "routing_material_sha256", "branch", "timing", "lanes", "automation_locks", "preview", "capabilities"],
   "properties": {
     "view_version": {"const": "0"},
     "automation_editing_available": {"type": "boolean"},
@@ -12,6 +12,8 @@
     "revision_id": {"type": "string", "minLength": 1},
     "blueprint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "automation_material_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "audio_material_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "routing_material_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "branch": {"type": "string", "minLength": 1},
     "timing": {
       "type": "object",
@@ -90,7 +92,7 @@
       "required": ["parameter_id", "scope", "owner_id", "unit", "minimum", "maximum"],
       "properties": {
         "parameter_id": {"type": "string", "minLength": 1},
-        "scope": {"enum": ["project", "part"]},
+        "scope": {"enum": ["project", "part", "audio_track", "routing_node"]},
         "owner_id": {"type": ["string", "null"]},
         "unit": {"enum": ["normalized", "decibel", "hertz", "semitone", "ratio"]},
         "minimum": {"type": "number"},

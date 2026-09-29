@@ -20,6 +20,7 @@ from .studio_automation import StudioAutomationSurface
 from .studio_automation_audition import StudioAutomationAuditionSurface
 from .studio_compare import StudioRevisionCompareSurface
 from .studio_notes import StudioNoteSurface
+from .studio_routing import StudioRoutingSurface
 
 MAX_JSON_BODY_BYTES = 1_048_576
 DEFAULT_HOST = "127.0.0.1"
@@ -80,6 +81,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + b"\n"
             + _static_bytes("revision_compare.js")
             + b"\n"
+            + _static_bytes("routing_editing.js")
+            + b"\n"
             + _static_bytes("app.js")
         )
     if name == "app.css":
@@ -94,6 +97,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + b"\n"
             + _static_bytes("revision_compare.css")
             + b"\n"
+            + _static_bytes("routing_editing.css")
+            + b"\n"
             + _static_bytes("app.css")
         )
     return _static_bytes(name)
@@ -104,6 +109,7 @@ def make_handler(application: StudioApplication):
     automation_surface = StudioAutomationSurface(application.service)
     audition_surface = StudioAutomationAuditionSurface(application.service)
     compare_surface = StudioRevisionCompareSurface(application.service)
+    routing_surface = StudioRoutingSurface(application.service)
 
     class StudioRequestHandler(BaseHTTPRequestHandler):
         server_version = "MUSICAStudio/0.6"
@@ -192,6 +198,8 @@ def make_handler(application: StudioApplication):
                             "automation_surface": True,
                             "audible_automation_validated": False,
                             "accepted_revision_compare": True,
+                            "routing_surface": True,
+                            "native_mixer_automation_surface": True,
                         },
                     )
                     return
@@ -240,6 +248,57 @@ def make_handler(application: StudioApplication):
                         revision_b=parts[5],
                     )
                     self._send_json(HTTPStatus.OK, application._response("revision_compare", data))
+                    return
+
+                if (
+                    method == "GET"
+                    and len(parts) == 4
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3] == "mixer-routing"
+                ):
+                    data = routing_surface.routing_view(parts[2])
+                    self._send_json(
+                        HTTPStatus.OK,
+                        application._response("routing_view", data),
+                    )
+                    return
+
+                if (
+                    method == "GET"
+                    and len(parts) == 6
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3:5] == ["mixer-routing", "media"]
+                    and parts[5] in {"accepted.wav", "preview.wav"}
+                ):
+                    source_kind = "accepted" if parts[5] == "accepted.wav" else "preview"
+                    data = routing_surface.audition_bytes(
+                        parts[2],
+                        source_kind=source_kind,
+                    )
+                    self._send_bytes(HTTPStatus.OK, "audio/wav", data)
+                    return
+
+                if (
+                    method == "POST"
+                    and len(parts) == 5
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3:] == ["preview", "routing"]
+                ):
+                    body = self._read_json()
+                    candidate = body.get("candidate")
+                    if not isinstance(candidate, dict):
+                        raise StudioServiceError(
+                            "invalid_request",
+                            "routing Preview requires candidate object",
+                        )
+                    data = routing_surface.preview_routing_edit(
+                        parts[2],
+                        candidate=candidate,
+                    )
+                    self._send_json(
+                        HTTPStatus.OK,
+                        application._response("preview_routing_edit", data),
+                    )
                     return
 
                 if (

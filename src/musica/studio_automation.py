@@ -16,6 +16,7 @@ from typing import Any
 from .automation_contracts import (
     automation_locks_from_blueprint,
     automation_material_from_blueprint,
+    native_mixer_automation_lanes,
 )
 from .automation_edit import (
     automation_material_sha256,
@@ -23,6 +24,8 @@ from .automation_edit import (
     build_automation_edit_preview,
 )
 from .automation_lowering import lower_automation_execution
+from .audio_edit import audio_material_sha256
+from .routing_contracts import routing_material_from_blueprint, routing_material_sha256
 from .automation_renderer import (
     automation_render_plan_sha256,
     build_automation_render_plan,
@@ -84,21 +87,56 @@ class StudioAutomationSurface:
 
         accepted_head_before = session.project.head_revision_id()
         try:
-            baseline_wav = pending.wav_path.read_bytes()
             preview_midi = pending.midi_path.read_bytes()
-            baseline_wav_sha256 = hashlib.sha256(baseline_wav).hexdigest()
             preview_midi_sha256 = hashlib.sha256(preview_midi).hexdigest()
 
-            music_ir = compile_blueprint(candidate_blueprint)
-            execution = lower_automation_execution(candidate_blueprint)
-            plan = build_automation_render_plan(music_ir, execution)
-            render_automation_wav(
-                music_ir,
-                execution,
-                pending.wav_path,
-                duration_seconds=float(candidate_blueprint["project"]["duration_seconds"]),
-                sample_rate=DEFAULT_SAMPLE_RATE,
-            )
+            native_lanes = native_mixer_automation_lanes(candidate_blueprint)
+            if native_lanes:
+                from .studio_audio import StudioAudioSurface
+
+                audio_surface = StudioAudioSurface(self.service)
+                accepted_blueprint = session.project.read_revision(accepted_head_before)
+                accepted_render = audio_surface._render_blueprint(
+                    session.session_id,
+                    session.project,
+                    accepted_blueprint,
+                    source_kind="accepted-native-automation-baseline",
+                )
+                baseline_wav_sha256 = hashlib.sha256(
+                    accepted_render.wav_bytes
+                ).hexdigest()
+                rendered = audio_surface._render_blueprint(
+                    session.session_id,
+                    session.project,
+                    candidate_blueprint,
+                    source_kind="preview-native-automation",
+                )
+                pending.wav_path.write_bytes(rendered.wav_bytes)
+                mapped_lane_ids = [str(lane["lane_id"]) for lane in native_lanes]
+                unmapped_lane_ids: list[str] = []
+                render_plan_hash = str(rendered.plan["routed_mix_plan_sha256"])
+                render_path = "mram-r2-routed-native-mixer"
+                automation_applied = True
+            else:
+                baseline_wav_sha256 = hashlib.sha256(
+                    pending.wav_path.read_bytes()
+                ).hexdigest()
+                music_ir = compile_blueprint(candidate_blueprint)
+                execution = lower_automation_execution(candidate_blueprint)
+                plan = build_automation_render_plan(music_ir, execution)
+                render_automation_wav(
+                    music_ir,
+                    execution,
+                    pending.wav_path,
+                    duration_seconds=float(candidate_blueprint["project"]["duration_seconds"]),
+                    sample_rate=DEFAULT_SAMPLE_RATE,
+                )
+                mapped_lane_ids = [str(lane["lane_id"]) for lane in plan["mapped_lanes"]]
+                unmapped_lane_ids = [str(lane["lane_id"]) for lane in plan["unmapped_lanes"]]
+                render_plan_hash = automation_render_plan_sha256(plan)
+                render_path = "m7-r3-to-m7-r4-reference-renderer"
+                automation_applied = bool(plan["mapped_lanes"])
+
             accepted_head_after = session.project.head_revision_id()
             if accepted_head_after != accepted_head_before:
                 raise StudioServiceError(
@@ -110,12 +148,12 @@ class StudioAutomationSurface:
             proof = {
                 "audition_version": "0",
                 "candidate_revision_id": str(candidate_blueprint["project"]["revision_id"]),
-                "path": "m7-r3-to-m7-r4-reference-renderer",
-                "automation_applied": bool(plan["mapped_lanes"]),
+                "path": render_path,
+                "automation_applied": automation_applied,
                 "output_differs_from_baseline": preview_wav_sha256 != baseline_wav_sha256,
-                "mapped_lane_ids": [str(lane["lane_id"]) for lane in plan["mapped_lanes"]],
-                "unmapped_lane_ids": [str(lane["lane_id"]) for lane in plan["unmapped_lanes"]],
-                "render_plan_sha256": automation_render_plan_sha256(plan),
+                "mapped_lane_ids": mapped_lane_ids,
+                "unmapped_lane_ids": unmapped_lane_ids,
+                "render_plan_sha256": render_plan_hash,
                 "baseline_wav_sha256": baseline_wav_sha256,
                 "preview_wav_sha256": preview_wav_sha256,
                 "preview_midi_sha256": preview_midi_sha256,
@@ -179,6 +217,10 @@ class StudioAutomationSurface:
                 "revision_id": str(revision_id),
                 "blueprint_sha256": blueprint_sha256(accepted),
                 "automation_material_sha256": automation_material_sha256(accepted),
+                "audio_material_sha256": audio_material_sha256(accepted),
+                "routing_material_sha256": routing_material_sha256(
+                    routing_material_from_blueprint(accepted)
+                ),
                 "branch": str(branch),
                 "timing": {
                     "bpm": bpm,
@@ -213,7 +255,13 @@ class StudioAutomationSurface:
             parent_revision_id = session.project.head_revision_id()
             parent = session.project.read_revision(parent_revision_id)
             revision_id = self.service._revision_id(parent_revision_id, "automation_edit", candidate)
-            resolved = build_automation_edit_preview(parent, candidate, revision_id=revision_id)
+            resolved = build_automation_edit_preview(
+                parent,
+                candidate,
+                revision_id=revision_id,
+                project=session.project,
+                branch=session.project.current_branch(),
+            )
             automation_detail = resolved.as_dict()
 
             if not resolved.ready or resolved.blueprint is None:
@@ -237,6 +285,7 @@ class StudioAutomationSurface:
                 detail={
                     "automation_edit": automation_detail,
                     "candidate_id": str(candidate["candidate_id"]),
+                    "source_candidate": copy.deepcopy(candidate),
                     "operations": copy.deepcopy(candidate["operations"]),
                     "audible_automation_validated": False,
                 },

@@ -94,7 +94,25 @@
       return;
     }
     const sessionId = state.sessionId;
-    if (!sessionId) {
+    if (!sessionId || !state.view) {
+      state.auditionView = null;
+      render();
+      return;
+    }
+    if (state.view.automation_editing_available !== true) {
+      state.auditionView = null;
+      render();
+      return;
+    }
+    const hasNativeMixerLane = (state.view.lanes || []).some((lane) => {
+      const scope = lane && lane.target ? lane.target.scope : null;
+      return scope === "audio_track" || scope === "routing_node";
+    });
+    if (hasNativeMixerLane) {
+      // MRAM-R2/R3 native mixer automation is auditioned truthfully by the routed
+      // mixer surface. The historical M7-R6 inspector is intentionally limited to
+      // its validated reference-renderer mapping family and must not fabricate or
+      // request legacy media for native mixer lanes.
       state.auditionView = null;
       render();
       return;

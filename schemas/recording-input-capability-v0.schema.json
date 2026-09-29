@@ -1,0 +1,19 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://eckommon.github.io/MUSICA/schemas/recording-input-capability-v0.schema.json",
+  "title":"MUSICA Recording Input Capability v0",
+  "type":"object","additionalProperties":false,
+  "required":["capability_version","backend_id","classification","deterministic","supported_sample_rates_hz","supported_input_channels","supported_block_sizes_frames","sample_format","latency_metadata","host_native_input_claimed"],
+  "properties":{
+    "capability_version":{"const":"0"},
+    "backend_id":{"const":"musica-simulated-input-v0"},
+    "classification":{"const":"simulated_test_input_backend"},
+    "deterministic":{"const":true},
+    "supported_sample_rates_hz":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"integer","minimum":8000,"maximum":192000}},
+    "supported_input_channels":{"type":"array","minItems":1,"uniqueItems":true,"items":{"enum":[1,2]}},
+    "supported_block_sizes_frames":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"integer","minimum":1,"maximum":8192}},
+    "sample_format":{"const":"pcm16_little_endian"},
+    "latency_metadata":{"type":"object","additionalProperties":false,"required":["available","nominal_input_latency_frames"],"properties":{"available":{"const":true},"nominal_input_latency_frames":{"type":"integer","minimum":0}}},
+    "host_native_input_claimed":{"const":false}
+  }
+}

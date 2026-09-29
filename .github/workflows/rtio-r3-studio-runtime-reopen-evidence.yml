@@ -1,0 +1,40 @@
+name: RTIO-R3 Studio Runtime & Restart Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rtio-r3-studio-runtime-restart-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA + browser evidence dependencies / MUSICA + browser 근거 의존성 설치
+        run: python -m pip install -e '.[dev,e2e]'
+      - name: Install Chromium for Playwright / Playwright Chromium 설치
+        run: python -m playwright install --with-deps chromium
+      - name: Run RTIO-R3 service regressions / RTIO-R3 서비스 회귀 테스트
+        run: >-
+          pytest -q
+          tests/test_rtio_r3_studio_runtime.py
+          tests/test_rtio_r2_transport.py
+          tests/test_rtio_r1_callback_engine.py
+          tests/test_rtio_r0_realtime_simulated_backend.py
+      - name: Run RTIO-R3 real-browser lifecycle / RTIO-R3 실제 Browser lifecycle 실행
+        env:
+          MUSICA_RTIO_R3_E2E_OUT: artifacts/rtio-r3-studio-runtime-reopen-evidence
+        run: pytest -q e2e/test_rtio_r3_browser.py
+      - name: Upload RTIO-R3 evidence / RTIO-R3 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-rtio-r3-studio-runtime-reopen-evidence
+          path: artifacts/rtio-r3-studio-runtime-reopen-evidence
+          if-no-files-found: error

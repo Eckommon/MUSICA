@@ -21,6 +21,7 @@ from .studio_automation_audition import StudioAutomationAuditionSurface
 from .studio_compare import StudioRevisionCompareSurface
 from .studio_notes import StudioNoteSurface
 from .studio_routing import StudioRoutingSurface
+from .studio_realtime import StudioRealtimeSurface
 
 MAX_JSON_BODY_BYTES = 1_048_576
 DEFAULT_HOST = "127.0.0.1"
@@ -83,6 +84,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + b"\n"
             + _static_bytes("routing_editing.js")
             + b"\n"
+            + _static_bytes("realtime_runtime.js")
+            + b"\n"
             + _static_bytes("app.js")
         )
     if name == "app.css":
@@ -99,6 +102,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + b"\n"
             + _static_bytes("routing_editing.css")
             + b"\n"
+            + _static_bytes("realtime_runtime.css")
+            + b"\n"
             + _static_bytes("app.css")
         )
     return _static_bytes(name)
@@ -110,6 +115,7 @@ def make_handler(application: StudioApplication):
     audition_surface = StudioAutomationAuditionSurface(application.service)
     compare_surface = StudioRevisionCompareSurface(application.service)
     routing_surface = StudioRoutingSurface(application.service)
+    realtime_surface = StudioRealtimeSurface(application.service)
 
     class StudioRequestHandler(BaseHTTPRequestHandler):
         server_version = "MUSICAStudio/0.6"
@@ -200,6 +206,8 @@ def make_handler(application: StudioApplication):
                             "accepted_revision_compare": True,
                             "routing_surface": True,
                             "native_mixer_automation_surface": True,
+                            "realtime_runtime_inspection": True,
+                            "realtime_runtime_commands_are_project_mutations": False,
                         },
                     )
                     return
@@ -374,6 +382,68 @@ def make_handler(application: StudioApplication):
                         raise StudioServiceError("invalid_request", "automation Preview requires candidate object")
                     data = automation_surface.preview_automation_edit(parts[2], candidate=candidate)
                     self._send_json(HTTPStatus.OK, application._response("preview_automation_edit", data))
+                    return
+
+                if (
+                    method == "POST"
+                    and len(parts) == 5
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3:] == ["realtime", "open"]
+                ):
+                    body = self._read_json()
+                    data = realtime_surface.open_runtime(parts[2], **body)
+                    self._send_json(
+                        HTTPStatus.OK,
+                        application._response("open_realtime_runtime", data),
+                    )
+                    return
+
+                if (
+                    method == "GET"
+                    and len(parts) == 5
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3] == "realtime"
+                ):
+                    data = realtime_surface.runtime_view(parts[2], parts[4])
+                    self._send_json(
+                        HTTPStatus.OK,
+                        application._response("realtime_runtime_view", data),
+                    )
+                    return
+
+                if (
+                    method == "POST"
+                    and len(parts) == 6
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3] == "realtime"
+                    and parts[5] in {"play", "callback", "stop", "seek", "close"}
+                ):
+                    body = self._read_json()
+                    runtime_id = parts[4]
+                    command = parts[5]
+                    if command == "play":
+                        data = realtime_surface.play(parts[2], runtime_id)
+                    elif command == "callback":
+                        data = realtime_surface.callback(parts[2], runtime_id)
+                    elif command == "stop":
+                        data = realtime_surface.stop(parts[2], runtime_id)
+                    elif command == "seek":
+                        if "target_frame" not in body:
+                            raise StudioServiceError(
+                                "invalid_request",
+                                "realtime SEEK requires target_frame",
+                            )
+                        data = realtime_surface.seek(
+                            parts[2],
+                            runtime_id,
+                            target_frame=body["target_frame"],
+                        )
+                    else:
+                        data = realtime_surface.close_runtime(parts[2], runtime_id)
+                    self._send_json(
+                        HTTPStatus.OK,
+                        application._response(f"realtime_{command}", data),
+                    )
                     return
 
                 body = self._read_json() if method == "POST" else None

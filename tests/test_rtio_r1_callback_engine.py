@@ -220,6 +220,14 @@ def test_callback_engine_and_adapter_illegal_lifecycle_fail_closed(tmp_path: Pat
             sample_rate_hz=8000,
             stop_after_callbacks=0,
         )
+    with pytest.raises(ContractError, match="outside execution trace"):
+        run_callback_harness(
+            project,
+            revision_id,
+            sample_rate_hz=8000,
+            stop_after_callbacks=3,
+            force_late_callback_indices=[4],
+        )
 
 
 def test_callback_harness_reopen_exactness(tmp_path: Path) -> None:

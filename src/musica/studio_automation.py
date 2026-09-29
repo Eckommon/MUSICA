@@ -87,16 +87,25 @@ class StudioAutomationSurface:
 
         accepted_head_before = session.project.head_revision_id()
         try:
-            baseline_wav = pending.wav_path.read_bytes()
             preview_midi = pending.midi_path.read_bytes()
-            baseline_wav_sha256 = hashlib.sha256(baseline_wav).hexdigest()
             preview_midi_sha256 = hashlib.sha256(preview_midi).hexdigest()
 
             native_lanes = native_mixer_automation_lanes(candidate_blueprint)
             if native_lanes:
                 from .studio_audio import StudioAudioSurface
 
-                rendered = StudioAudioSurface(self.service)._render_blueprint(
+                audio_surface = StudioAudioSurface(self.service)
+                accepted_blueprint = session.project.read_revision(accepted_head_before)
+                accepted_render = audio_surface._render_blueprint(
+                    session.session_id,
+                    session.project,
+                    accepted_blueprint,
+                    source_kind="accepted-native-automation-baseline",
+                )
+                baseline_wav_sha256 = hashlib.sha256(
+                    accepted_render.wav_bytes
+                ).hexdigest()
+                rendered = audio_surface._render_blueprint(
                     session.session_id,
                     session.project,
                     candidate_blueprint,
@@ -109,6 +118,9 @@ class StudioAutomationSurface:
                 render_path = "mram-r2-routed-native-mixer"
                 automation_applied = True
             else:
+                baseline_wav_sha256 = hashlib.sha256(
+                    pending.wav_path.read_bytes()
+                ).hexdigest()
                 music_ir = compile_blueprint(candidate_blueprint)
                 execution = lower_automation_execution(candidate_blueprint)
                 plan = build_automation_render_plan(music_ir, execution)

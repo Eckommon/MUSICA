@@ -129,6 +129,7 @@ class CallbackEngine:
         sample_rate_hz: int,
         output_channels: int = 2,
         block_size_frames: int = 256,
+        initial_frame: int = 0,
     ) -> None:
         self.project = project
         self.revision_id = str(revision_id)
@@ -152,10 +153,13 @@ class CallbackEngine:
             raise ContractError("callback source frame count changed after plan construction")
         if routed.wav_sha256 != self.plan["source"]["routed_wav_sha256"]:
             raise ContractError("callback routed source WAV changed after plan construction")
+        duration = int(self.plan["duration_frames"])
+        if not isinstance(initial_frame, int) or initial_frame < 0 or initial_frame > duration:
+            raise ContractError("callback initial_frame outside valid transport range")
         self._source_payload = payload
-        self._frame_cursor = 0
+        self._frame_cursor = int(initial_frame)
         self._callback_index = 0
-        self._ended = False
+        self._ended = self._frame_cursor >= duration
 
     @property
     def frame_cursor(self) -> int:

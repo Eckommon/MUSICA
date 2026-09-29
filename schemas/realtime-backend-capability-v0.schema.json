@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/realtime-backend-capability-v0.schema.json",
+  "title": "MUSICA Realtime Backend Capability v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["capability_version","backend_id","classification","deterministic","supported_sample_rates_hz","supported_output_channels","supported_block_sizes_frames","latency_metadata"],
+  "properties": {
+    "capability_version": {"const": "0"},
+    "backend_id": {"const": "musica-simulated-output-v0"},
+    "classification": {"const": "simulated_test_backend"},
+    "deterministic": {"const": true},
+    "supported_sample_rates_hz": {"type":"array","minItems":1,"items":{"type":"integer","minimum":8000,"maximum":192000},"uniqueItems":true},
+    "supported_output_channels": {"type":"array","minItems":1,"items":{"type":"integer","minimum":1,"maximum":8},"uniqueItems":true},
+    "supported_block_sizes_frames": {"type":"array","minItems":1,"items":{"type":"integer","minimum":1,"maximum":8192},"uniqueItems":true},
+    "latency_metadata": {
+      "type":"object","additionalProperties":false,
+      "required":["available","nominal_output_latency_frames"],
+      "properties":{
+        "available":{"const":true},
+        "nominal_output_latency_frames":{"type":"integer","minimum":0}
+      }
+    }
+  }
+}

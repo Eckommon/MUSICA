@@ -235,6 +235,8 @@ def _block_trace(
     duration_frames: int,
     block_size_frames: int,
 ) -> list[dict[str, Any]]:
+    if len(payload) != int(duration_frames) * 4:
+        raise ContractError("realtime block source payload length does not match stereo PCM16 frames")
     trace: list[dict[str, Any]] = []
     cursor = 0
     block_index = 0

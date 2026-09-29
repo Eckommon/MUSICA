@@ -99,6 +99,11 @@
       render();
       return;
     }
+    if (state.view.automation_editing_available !== true) {
+      state.auditionView = null;
+      render();
+      return;
+    }
     const hasNativeMixerLane = (state.view.lanes || []).some((lane) => {
       const scope = lane && lane.target ? lane.target.scope : null;
       return scope === "audio_track" || scope === "routing_node";

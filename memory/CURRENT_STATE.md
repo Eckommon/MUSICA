@@ -2,7 +2,7 @@
 
 ## Project phase / 프로젝트 단계
 
-**CORE PRODUCT LOOP BOUNDEDLY VALIDATED → NATIVE AUDIO FOUNDATION VALIDATED → MIXER ROUTING & AUTOMATION FOUNDATION COMPLETED → REAL-TIME AUDIO ENGINE & DEVICE FOUNDATION IN PROGRESS**
+**CORE PRODUCT LOOP BOUNDEDLY VALIDATED → NATIVE AUDIO FOUNDATION VALIDATED → MIXER ROUTING & AUTOMATION FOUNDATION COMPLETED → REAL-TIME AUDIO ENGINE & DEVICE FOUNDATION IN FINAL STUDIO/BROWSER LIFECYCLE RUNG**
 
 Long-term governing target:
 
@@ -37,148 +37,95 @@ Current rung sequence:
 ```text
 RTIO-R0 realtime execution contracts + simulated backend      VALIDATED
 → RTIO-R1 bounded callback engine + backend adapter           VALIDATED
-→ RTIO-R2 exact-frame transport + latency/dropout metrics     CURRENT
-→ RTIO-R3 Studio/Browser runtime inspection + restart
+→ RTIO-R2 exact-frame transport + latency/dropout metrics     VALIDATED
+→ RTIO-R3 Studio/Browser runtime inspection + restart         CURRENT
 → parent #129 bounded closure evaluation
 ```
 
-## RTIO-R0 — validated realtime contract/simulated backend substrate
+## RTIO-R2 — validated exact-frame transport + latency/dropout instrumentation
 
-Issue `#130` — **COMPLETED**
+Issue `#136` — **COMPLETED**
 
-Implementation PR `#132` — **MERGED**
-
-Canonical implementation merge/main:
-
-> **`c6857700eb599a453ef3e99619c0f4ef8243a783`**
-
-Durable validation: `evidence/RTIO_R0_VALIDATION.md`.
-
-RTIO-R0 established the provenance-bound realtime execution plan, deterministic fixed-block simulated backend, exact frame cursor, lifecycle, xrun/dropout simulation, sink equivalence to routed PCM, accepted-HEAD invariance and reopen exactness.
-
-## RTIO-R1 — validated callback engine + host-backend adapter boundary
-
-Issue `#133` — **COMPLETED**
-
-Implementation PR `#135` — **MERGED**
+Implementation PR `#138` — **MERGED**
 
 Canonical implementation merge/main:
 
-> **`310112b4d458f0a7cf120c7dcee1aab34bbbbdea`**
+> **`f01be3232459dec9e687c7c6b961b73f8ef6cbd5`**
 
 Durable validation:
 
-- `evidence/RTIO_R1_VALIDATION.md`
+- `evidence/RTIO_R2_VALIDATION.md`
 - implementation/evidence exact head:
-  `c0ce95fef4ec1990311dc3dd0305e24fe793eb43` — **26/26 permanent workflows SUCCESS**
+  `cf4e9d3dba17d1ba130a66e5fd79b9a38d57db29` — **27/27 permanent workflows SUCCESS**
 - validation-record successor:
-  `80e30249891715144ee0d84d9c8a269e48351bfe` — **26/26 SUCCESS**
-- dedicated workflow: **RTIO-R1 Callback Engine Evidence**
-- dedicated run: `36560788431` — **SUCCESS**
-- artifact ID: `11030046866`
+  `a79da14a30e9428e7fc7e88960b25f837e6c85fd` — **27/27 SUCCESS**
+- dedicated workflow: **RTIO-R2 Exact-Frame Transport Evidence**
+- dedicated run: `36592465888` — **SUCCESS**
+- artifact ID: `11044417646`
 - artifact ZIP SHA-256:
-  `14c58c4eb9f68bdadb189d6c59c61b1951f89a2055327ccc5bd699b8177c0077`
-- artifact ZIP size: **40,275 bytes**
-- manifest payloads: **13/13 exact SHA-256 + byte size PASS**
-- exact Git contract/source/test/workflow inventory: **10/10 PASS**
+  `372829e4ca4abe4b953a603164bd8f19c9d08cdbc4615d7f07abd7b3f7ab0337`
+- artifact ZIP size: **60,025 bytes**
+- manifest payloads: **18/18 exact SHA-256 + byte size PASS**
+- exact Git contract/source/test/workflow inventory: **11/11 PASS**
 - persisted project object store: **16/16 object hashes PASS**
 - realtime plan self-hash:
   `042a3c6e144025d89c7668496d8371c60a8000a19764f7868d2e2e1afcfa9fc0`
-- normal callback report self-hash:
-  `f44c4f74131dd43d2b0cf04bd5dd2473c61e0b77e3b5a9c78e0af6bf97b68d93`
-- failure callback report self-hash:
-  `2f67a2fa440757a0d0076b46798f0ec30a64f3158d46952e2bb10463957b884e`
-- early-stop report self-hash:
-  `b2d18194402bb778833752de2f04e9f8e9745935f86338fee4ae7e900c3e9bfb`
+- normal transport report self-hash:
+  `a912027823fc515467979c8cec4d270fa2cb781bb8fce0a1c1c7517ca020e963`
+- segmented transport report self-hash:
+  `327a951629655238ce38957c1172156272cab973532f47b6c38adbb77b04f13a`
+- failure transport report self-hash:
+  `d9895547a358e7b1d0c4d60293c890ff6d1d770baf0037bf084030083cc46470`
 
-### Validated RTIO-R1 behavior
+### Validated RTIO-R2 behavior
 
-RTIO-R1 establishes:
+RTIO-R2 establishes exact-frame play/stop/seek/EOS transport over the validated callback engine, explicit transport↔callback cursor equality, configured/simulated latency provenance, deterministic ERROR/SHORT_FILL/LATE accounting, accepted Project HEAD invariance, byte-reproducible segmented/failure execution and fresh reopen exactness.
 
-- explicit callback transaction contract over exact frame ranges;
-- deterministic callback adapter capability and lifecycle;
-- strict `CLOSED → OPEN → CALLBACK_REGISTERED → RUNNING → STOPPED → CLOSED`;
-- exact monotonic frame cursor and callback index;
-- final partial callback without padding;
-- callback-after-EOS fail-closed behavior;
-- fail-closed callback index/start-frame/frame-count mismatch;
-- deterministic `ERROR`, `SHORT_FILL` and `LATE` instrumentation;
-- exact requested vs delivered frame metrics;
-- explicit early stop;
-- deterministic repeat-exact callback trace, sink and run report;
-- normal callback sink exact equality with RTIO-R0 source/sink;
-- accepted Project HEAD unchanged across callback execution;
-- fresh import/reopen exactness for plan, trace, sink and report;
-- explicit non-claim of host-native ASIO/CoreAudio/WASAPI output.
+### Maximum validated RTIO-R2 claim
 
-Evidence fixture:
-
-```text
-sample rate       = 8,000 Hz
-channels          = 2
-duration          = 96,000 frames
-normal block      = 1,024 frames
-normal callbacks  = 94
-final callback    = 768 frames
-failure block     = 256 frames
-failure callbacks = 375
-ERROR             = 1
-SHORT_FILL        = 1
-LATE              = 1
-```
-
-Normal callback sink SHA-256:
-
-`08aefbaf4a918446584245d2c7f4a79feede21c769cb8f2cacc510eeaece3c03`
-
-Failure callback sink SHA-256:
-
-`97cbe0a93c0092c939ff9f25a86e93ad4ef740354f124803509a02671685f8bd`
-
-### Maximum validated RTIO-R1 claim
-
-> **MUSICA can execute its provenance-bound realtime plan through a bounded callback-driven output engine with exact frame cursor, lifecycle, final-block behavior and deterministic failure accounting while callback/backend runtime remains derived and cannot reverse-author accepted creative state.**
+> **MUSICA can control its provenance-bound callback engine through a bounded exact-frame play/stop/seek/EOS transport and report deterministic configured latency plus xrun/dropout-equivalent instrumentation while runtime state remains derived and accepted creative state remains unchanged.**
 
 ## Exact current rung / 현재 정확한 단계
 
-> **Issue #136 — RTIO-R2: Exact-Frame Transport & Latency/Dropout Instrumentation v0**
+> **Issue #139 — RTIO-R3: Studio/Browser Runtime Inspection + Restart/Reopen Lifecycle v0**
 
-RTIO-R2 must add a bounded transport state machine and deterministic runtime observability on top of the validated RTIO-R0/R1 execution stack.
+R3 must project the already validated RTIO-R0/R1/R2 runtime truth into Studio/Browser inspection without creating a Browser-owned realtime authority.
 
 Required direction:
 
 ```text
 accepted routed+automated revision
-→ RTIO-R0 realtime plan
-→ RTIO-R1 callback engine
-→ exact-frame transport state
-→ play / stop / seek / EOS
-→ callback requests
-→ latency/xrun/dropout metrics
-≠ Project authority
+→ RTIO realtime plan / callback / transport runtime
+→ typed non-canonical Studio/Browser runtime projection
+→ exact frame/state/metrics inspection
+→ optional bounded runtime-only commands delegating to RTIO transport
+→ accepted Project HEAD unchanged
+→ fresh service/process restart
+→ reopen
+→ same source binding / runtime contract / deterministic scenario identities
 ```
 
-The transport layer must not infer canonical creative state from wall-clock/runtime state.
+R3 should begin inspection-first. Browser/runtime objects must never become accepted creative state.
 
 ## Current important non-claims
 
 Until separately validated, do not claim:
 
 - real ASIO/CoreAudio/WASAPI device output;
-- wall-clock low-latency guarantees;
+- measured or guaranteed wall-clock low latency;
 - microphone/line input;
 - recording/monitoring;
-- take/comp management;
+- take/comp workflows;
 - VST3/AU/CLAP hosting;
 - plugin-delay compensation;
 - sample-rate conversion;
-- realtime Browser control;
+- Browser-originated creative authority;
 - sidechains;
 - generalized commercial realtime readiness.
 
 ## Exact next phase / 다음 단계
 
-> **Implement Issue #136 from canonical main `310112b4d458f0a7cf120c7dcee1aab34bbbbdea`: define exact-frame transport command/state contracts, freeze play/stop/seek/EOS behavior and callback-cursor interaction, add deterministic latency/xrun/dropout instrumentation, prove accepted-HEAD invariance and reopen exactness, then promote through a dedicated RTIO-R2 permanent gate.**
+> **Implement Issue #139 from canonical main `f01be3232459dec9e687c7c6b961b73f8ef6cbd5`: re-ground Studio/Browser service/session architecture and RTIO-R0/R1/R2 runtime APIs, define a truthful typed runtime inspection payload with exact source/realtime-plan/frame/state/latency/dropout provenance, prove Browser/Studio inspection and fresh restart/reopen lifecycle without Project mutation, then evaluate parent Issue #129 for bounded closure.**
 
 See `memory/NEXT_ACTION.md` for exact execution order.
 

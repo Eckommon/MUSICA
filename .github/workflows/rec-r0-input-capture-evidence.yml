@@ -1,0 +1,43 @@
+name: REC-R0 Input Capture Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rec-r0-input-capture-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA / MUSICA 설치
+        run: python -m pip install -e '.[dev]'
+      - name: Run REC-R0 regressions / REC-R0 회귀 테스트
+        run: >-
+          pytest -q
+          tests/test_rec_r0_capture.py
+          tests/test_rtio_r0_realtime_simulated_backend.py
+          tests/test_rtio_r1_callback_engine.py
+      - name: Generate REC-R0 evidence A / REC-R0 근거 A 생성
+        env:
+          MUSICA_REC_R0_EVIDENCE_OUT: artifacts/rec-r0-input-capture-a
+        run: python -m musica.rec_r0_evidence
+      - name: Generate REC-R0 evidence B / REC-R0 근거 B 생성
+        env:
+          MUSICA_REC_R0_EVIDENCE_OUT: artifacts/rec-r0-input-capture-b
+        run: python -m musica.rec_r0_evidence
+      - name: Prove byte-reproducible REC-R0 evidence / REC-R0 근거 byte 재현성 증명
+        run: diff -qr artifacts/rec-r0-input-capture-a artifacts/rec-r0-input-capture-b
+      - name: Upload REC-R0 evidence / REC-R0 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-rec-r0-input-capture-evidence
+          path: artifacts/rec-r0-input-capture-a
+          if-no-files-found: error

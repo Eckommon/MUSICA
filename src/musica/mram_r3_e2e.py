@@ -279,7 +279,9 @@ def _attach_observers(
     page_errors: list[str],
     request_failures: list[str],
     expected_media_aborts: list[str],
+    expected_teardown_aborts: list[str],
     http_error_responses: list[str],
+    teardown_state: dict[str, bool],
 ) -> None:
     page.on(
         "console",
@@ -298,6 +300,9 @@ def _attach_observers(
             and "ERR_ABORTED" in failure
         ):
             expected_media_aborts.append(record)
+            return
+        if teardown_state.get("active") and "ERR_ABORTED" in failure:
+            expected_teardown_aborts.append(record)
             return
         request_failures.append(record)
 
@@ -365,6 +370,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
     page_errors: list[str] = []
     request_failures: list[str] = []
     expected_media_aborts: list[str] = []
+    expected_teardown_aborts: list[str] = []
     http_error_responses: list[str] = []
     screenshots: list[Path] = []
     records: dict[str, Any] = {}
@@ -378,13 +384,16 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
         context.set_default_timeout(30_000)
         try:
             page = context.new_page()
+            page_teardown = {"active": False}
             _attach_observers(
                 page,
                 console_errors,
                 page_errors,
                 request_failures,
                 expected_media_aborts,
+                expected_teardown_aborts,
                 http_error_responses,
+                page_teardown,
             )
             opened = _open_project(page, base1, expect)
             if str(opened["head_revision_id"]) != initial_revision:
@@ -554,6 +563,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
             records["stale_source_result"] = stale["data"]
             final_revision = str(_session(page)["head_revision_id"])
             page.wait_for_load_state("networkidle")
+            page_teardown["active"] = True
             page.close()
 
             _stop_server(server1, thread1)
@@ -561,13 +571,16 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
 
             service2, server2, thread2, base2 = _start_server(workspace)
             reopen_page = context.new_page()
+            reopen_teardown = {"active": False}
             _attach_observers(
                 reopen_page,
                 console_errors,
                 page_errors,
                 request_failures,
                 expected_media_aborts,
+                expected_teardown_aborts,
                 http_error_responses,
+                reopen_teardown,
             )
             try:
                 reopened_session = _open_project(reopen_page, base2, expect)
@@ -593,6 +606,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
                 screenshots.append(_screenshot(reopen_page, root / "06-reopened-exact.png"))
                 reopen_page.wait_for_load_state("networkidle")
             finally:
+                reopen_teardown["active"] = True
                 reopen_page.close()
                 _stop_server(server2, thread2)
         finally:
@@ -660,6 +674,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
         "request_failures": request_failures,
         "http_error_responses": http_error_responses,
         "expected_media_aborts": expected_media_aborts,
+        "expected_teardown_aborts": expected_teardown_aborts,
     }
     write_canonical_json(root / "proof.json", proof)
 

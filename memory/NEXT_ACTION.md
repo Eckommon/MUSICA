@@ -2,293 +2,253 @@
 
 ## Exact resume point / 정확한 재개점
 
-**MRAM-R3 — BROWSER ROUTING & NATIVE AUTOMATION SURFACE + REOPEN LIFECYCLE v0**
+**RTIO-R0 — REALTIME EXECUTION CONTRACTS & DETERMINISTIC SIMULATED BACKEND v0**
 
-Issue `#126` — **OPEN**
+Issue `#130` — **OPEN**
 
-Parent mission: Issue `#115` — **Mixer Routing & Automation Foundation v0 — OPEN**
+Parent mission: Issue `#129` — **Real-Time Audio Engine & Device Foundation v0 — OPEN**
 
-MRAM-R2 Issue `#124` is validated, merged and completed. The next dependency-safe step is to expose the already accepted routing graph and native mixer gain/pan automation through a truthful real-Browser/Studio inspection/edit surface, then prove fresh restart/reopen lifecycle exactness.
+Mixer Routing & Automation Foundation Issue `#115` is now **COMPLETED** after MRAM-R0→R3 validation and explicit parent closure evaluation.
 
-Do **not** add realtime device I/O, recording, plugin hosting, sidechains, generalized parameter automation, send automation, mute/solo automation or mastering scope in R3.
+Do **not** start recording, microphone input, monitoring, plugin hosting, platform-native backend claims or resampling in R0.
 
 ## Canonical base / 공식 기준점
 
-- canonical main after MRAM-R2 implementation merge:
-  `932b98e64f6e6d0b5464023b79973b1a5b33b65c`
-- parent Issue `#115` — **OPEN**
-- MRAM-R2 Issue `#124` — **COMPLETED**
-- MRAM-R2 PR `#125` — **MERGED**
-- R2 implementation/evidence exact head:
-  `6fdc2a38b59886ebd41fe38d2f293363d3bbec77` — **23/23 SUCCESS**
-- R2 validation-record successor:
-  `7432b2a2c1ee3e4d6fe031ef36cbd8206ace6b11` — **23/23 SUCCESS**
-- durable validation: `evidence/MRAM_R2_VALIDATION.md`
-- dedicated artifact ID: `10646022648`
+- canonical main after MRAM-R3 implementation merge:
+  `5fb3796160d95cd11ad0332b23c67e65bd948e08`
+- MRAM parent Issue `#115` — **COMPLETED**
+- MRAM-R3 Issue `#126` — **COMPLETED**
+- MRAM-R3 PR `#128` — **MERGED**
+- R3 implementation/evidence head:
+  `68250b792ea8ecf773bfd92a16c8866efb4ef2b5` — **24/24 SUCCESS**
+- R3 validation-record successor:
+  `a68b16531df6b8ecca61d7504c6977ca88e5408f` — **24/24 SUCCESS**
+- durable validation: `evidence/MRAM_R3_VALIDATION.md`
+- dedicated artifact ID: `11016528257`
 - artifact ZIP SHA:
-  `03b13c8a2c1bc1c84ed248b8891ae3626532723197359509273de56967f2abb0`
-- permanent workflow count at validated R2 state: **23**
+  `e56c11505cf50b410b74461bdf0bc9a2fb88de31d13a04dbe4b4ad3c54d58938`
+- permanent workflow count at validated R3 state: **24**
 
 ## Inherited authority / 상속 권한
 
-R3 inherits:
+RTIO-R0 inherits:
 
 ```text
 ATCM:
-immutable audio assets
-→ accepted tracks/clips/static mixer
-→ deterministic native mix
-→ Browser native-audio truth + reopen
+accepted audio assets/tracks/clips/static mixer
 
-M7:
-typed automation material
-→ source-bound Preview / explicit Accept
-→ deterministic generic lowering
-→ Browser automation inspection/edit authority patterns
+MRAM:
+accepted routing DAG + sends
+accepted native track/node gain/pan automation
+deterministic routed mixer
+truthful Browser/Studio projection
+restart/reopen exactness
 
-MRAM-R0/R1:
-explicit routing DAG
-→ trusted routing Preview / Accept
-→ accepted routing state
-→ deterministic routed mixer
-
-MRAM-R2:
-stable audio_track|routing_node gain/pan automation
-→ trusted native automation Preview / Accept
-→ deterministic beat→frame lowering
-→ deterministic routed execution
+M2 Project Engine:
+accepted revision is creative authority
 ```
 
-R3 must connect the real Browser/Studio surface to these existing authorities. It must not create a parallel routing/automation store, direct Browser commit path or runtime write-back authority.
+The realtime execution plan, block scheduler, backend instance, sink bytes, clocks/cursors and metrics must remain derived/non-canonical.
 
 ## Exact implementation order / 정확한 구현 순서
 
-### 1. Re-ground Browser/Studio architecture before changing UI
+### 1. Re-ground existing render/signal-flow contracts
 
 Inspect at minimum:
 
-- `src/musica/studio_service.py` and related session/project lifecycle code;
-- `src/musica/studio_http.py` routes;
-- `src/musica/studio_audio.py` routed audition path;
-- `src/musica/studio_web/*` current Browser UI;
-- existing M6/M7 real-browser edit/Preview/Accept implementations and tests;
-- accepted revision Compare Browser projection;
-- `src/musica/routing_edit.py`;
-- `src/musica/automation_edit.py`;
-- `src/musica/routing_contracts.py`;
-- `src/musica/native_mixer_automation.py`;
 - `src/musica/routed_mixer.py`;
-- `evidence/MRAM_R1_VALIDATION.md`;
-- `evidence/MRAM_R2_VALIDATION.md`.
+- `src/musica/native_mixer_automation.py`;
+- `src/musica/routing_contracts.py`;
+- accepted project/revision/hash utilities;
+- Studio audio/audition paths;
+- MRAM-R1/R2/R3 durable validation records;
+- current sample-rate/no-resampling assumptions.
 
-Determine the narrowest existing service/API/UI extension that can project exact accepted routing + native automation and delegate edits to current authority engines.
+Freeze what can be reused and what must be a new realtime-only derived layer.
 
-### 2. Freeze the Browser projection contract
+### 2. Define realtime execution plan v0
 
-The Browser-visible derived projection should bind at least:
+The plan must bind at least:
 
-- session ID;
-- accepted revision ID;
+- plan version/compiler/runtime ID;
+- exact project ID and accepted revision ID;
 - Blueprint SHA;
 - audio material SHA;
 - routing material SHA;
 - automation material SHA;
-- exact stable track IDs;
-- exact stable routing node/send IDs;
-- exact native automation lane/point IDs;
-- explicit authority flags showing Browser projection is non-canonical.
+- backend ID/capability version;
+- sample rate;
+- output channel count;
+- block size in frames;
+- project duration/total frame count;
+- transport start frame;
+- no-resampling policy;
+- exact execution/scheduling policy;
+- self-hash.
 
-Prefer a typed projection object rather than reconstructing authority from DOM state.
+The plan is **derived_noncanonical**.
 
-### 3. Implement truthful routing inspection
+### 3. Define backend capability/configuration contracts
 
-At minimum make the Browser/Studio able to inspect:
+Create explicit typed contracts for:
 
-- each accepted audio track's primary routing target;
-- bus/group/return/master node identity and type;
-- node output target;
-- post-fader sends and send gain;
-- node static gain/pan/mute;
-- exact master sink;
-- accepted revision/source hashes.
+- backend identity;
+- supported sample rates;
+- supported channel counts;
+- supported block-size range/set;
+- latency metadata availability;
+- deterministic/simulated vs host-native classification.
 
-The Browser must never infer identity from display name or array position.
+Reject unsupported configurations rather than coercing them silently.
 
-### 4. Implement truthful native automation inspection
+### 4. Implement deterministic simulated output backend
 
-Expose accepted R2 lanes with:
+Implement an in-process backend whose behavior is fully controllable in tests.
 
-- lane ID;
-- target kind;
-- stable target ID;
-- parameter ID;
-- unit/range;
-- points;
-- interpolation;
-- exact accepted revision/source hashes.
-
-Do not display generic M7 `UNMAPPED` lowering as if it were separate canonical mixer authority.
-
-### 5. Reuse existing typed edit engines
-
-Browser routing edits must produce existing routing edit candidate operations.
-
-Browser native automation edits must produce existing automation edit candidate operations.
-
-Required invariant:
+Required lifecycle:
 
 ```text
-Browser input
-→ typed non-canonical candidate
-→ existing source-bound Preview engine
-→ READY_FOR_PREVIEW or BLOCKED
-→ accepted HEAD unchanged
-→ explicit Accept
-→ existing trusted authority
-→ exactly one accepted revision advance
+CLOSED
+→ OPEN
+→ RUNNING
+→ STOPPED
+→ CLOSED
 ```
 
-Do not add a direct Project Engine commit endpoint for Browser edits.
+Define exact allowed/blocked transitions.
 
-### 6. Bound the first Browser edit surface
+The backend should accept fixed-size stereo float/PCM blocks or another explicitly frozen representation and persist/accumulate deterministic sink output for evidence.
 
-Prefer only operations already contracted and evidenced.
+### 5. Implement fixed-block scheduler and frame cursor
 
-Routing candidates may include a small subset such as:
+Freeze:
 
-- change track primary output;
-- adjust an existing send gain;
-- adjust existing node static mixer values.
+- zero-based frame cursor;
+- block start/end semantics;
+- final partial-block policy;
+- transport start/stop behavior;
+- exact total frames rendered;
+- behavior after end-of-project;
+- no hidden wall-clock authority.
 
-Native automation candidates may include:
+For the simulated backend, block scheduling should be deterministic.
 
-- add one bounded gain/pan lane where absent;
-- insert/move/delete automation point under existing rules;
-- set point value;
-- set interpolation.
+### 6. Connect accepted routed audio to block execution
 
-Do not broaden the underlying authority model merely to make UI implementation easier.
+Reuse accepted routed/native automation semantics instead of implementing a second mix engine.
 
-### 7. Preview truthfulness and stale-state protection
+Preferred bounded strategy:
 
-Preview responses should bind exact source hashes and expose:
+- derive exact routed PCM/float source from the accepted revision;
+- expose it through the realtime block scheduler;
+- prove block concatenation corresponds exactly to the declared source/render policy.
 
-- candidate diff;
-- changed stable IDs;
-- authority status/conflicts;
-- accepted HEAD unchanged;
-- whether the audition is accepted or Preview state.
+If a streaming implementation is introduced, it must be mathematically/evidentially equivalent to the existing validated routed mixer semantics.
+
+### 7. Runtime metrics and xrun/dropout instrumentation
+
+Expose at least:
+
+- blocks requested/written;
+- frames requested/written;
+- current frame cursor;
+- underrun/dropout/xrun count;
+- configured/backend latency metadata;
+- lifecycle state;
+- last error/failure reason.
+
+Provide a deterministic test-only mechanism to force an xrun/dropout condition and prove it increments/reporting exactly without mutating creative state.
+
+### 8. No-resampling and invalid-config fail closed
 
 Reject at minimum:
 
-- stale accepted revision;
-- stale session/reopen source;
-- stale Blueprint/audio/routing/automation hashes;
-- missing track/node/lane/point IDs;
-- malformed target identity;
-- unsupported operation/parameter/unit/range;
-- Browser request attempting direct accepted-state mutation.
+- unsupported sample rate;
+- unsupported output channel count;
+- unsupported block size;
+- source/backend sample-rate mismatch under v0 no-resampling;
+- missing/corrupt source asset;
+- invalid routing/native automation source state;
+- stale/nonexistent revision;
+- illegal lifecycle transition.
 
-### 8. Audition the exact routing + automation state
+Do not silently convert sample rates or channel topology.
 
-Accepted audition must use the MRAM-R1/R2 routed mixer path.
-
-If Preview audition is exposed, it must render the exact candidate state without silently accepting it.
-
-At minimum prove the Browser does not fall back to:
-
-- flat native mix when accepted routing exists;
-- static gain/pan when accepted native automation exists.
-
-### 9. Fresh restart/reopen lifecycle
-
-Use a real process/service restart, not merely a second object reference.
+### 9. Authority boundary proof
 
 Prove:
 
 ```text
-accepted routed+automated revision
-→ export/persist
-→ stop service/process
-→ start fresh service/process
-→ reopen project
-→ same accepted revision
-→ same routing identities
-→ same automation lane/point identities
-→ same derived native automation plan SHA
-→ same routed mix plan SHA
-→ same routed WAV SHA
+accepted HEAD before realtime run
+== accepted HEAD during open/start/run/stop
+== accepted HEAD after close
 ```
 
-Browser-local UI state must not be required to reconstruct accepted creative state.
+No runtime metric, sink buffer or transport cursor may write back into the accepted Blueprint/project revision.
 
-### 10. Real Chromium evidence
+### 10. Deterministic repeat and reopen proof
 
-Add a dedicated real-browser E2E covering at minimum:
+For the simulated backend, prove independent runs over exact source/config produce:
 
-1. open routed+automated project;
-2. inspect exact routing graph;
-3. inspect exact native automation;
-4. propose one bounded Browser edit;
-5. observe Preview and unchanged HEAD;
-6. explicitly Accept;
-7. observe one revision advance and updated exact projection;
-8. audition exact routed result;
-9. restart/reopen fresh service;
-10. observe exact restored identities and media hashes;
-11. stale/unknown-ID negative paths fail closed;
-12. no console/page/request errors beyond explicitly documented expected media aborts.
+- identical realtime plan;
+- identical block sequence/frame ranges;
+- identical sink output hash;
+- identical deterministic metrics except explicitly excluded runtime-only identifiers.
 
-### 11. Deterministic evidence and permanent gate
+Then fresh reopen of the project must produce the same exact source binding and plan.
 
-Add a dedicated MRAM-R3 permanent workflow without weakening existing gates.
+### 11. Dedicated evidence and permanent gate
 
-Expected permanent workflow count after adding a dedicated R3 gate: **24**, unless a repository-native consolidation is deliberately justified and evidenced.
+Add a dedicated RTIO-R0 workflow without weakening the existing **24** gates.
 
-Evidence should bind exact source hashes and prove deterministic Browser/API payloads where appropriate, real-browser screenshots/interaction evidence, accepted revision identities, restart/reopen hashes and fail-closed paths.
+Expected total after R0: **25 permanent workflows**.
 
-### 12. Parent Issue #115 closure evaluation
+Evidence should include:
 
-After R3 validates, evaluate every required capability in parent Issue #115 against repository evidence.
+- source/plan/config hashes;
+- block trace;
+- sink output hash/bytes;
+- lifecycle trace;
+- runtime metrics;
+- forced xrun/dropout proof;
+- invalid configuration results;
+- accepted HEAD invariant;
+- reopen exactness;
+- contract/source/test/workflow hash inventory.
 
-Do not close #115 merely because R3 merged. Close it only if all bounded v0 requirements are directly evidenced.
+### 12. Promotion
 
-If a genuine gap remains, open the smallest dependency-safe successor rung instead of broadening R3 retroactively.
-
-### 13. Promotion
-
-R3 promotion requires:
+RTIO-R0 promotion requires:
 
 - implementation/evidence complete;
-- dedicated MRAM-R3 gate green;
-- all permanent workflows green on exact evidence-bearing head;
+- dedicated RTIO-R0 gate green;
+- all 25 workflows green on exact evidence-bearing head;
 - independent artifact digest/manifest/hash inspection;
-- durable MRAM-R3 validation record;
-- all workflows green again on exact validation-record successor head;
+- durable RTIO-R0 validation record;
+- all 25 workflows green again on validation-record successor head;
 - expected-head squash merge;
-- Issue #126 completed;
-- separate state-only closure evaluating Issue #115.
+- Issue #130 completed;
+- separate state-only closure to RTIO-R1.
 
-## MRAM-R3 non-goals / 비목표
+## RTIO-R0 non-goals / 비목표
 
-Do not implement or claim in R3:
+Do not implement or claim in R0:
 
-- sidechains;
-- send-gain automation beyond existing static send edit semantics;
-- mute/solo automation;
-- realtime callback/device transport;
+- real ASIO/CoreAudio/WASAPI output;
+- low-latency wall-clock guarantees;
+- microphone/line input;
 - recording/monitoring;
-- VST3/AU/CLAP hosting;
+- plugin hosting;
 - plugin-delay compensation;
-- resampling;
-- warp/time-stretch/pitch shift;
-- mastering;
-- generalized commercial release readiness.
+- realtime Browser control;
+- sample-rate conversion;
+- sidechains;
+- commercial realtime readiness.
 
-## Maximum intended R3 outcome
+## Maximum intended R0 outcome
 
-> **MUSICA can truthfully inspect and edit its bounded accepted routing and native mixer gain/pan automation through a real Browser/Studio Preview→Accept surface, audition the exact accepted routed result, and recover the same accepted identities and deterministic routed output after fresh restart/reopen without Browser/runtime reverse authority.**
+> **MUSICA can deterministically lower an accepted routed/automated project into an explicit realtime execution plan and execute it through a bounded simulated fixed-block backend with exact frame progression, lifecycle and runtime metrics while realtime state remains derived and accepted creative state remains unchanged.**
 
-This remains a target claim until R3 is implemented, evidenced, merged and state-closed.
+This remains a target claim until RTIO-R0 is implemented, evidenced, merged and state-closed.
 
 **Repository evidence remains authoritative over conversation/model memory.**

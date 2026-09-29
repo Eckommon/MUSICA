@@ -2,201 +2,259 @@
 
 ## Exact resume point / 정확한 재개점
 
-**RTIO-R1 — BOUNDED CALLBACK ENGINE & HOST-BACKEND ADAPTER BOUNDARY v0**
+**RTIO-R2 — EXACT-FRAME TRANSPORT & LATENCY/DROPOUT INSTRUMENTATION v0**
 
-Issue `#133` — **OPEN**
+Issue `#136` — **OPEN**
 
 Parent mission: Issue `#129` — **Real-Time Audio Engine & Device Foundation v0 — OPEN**
 
-RTIO-R0 Issue `#130` is validated, merged and completed.
+RTIO-R1 Issue `#133` is validated, merged and completed.
 
-Do **not** add microphone input, recording, monitoring, plugin hosting, resampling, platform-specific low-latency claims or realtime Browser control in R1.
+Do **not** add microphone input, recording, monitoring, plugin hosting, resampling, platform-native latency claims or realtime Browser control in R2.
 
 ## Canonical base / 공식 기준점
 
-- canonical main after RTIO-R0 implementation merge:
-  `c6857700eb599a453ef3e99619c0f4ef8243a783`
+- canonical main after RTIO-R1 implementation merge:
+  `310112b4d458f0a7cf120c7dcee1aab34bbbbdea`
 - parent Issue `#129` — **OPEN**
-- RTIO-R0 Issue `#130` — **COMPLETED**
-- RTIO-R0 PR `#132` — **MERGED**
-- R0 implementation/evidence head:
-  `f597c441e0b2586789b7c5f06d802ed0c9298f17` — **25/25 SUCCESS**
-- R0 validation-record successor:
-  `6cd85303a17bed6f10bb200e6074e991f415a77c` — **25/25 SUCCESS**
-- durable validation: `evidence/RTIO_R0_VALIDATION.md`
-- dedicated artifact ID: `11023801193`
+- RTIO-R1 Issue `#133` — **COMPLETED**
+- RTIO-R1 PR `#135` — **MERGED**
+- R1 implementation/evidence head:
+  `c0ce95fef4ec1990311dc3dd0305e24fe793eb43` — **26/26 SUCCESS**
+- R1 validation-record successor:
+  `80e30249891715144ee0d84d9c8a269e48351bfe` — **26/26 SUCCESS**
+- durable validation: `evidence/RTIO_R1_VALIDATION.md`
+- dedicated artifact ID: `11030046866`
 - artifact ZIP SHA:
-  `8765ec2e24c9fb081f1aadd74e7861aeccffea00194b638b9d0a5204f7920456`
-- permanent workflow count at validated R0 state: **25**
+  `14c58c4eb9f68bdadb189d6c59c61b1951f89a2055327ccc5bd699b8177c0077`
+- permanent workflow count at validated R1 state: **26**
 
 ## Inherited authority / 상속 권한
 
-R1 inherits:
+R2 inherits:
 
 ```text
 M2 Project Engine:
 accepted revision is creative authority
 
 MRAM:
-accepted audio/routing/native automation
+accepted routed + automated audio
 → deterministic routed PCM semantics
 
 RTIO-R0:
 provenance-bound realtime execution plan
-→ deterministic fixed-block scheduler
-→ simulated output backend
-→ lifecycle/runtime/xrun metrics
+→ exact frame/block source semantics
+
+RTIO-R1:
+callback engine
+→ exact callback request/response frame ranges
+→ deterministic backend-adapter boundary
+→ callback lifecycle/error metrics
 ```
 
-R1 must make execution callback-driven without replacing these source semantics.
+R2 must add transport and observability without creating a second source model or runtime write-back path.
 
 ## Exact implementation order / 정확한 구현 순서
 
-### 1. Re-ground RTIO-R0 contracts and runtime
+### 1. Re-ground R0/R1 execution contracts
 
-Inspect:
+Inspect at minimum:
 
 - `src/musica/realtime_engine.py`;
-- RTIO-R0 schemas/tests/evidence;
-- `src/musica/routed_mixer.py`;
-- project revision/hash utilities;
-- `evidence/RTIO_R0_VALIDATION.md`.
+- `src/musica/realtime_callback.py`;
+- RTIO-R0/R1 schemas/tests/evidence;
+- `evidence/RTIO_R0_VALIDATION.md`;
+- `evidence/RTIO_R1_VALIDATION.md`.
 
-Freeze which state belongs to plan, callback engine, backend adapter and runtime metrics.
+Freeze which state belongs to accepted plan, callback engine, transport and metrics.
 
-### 2. Define callback request/response contracts
+### 2. Define transport contract v0
 
 At minimum define:
 
-- callback sequence/index;
-- requested start frame;
-- requested frame count;
-- end frame exclusive;
-- source plan SHA;
 - transport state;
-- response frame count;
-- response payload identity;
-- callback status;
-- error/short-fill condition.
+- exact zero-based playhead frame;
+- command sequence/index;
+- command kind;
+- requested target frame where applicable;
+- before/after playhead;
+- source realtime-plan SHA;
+- status/error code;
+- derived/non-canonical authority flag.
 
-No callback request may infer source identity from wall-clock time.
+Prefer a small state model such as:
 
-### 3. Define host-backend adapter boundary
+```text
+STOPPED
+→ PLAYING
+→ STOPPED
+→ END_OF_STREAM
+```
 
-The adapter should expose:
+with exact legal transitions.
 
-- backend/capability identity;
-- open/close;
-- callback registration;
-- start/stop;
-- callback buffer request;
-- latency metadata access where available;
-- error/xrun notification.
+### 3. Freeze play semantics
 
-Provide a deterministic test adapter/harness. Host-native implementations remain optional and unclaimed unless directly evidenced.
+Play must:
 
-### 4. Implement callback-driven engine
+- start from the current exact playhead;
+- bind the callback engine to that frame;
+- preserve exact source plan identity;
+- define whether callback index resets per play segment;
+- never infer position from wall-clock time.
 
-The callback engine must:
+### 4. Freeze stop semantics
 
-- consume the exact RTIO-R0 execution plan;
-- own a monotonic frame cursor;
-- answer callback requests with exact source frames;
-- preserve the R0 no-resampling policy;
-- define exact end-of-stream behavior;
-- never mutate accepted Project state.
+Prove explicit stop:
 
-### 5. Freeze final-block and stop semantics
+- before first callback if allowed or fail closed;
+- mid-stream;
+- at EOS;
+- repeated stop behavior;
+- exact final playhead/cursor.
 
-Prove:
+### 5. Freeze seek semantics
 
-- normal full-size callbacks;
-- final partial callback when duration is not divisible by block size;
-- callback after end-of-stream behavior;
-- explicit stop before project end;
-- restart policy if supported;
-- illegal lifecycle calls fail closed.
+Define exact seek behavior:
 
-### 6. Callback failure instrumentation
+- valid frame range;
+- whether seek is legal only while stopped;
+- whether seek while playing fails closed in v0;
+- callback cursor/index reset policy;
+- exact first callback range after seek;
+- seek-to-EOS behavior;
+- out-of-range/negative seek fail closed.
 
-Provide deterministic test paths for:
+Do not implement ambiguous async seek behavior.
 
-- forced callback error;
-- short-fill;
-- late/xrun-equivalent notification;
-- invalid frame request or cursor mismatch.
+### 6. Transport ↔ callback cursor invariant
 
-Metrics must distinguish requested vs delivered frames and error counts.
+At every callback boundary, prove the relationship among:
 
-### 7. Deterministic callback-harness proof
+- transport playhead;
+- callback requested start frame;
+- callback end frame;
+- engine frame cursor;
+- next transport playhead.
 
-For an identical plan/config, independent runs should reproduce:
+Any mismatch must fail closed.
 
-- callback request sequence;
-- frame ranges;
-- response payload hashes;
-- output sink bytes;
-- deterministic metrics.
+### 7. Latency metadata contract
 
-The concatenated successful callback payload must equal the RTIO-R0 normal source/sink bytes when no failure is injected.
+Expose deterministic metadata that clearly separates:
 
-### 8. Authority invariant
+- configured block/buffer size;
+- adapter nominal output latency frames;
+- reported runtime latency fields, if any;
+- whether values are simulated, configured or host-observed;
+- no wall-clock guarantee flag.
 
-Prove accepted HEAD equality across:
+Do not label simulated/configured latency as measured device latency.
+
+### 8. Dropout/xrun instrumentation
+
+Carry forward R0/R1 error semantics and expose at least:
+
+- callback count;
+- requested frames;
+- delivered frames;
+- error count;
+- short-fill count;
+- late count;
+- xrun/dropout-equivalent count;
+- transport discontinuity/seek count;
+- final playhead;
+- final callback cursor.
+
+Provide deterministic forced paths.
+
+### 9. Deterministic transport scenarios
+
+Evidence should cover at minimum:
+
+1. play from frame 0 to EOS;
+2. stop before EOS;
+3. seek to exact middle frame then play to EOS;
+4. multiple stop/seek/play segments if contract supports them;
+5. forced ERROR/SHORT_FILL/LATE/dropout accounting;
+6. invalid transition/seek paths blocked;
+7. exact repeated trace/sink/metrics equality.
+
+### 10. Authority invariant
+
+Prove accepted HEAD equality across all transport operations:
 
 ```text
 open
-→ start
-→ callback execution
+→ seek
+→ play
+→ callbacks
 → stop
+→ seek
+→ play
+→ EOS
 → close
 ```
 
-Callback buffers, adapter state and metrics remain derived/non-canonical.
+Transport, playhead, adapter and metrics remain derived/non-canonical.
 
-### 9. Restart/reopen proof
+### 11. Fresh reopen proof
 
-Fresh project reopen should regenerate the same source binding and callback plan/harness result.
+Export/import or fresh reopen must regenerate the same:
 
-### 10. Dedicated evidence and permanent gate
+- source realtime plan;
+- valid transport behavior;
+- transport trace;
+- callback ranges;
+- sink;
+- latency/dropout metrics.
 
-Add a dedicated RTIO-R1 workflow without weakening the existing **25** gates.
+### 12. Dedicated evidence and permanent gate
 
-Expected total after R1: **26 permanent workflows**.
+Add a dedicated RTIO-R2 workflow without weakening the existing **26** gates.
 
-Evidence should include callback contracts, callback trace, normal/failure sink, metrics, invalid lifecycle results, accepted HEAD invariant, reopen exactness and contract hash inventory.
+Expected total after R2: **27 permanent workflows**.
 
-### 11. Promotion
+Evidence should include transport contract/trace, callback trace, latency metadata, normal/failure sink, metrics, invalid transition results, accepted HEAD invariant, reopen exactness and contract hash inventory.
 
-RTIO-R1 promotion requires:
+### 13. Promotion
+
+RTIO-R2 promotion requires:
 
 - implementation/evidence complete;
-- dedicated RTIO-R1 gate green;
-- all 26 workflows green on exact evidence head;
+- dedicated RTIO-R2 gate green;
+- all 27 workflows green on exact evidence head;
 - independent artifact inspection;
 - durable validation;
-- all 26 workflows green again on validation successor;
+- all 27 workflows green again on validation successor;
 - expected-head squash merge;
-- Issue #133 completed;
-- separate state-only closure to RTIO-R2.
+- Issue #136 completed;
+- separate state-only closure to RTIO-R3.
 
-## RTIO-R1 non-goals
+## RTIO-R2 non-goals
 
 Do not implement or claim:
 
 - microphone/line input;
 - recording/monitoring;
-- host-native low-latency performance;
+- host-native ASIO/CoreAudio/WASAPI latency guarantees;
 - VST3/AU/CLAP hosting;
 - plugin-delay compensation;
 - resampling;
 - realtime Browser control;
+- mastering;
 - commercial realtime readiness.
 
-## Maximum intended R1 outcome
+## Successor after R2
 
-> **MUSICA can execute its provenance-bound realtime plan through a bounded callback-driven output engine with exact frame cursor, lifecycle and error accounting while callback/backend runtime remains derived and cannot reverse-author accepted creative state.**
+If R2 validates cleanly, exact next rung:
 
-This remains a target claim until R1 is implemented, evidenced, merged and state-closed.
+> **RTIO-R3 — Studio/Browser runtime inspection + restart/reopen lifecycle over the validated realtime/transport substrate, followed by parent Issue #129 bounded closure evaluation.**
+
+## Maximum intended R2 outcome
+
+> **MUSICA can control its provenance-bound callback engine through a bounded exact-frame transport and report deterministic latency/xrun/dropout instrumentation while transport/runtime state remains derived and accepted creative state remains unchanged.**
+
+This remains a target claim until R2 is implemented, evidenced, merged and state-closed.
 
 **Repository evidence remains authoritative over conversation/model memory.**

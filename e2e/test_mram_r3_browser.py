@@ -37,6 +37,11 @@ def test_mram_r3_real_browser_routing_native_automation_reopen(tmp_path: Path) -
     assert proof["restart_reopen_routed_wav_exact"] is True
     assert proof["browser_project_mutation_authorized"] is False
     assert proof["browser_state_is_canonical"] is False
-    assert proof["browser_console_error_count"] == 0
+    assert proof["browser_console_error_count"] == 0, {
+        "unexpected_console_errors": proof.get("unexpected_console_errors", []),
+        "expected_media_aborts": proof.get("expected_media_aborts", []),
+        "page_error_count": proof.get("browser_page_error_count"),
+        "request_failure_count": proof.get("browser_request_failure_count"),
+    }
     assert proof["browser_page_error_count"] == 0
     assert proof["browser_request_failure_count"] == 0

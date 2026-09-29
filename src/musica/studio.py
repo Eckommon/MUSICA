@@ -609,12 +609,90 @@ class StudioService:
                 "pending preview is stale because the branch head changed",
             )
         try:
-            record = session.project.commit_revision(
-                pending.candidate,
-                branch=branch,
-                actor=pending.actor,
-                reason=pending.reason,
-            )
+            if pending.descriptor.get("kind") == "automation_edit":
+                from .automation_edit import (
+                    accept_automation_edit_preview,
+                    blueprint_sha256 as automation_blueprint_sha256,
+                    build_automation_edit_preview,
+                )
+
+                detail = pending.detail.get("automation_edit", {})
+                source_candidate = pending.detail.get("source_candidate")
+                if not isinstance(source_candidate, dict):
+                    raise StudioServiceError(
+                        "integrity_error",
+                        "pending automation Preview is missing its source candidate",
+                    )
+                parent = session.project.read_revision(current_head)
+                resolved = build_automation_edit_preview(
+                    parent,
+                    source_candidate,
+                    revision_id=str(pending.descriptor["candidate_revision_id"]),
+                    project=session.project,
+                    branch=branch,
+                )
+                if not resolved.ready or resolved.blueprint is None:
+                    raise StudioServiceError(
+                        "conflict",
+                        "pending automation Preview no longer passes trusted authority",
+                    )
+                if automation_blueprint_sha256(resolved.blueprint) != automation_blueprint_sha256(
+                    pending.candidate
+                ):
+                    raise StudioServiceError(
+                        "integrity_error",
+                        "recomputed automation Preview differs from pending candidate",
+                    )
+                record = accept_automation_edit_preview(
+                    session.project,
+                    resolved,
+                    branch=branch,
+                )
+            elif pending.descriptor.get("kind") == "routing_edit":
+                from .routing_edit import (
+                    accept_routing_edit_preview,
+                    build_routing_edit_preview,
+                )
+                from .audio_edit import blueprint_sha256 as routing_blueprint_sha256
+
+                source_candidate = pending.detail.get("source_candidate")
+                if not isinstance(source_candidate, dict):
+                    raise StudioServiceError(
+                        "integrity_error",
+                        "pending routing Preview is missing its source candidate",
+                    )
+                parent = session.project.read_revision(current_head)
+                resolved = build_routing_edit_preview(
+                    session.project,
+                    parent,
+                    source_candidate,
+                    branch=branch,
+                    revision_id=str(pending.descriptor["candidate_revision_id"]),
+                )
+                if not resolved.ready or resolved.blueprint is None:
+                    raise StudioServiceError(
+                        "conflict",
+                        "pending routing Preview no longer passes trusted authority",
+                    )
+                if routing_blueprint_sha256(resolved.blueprint) != routing_blueprint_sha256(
+                    pending.candidate
+                ):
+                    raise StudioServiceError(
+                        "integrity_error",
+                        "recomputed routing Preview differs from pending candidate",
+                    )
+                record = accept_routing_edit_preview(
+                    session.project,
+                    resolved,
+                    branch=branch,
+                )
+            else:
+                record = session.project.commit_revision(
+                    pending.candidate,
+                    branch=branch,
+                    actor=pending.actor,
+                    reason=pending.reason,
+                )
             manifest = session.project.bind_artifacts(
                 pending.candidate["project"]["revision_id"],
                 [pending.midi_path, pending.wav_path],

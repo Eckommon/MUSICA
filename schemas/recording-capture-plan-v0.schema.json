@@ -1,0 +1,30 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://eckommon.github.io/MUSICA/schemas/recording-capture-plan-v0.schema.json",
+  "title":"MUSICA Recording Capture Plan v0",
+  "type":"object","additionalProperties":false,
+  "required":["plan_version","engine_id","classification","source","input","sample_rate_hz","input_channels","block_size_frames","capture_frames","policy","recording_capture_plan_sha256"],
+  "properties":{
+    "plan_version":{"const":"0"},
+    "engine_id":{"const":"musica-recording-simulated-capture-v0"},
+    "classification":{"const":"derived_noncanonical"},
+    "source":{"type":"object","additionalProperties":false,"required":["project_id","revision_id","blueprint_sha256","audio_material_sha256","routing_material_sha256","automation_material_sha256"],"properties":{
+      "project_id":{"type":"string","minLength":1},"revision_id":{"type":"string","minLength":1},
+      "blueprint_sha256":{"$ref":"#/$defs/sha256"},"audio_material_sha256":{"$ref":"#/$defs/sha256"},"routing_material_sha256":{"$ref":"#/$defs/sha256"},"automation_material_sha256":{"$ref":"#/$defs/sha256"}
+    }},
+    "input":{"type":"object","additionalProperties":false,"required":["backend_id","classification","capability_sha256","nominal_input_latency_frames","source_generator_id"],"properties":{
+      "backend_id":{"const":"musica-simulated-input-v0"},"classification":{"const":"simulated_test_input_backend"},"capability_sha256":{"$ref":"#/$defs/sha256"},
+      "nominal_input_latency_frames":{"type":"integer","minimum":0},"source_generator_id":{"const":"musica-deterministic-input-pattern-v0"}
+    }},
+    "sample_rate_hz":{"type":"integer","minimum":8000,"maximum":192000},
+    "input_channels":{"enum":[1,2]},
+    "block_size_frames":{"type":"integer","minimum":1,"maximum":8192},
+    "capture_frames":{"type":"integer","minimum":1,"maximum":10000000},
+    "policy":{"type":"object","additionalProperties":false,"required":["source_rate_policy","sample_format","cursor_authority","scheduler","final_block","runtime_state_is_canonical","captured_payload_is_canonical"],"properties":{
+      "source_rate_policy":{"const":"exact_match_required_no_resampling"},"sample_format":{"const":"pcm16_little_endian"},"cursor_authority":{"const":"exact_zero_based_capture_frame"},
+      "scheduler":{"const":"sequential_fixed_blocks"},"final_block":{"const":"partial_block_without_padding"},"runtime_state_is_canonical":{"const":false},"captured_payload_is_canonical":{"const":false}
+    }},
+    "recording_capture_plan_sha256":{"$ref":"#/$defs/sha256"}
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

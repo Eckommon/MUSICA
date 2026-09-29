@@ -40,6 +40,8 @@ def test_mram_r3_real_browser_routing_native_automation_reopen(tmp_path: Path) -
     assert proof["browser_console_error_count"] == 0, {
         "unexpected_console_errors": proof.get("unexpected_console_errors", []),
         "expected_media_aborts": proof.get("expected_media_aborts", []),
+        "request_failures": proof.get("request_failures", []),
+        "http_error_responses": proof.get("http_error_responses", []),
         "page_error_count": proof.get("browser_page_error_count"),
         "request_failure_count": proof.get("browser_request_failure_count"),
     }

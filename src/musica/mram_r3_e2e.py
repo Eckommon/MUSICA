@@ -279,6 +279,7 @@ def _attach_observers(
     page_errors: list[str],
     request_failures: list[str],
     expected_media_aborts: list[str],
+    http_error_responses: list[str],
 ) -> None:
     page.on(
         "console",
@@ -301,14 +302,16 @@ def _attach_observers(
         request_failures.append(record)
 
     def on_response(response) -> None:
-        if (
-            response.request.method == "GET"
-            and "/mixer-routing/media/preview.wav" in response.url
-            and response.status in {400, 404, 409}
-        ):
-            expected_media_aborts.append(
-                f"GET {response.url}: HTTP {response.status}"
-            )
+        if response.status >= 400:
+            record = f"{response.request.method} {response.url}: HTTP {response.status}"
+            if (
+                response.request.method == "GET"
+                and "/mixer-routing/media/preview.wav" in response.url
+                and response.status in {400, 404, 409}
+            ):
+                expected_media_aborts.append(record)
+                return
+            http_error_responses.append(record)
 
     page.on("requestfailed", on_request_failed)
     page.on("response", on_response)
@@ -362,6 +365,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
     page_errors: list[str] = []
     request_failures: list[str] = []
     expected_media_aborts: list[str] = []
+    http_error_responses: list[str] = []
     screenshots: list[Path] = []
     records: dict[str, Any] = {}
 
@@ -380,6 +384,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
                 page_errors,
                 request_failures,
                 expected_media_aborts,
+                http_error_responses,
             )
             opened = _open_project(page, base1, expect)
             if str(opened["head_revision_id"]) != initial_revision:
@@ -561,6 +566,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
                 page_errors,
                 request_failures,
                 expected_media_aborts,
+                http_error_responses,
             )
             try:
                 reopened_session = _open_project(reopen_page, base2, expect)
@@ -649,6 +655,8 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
         "browser_request_failure_count": len(request_failures),
         "expected_media_abort_count": len(expected_media_aborts),
         "unexpected_console_errors": unexpected_console_errors,
+        "request_failures": request_failures,
+        "http_error_responses": http_error_responses,
         "expected_media_aborts": expected_media_aborts,
     }
     write_canonical_json(root / "proof.json", proof)

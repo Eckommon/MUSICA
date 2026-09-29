@@ -421,6 +421,13 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
             accepted_point = next(point for point in accepted_lane["points"] if point["point_id"] == "P-R3-1")
             if float(accepted_point["value"]) != -12.0:
                 raise RuntimeError("native automation Browser value did not persist")
+            page.wait_for_function(
+                """revisionId => window.MUSICA_ROUTING
+                  && window.MUSICA_ROUTING.state.view
+                  && window.MUSICA_ROUTING.state.view.revision_id === revisionId
+                  && !window.MUSICA_ROUTING.state.view.preview""",
+                auto_candidate_revision,
+            )
             final_routing = _routing_state(page)["view"]
             final_audio_sha = _browser_audio_sha(page)
             if final_audio_sha != final_routing["accepted_audition"]["wav_sha256"]:

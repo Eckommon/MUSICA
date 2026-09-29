@@ -325,6 +325,8 @@
         revision_id: view.revision_id,
         blueprint_sha256: view.blueprint_sha256,
         automation_material_sha256: view.automation_material_sha256,
+        audio_material_sha256: view.audio_material_sha256,
+        routing_material_sha256: view.routing_material_sha256,
       },
       actor: { kind: "user", actor_id: "browser-studio" },
       reason,
@@ -359,7 +361,7 @@
         const conflicts = (data.authority_result && data.authority_result.conflicts) || [];
         status(conflicts.map(conflictText).join(" | ") || "Automation edit blocked by trusted authority.", "error");
       } else {
-        status("Automation Preview ready. Accepted revision is unchanged. Audible automation is not validated in M7-R2.", "success");
+        status("Automation Preview ready. Accepted revision is unchanged. Native mixer lanes retain routed audition authority; Browser state remains non-canonical.", "success");
         const refresh = el("refreshButton");
         if (refresh) refresh.click();
       }

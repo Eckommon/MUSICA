@@ -296,9 +296,16 @@ def _attach_observers(
         record = f"{request.method} {request.url}: {failure}"
         if (
             request.method == "GET"
-            and "/mixer-routing/media/preview.wav" in request.url
             and "ERR_ABORTED" in failure
+            and (
+                "/media/audio.wav" in request.url
+                or "/mixer-routing/media/accepted.wav" in request.url
+                or "/mixer-routing/media/preview.wav" in request.url
+            )
         ):
+            # HTMLAudioElement source replacement intentionally aborts the superseded
+            # GET when accepted/Preview state refreshes. This is a Browser media
+            # lifecycle cancellation, not an HTTP/API failure.
             expected_media_aborts.append(record)
             return
         if teardown_state.get("active") and "ERR_ABORTED" in failure:

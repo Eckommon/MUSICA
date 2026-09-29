@@ -32,6 +32,25 @@ from .studio_routing import StudioRoutingSurface
 ROOT = Path(__file__).resolve().parents[2]
 INTENT_PATH = ROOT / "examples" / "intents" / "dark-electronic-12s.json"
 
+CONTRACT_PATHS = [
+    ROOT / "schemas" / "studio-preview-v0.schema.json",
+    ROOT / "schemas" / "studio-automation-view-v0.schema.json",
+    ROOT / "schemas" / "studio-routing-view-v0.schema.json",
+    ROOT / "src" / "musica" / "studio.py",
+    ROOT / "src" / "musica" / "studio_audio.py",
+    ROOT / "src" / "musica" / "studio_automation.py",
+    ROOT / "src" / "musica" / "studio_routing.py",
+    ROOT / "src" / "musica" / "studio_http.py",
+    ROOT / "src" / "musica" / "routing_edit.py",
+    ROOT / "src" / "musica" / "automation_edit.py",
+    ROOT / "src" / "musica" / "studio_web" / "routing_editing.js",
+    ROOT / "src" / "musica" / "studio_web" / "routing_editing.css",
+    ROOT / "src" / "musica" / "studio_web" / "automation_editing.js",
+    ROOT / "tests" / "test_mram_r3_studio_routing.py",
+    ROOT / "e2e" / "test_mram_r3_browser.py",
+    ROOT / ".github" / "workflows" / "mram-r3-browser-routing-reopen-evidence.yml",
+]
+
 
 def _wav_bytes(value: int, *, rate: int = 8000, frames: int = 800) -> bytes:
     stream = io.BytesIO()
@@ -520,6 +539,18 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
 
     for name, value in records.items():
         write_canonical_json(root / f"{name.replace('_','-')}.json", value)
+
+    contract_hashes = []
+    for source_path in CONTRACT_PATHS:
+        data = source_path.read_bytes()
+        contract_hashes.append(
+            {
+                "path": source_path.relative_to(ROOT).as_posix(),
+                "sha256": hashlib.sha256(data).hexdigest(),
+                "size_bytes": len(data),
+            }
+        )
+    write_canonical_json(root / "contract-hashes.json", contract_hashes)
 
     proof = {
         "milestone": "MRAM-R3",

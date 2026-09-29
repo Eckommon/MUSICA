@@ -2,7 +2,7 @@
 
 ## Project phase / 프로젝트 단계
 
-**CORE PRODUCT LOOP BOUNDEDLY VALIDATED → NATIVE AUDIO FOUNDATION VALIDATED → MIXER ROUTING & AUTOMATION FOUNDATION COMPLETED → REAL-TIME AUDIO ENGINE & DEVICE FOUNDATION STARTING**
+**CORE PRODUCT LOOP BOUNDEDLY VALIDATED → NATIVE AUDIO FOUNDATION VALIDATED → MIXER ROUTING & AUTOMATION FOUNDATION COMPLETED → REAL-TIME AUDIO ENGINE & DEVICE FOUNDATION IN PROGRESS**
 
 Long-term governing target:
 
@@ -14,19 +14,13 @@ This remains a product target, not a claim that MUSICA is already a complete com
 
 ### Audio Track / Clip / Mixer Foundation v0
 
-Parent Issue `#95` — **COMPLETED — BOUNDED FOUNDATION ONLY**
+Parent Issue `#95` — **COMPLETED**
 
-Validated ATCM rungs:
-
-- R0 Issue `#97` / PR `#98`
-- R1 Issue `#99` / PR `#101`
-- R2 Issue `#102` / PR `#104`
-- R3 Issue `#105` / PR `#107`
-- R4 Issue `#111` / PR `#114`
+Validated ATCM rungs: R0→R4.
 
 ### Mixer Routing & Automation Foundation v0
 
-Parent Issue `#115` — **COMPLETED — BOUNDED FOUNDATION ONLY**
+Parent Issue `#115` — **COMPLETED**
 
 Validated MRAM rungs:
 
@@ -37,116 +31,139 @@ MRAM-R2 track/routing-node gain/pan automation mapping        VALIDATED
 MRAM-R3 Browser routing/automation + restart/reopen           VALIDATED
 ```
 
-Parent #115 closure evaluation directly passed all 13 required v0 capabilities.
-
-## MRAM-R3 — final validated rung
-
-Issue `#126` — **COMPLETED**
-
-Implementation PR `#128` — **MERGED**
-
-Canonical implementation merge/main:
+Canonical MRAM-R3 merge/main:
 
 > **`5fb3796160d95cd11ad0332b23c67e65bd948e08`**
-
-Durable validation:
-
-- `evidence/MRAM_R3_VALIDATION.md`
-- implementation/evidence exact head:
-  `68250b792ea8ecf773bfd92a16c8866efb4ef2b5` — **24/24 permanent workflows SUCCESS**
-- validation-record successor:
-  `a68b16531df6b8ecca61d7504c6977ca88e5408f` — **24/24 SUCCESS**
-- dedicated workflow: **MRAM-R3 Browser Routing & Reopen Evidence**
-- dedicated run: `36530923478` — **SUCCESS**
-- artifact ID: `11016528257`
-- artifact ZIP SHA-256:
-  `e56c11505cf50b410b74461bdf0bc9a2fb88de31d13a04dbe4b4ad3c54d58938`
-- artifact ZIP size: **7,971,169 bytes**
-- manifest evidence payloads: **17/17 exact SHA-256 + byte size PASS**
-- persisted content-addressed object store: **27/27 hash PASS**
-- real-Chromium screenshots: **6/6 valid PNG and exact recorded dimensions/hash PASS**
-
-### Validated MRAM-R3 behavior
-
-MRAM-R3 establishes:
-
-- exact accepted routing and native mixer automation Browser/Studio projections;
-- exact accepted revision, Blueprint, audio, routing and automation hash binding;
-- stable track/node/send/lane/point identities in Browser-visible derived state;
-- typed Browser routing proposals delegated to the existing MRAM-R1 routing authority;
-- typed Browser native automation proposals delegated to the existing M7/MRAM-R2 automation authority;
-- routing and native automation Preview with accepted HEAD unchanged;
-- explicit Accept with exactly one accepted revision advance;
-- routed Preview/accepted audition using the exact MRAM routed mixer path;
-- no flat/static fallback when accepted routing/native automation exists;
-- unknown ID and stale source fail-closed behavior;
-- fresh Studio-service restart/reopen preserving exact routing/automation identities;
-- restart/reopen equality for routed plan SHA and routed WAV SHA;
-- Browser DOM/JS state, Preview state, routed plan and rendered WAV remaining non-canonical.
-
-Evidenced controlled edits:
-
-```text
-routing: SEND-001 gain_db -12 dB → -2 dB
-native automation: AUTO-AT001-GAIN / P-R3-1 -3 dB → -12 dB
-```
-
-Final evidence values include:
-
-- final accepted revision:
-  `rev-studio-382cb403161ac48f712061ab`
-- final routed WAV SHA-256:
-  `2eb68ddccaa8e827ebc6c0235d5740702fb7b631f91f3fcefff698ff7d9a9eee`
-- final routed mix plan SHA-256:
-  `a0bcb84ac8789c544bb0ce595fd5113059aa217cfe1ab76bacba953d5dcf89ea`
-
-### Maximum validated MRAM parent claim
-
-> **MUSICA can represent, edit through Preview/Accept, persist, inspect and deterministically render a bounded explicit mixer routing graph with supported programmable mixer automation, without allowing routing runtime, Browser state or rendered audio to become reverse creative authority.**
 
 ## Current commercial-workstation mission
 
 Parent Issue `#129` — **Real-Time Audio Engine & Device Foundation v0 — OPEN**
 
-The dependency-safe next stage follows the governing chain:
+Current rung sequence:
 
 ```text
-validated native audio
-→ validated mixer/routing/automation
-→ realtime engine + devices          CURRENT
-→ recording/monitoring               LATER
-→ plugin hosting + latency compensation
-→ deeper audio editing
-→ release hardening
+RTIO-R0 realtime execution contracts + simulated backend      VALIDATED
+→ RTIO-R1 bounded callback engine + backend adapter           CURRENT
+→ RTIO-R2 transport + latency/dropout instrumentation
+→ RTIO-R3 Studio/Browser runtime inspection + restart
+→ parent #129 bounded closure evaluation
 ```
 
-The first rung is:
+## RTIO-R0 — validated realtime contract/simulated backend substrate
 
-> **Issue #130 — RTIO-R0: Realtime Execution Contracts & Deterministic Simulated Backend v0**
+Issue `#130` — **COMPLETED**
 
-RTIO-R0 deliberately starts with contracts, fixed block scheduling and a deterministic in-process simulated backend before any platform-native ASIO/CoreAudio/WASAPI claim.
+Implementation PR `#132` — **MERGED**
+
+Canonical implementation merge/main:
+
+> **`c6857700eb599a453ef3e99619c0f4ef8243a783`**
+
+Durable validation:
+
+- `evidence/RTIO_R0_VALIDATION.md`
+- implementation/evidence exact head:
+  `f597c441e0b2586789b7c5f06d802ed0c9298f17` — **25/25 permanent workflows SUCCESS**
+- validation-record successor exact head:
+  `6cd85303a17bed6f10bb200e6074e991f415a77c` — **25/25 SUCCESS**
+- dedicated workflow: **RTIO-R0 Realtime Simulated Backend Evidence**
+- dedicated run: `36548047238` — **SUCCESS**
+- artifact ID: `11023801193`
+- artifact ZIP SHA-256:
+  `8765ec2e24c9fb081f1aadd74e7861aeccffea00194b638b9d0a5204f7920456`
+- artifact ZIP size: **31,187 bytes**
+- manifest payloads: **11/11 exact SHA-256 + byte size PASS**
+- exact Git contract/source/test/workflow inventory: **9/9 PASS**
+- persisted project object store: **16/16 object hashes PASS**
+- realtime plan self-hash:
+  `29566a48c8e8a9c20ac03c45ca0b499747975aa88d386ab3a3956d0510d0b203`
+- normal run report self-hash:
+  `4ec3fd23d6c0f96fb67b52907559095f8daf5a1cfc1746fd3226a8d8316bb642`
+- forced-xrun report self-hash:
+  `5d5b2d4c4376e43660d34929d8e29febda4e6af341f907f60fa03f402d2eddc5`
+
+### Validated RTIO-R0 behavior
+
+RTIO-R0 establishes:
+
+- explicit simulated backend capability contract;
+- exact accepted revision/Blueprint/audio/routing/automation source binding;
+- explicit sample rate, stereo channel and block-size configuration;
+- inherited exact source-rate match / no-resampling policy;
+- derived/non-canonical realtime execution plan;
+- strict `CLOSED → OPEN → RUNNING → STOPPED → CLOSED` lifecycle;
+- deterministic fixed-block scheduling;
+- zero-based monotonic frame cursor;
+- exact normal sink equivalence to routed mixer PCM payload;
+- deterministic run report and block trace;
+- runtime counters for blocks, frames, cursor, xrun count and simulated latency metadata;
+- deterministic forced-xrun/dropout injection;
+- fail-closed unsupported sample rate, source-rate mismatch, unsupported block size and invalid xrun index;
+- accepted Project HEAD unchanged across realtime execution;
+- export/import reopen exactness for plan, block trace, sink and run report.
+
+Evidence fixture:
+
+```text
+sample rate       = 8,000 Hz
+channels          = 2
+block size        = 256 frames
+duration          = 96,000 frames
+normal blocks     = 375 / 375
+normal xrun count = 0
+forced xrun       = block index 1
+xrun blocks       = 374 / 375
+xrun frames       = 95,744 / 96,000
+```
+
+Normal sink SHA-256:
+
+`08aefbaf4a918446584245d2c7f4a79feede21c769cb8f2cacc510eeaece3c03`
+
+Forced-xrun sink SHA-256:
+
+`2180084d3a8b09fe229a259d8c2a9bc3a79d814136a1be82ef8cf5129ae659ac`
+
+### Maximum validated RTIO-R0 claim
+
+> **MUSICA can deterministically lower an accepted routed/automated project into an explicit realtime execution plan and execute it through a bounded simulated fixed-block backend with exact frame progression, lifecycle and runtime metrics while realtime state remains derived and accepted creative state remains unchanged.**
+
+## Exact current rung / 현재 정확한 단계
+
+> **Issue #133 — RTIO-R1: Bounded Callback Engine & Host-Backend Adapter Boundary v0**
+
+RTIO-R1 must consume the validated RTIO-R0 plan and introduce callback-driven execution semantics without creating a second audio source model or unsupported platform-device claim.
+
+Required direction:
+
+```text
+accepted routed+automated revision
+→ RTIO-R0 realtime plan
+→ callback engine / exact frame cursor
+→ backend adapter callback
+→ output buffer + callback metrics
+≠ Project authority
+```
 
 ## Current important non-claims
 
 Until separately validated, do not claim:
 
 - real ASIO/CoreAudio/WASAPI device output;
-- realtime low-latency guarantees;
-- microphone/line recording;
-- input monitoring, takes or comping;
+- wall-clock low-latency guarantees;
+- microphone/line input;
+- recording/monitoring;
+- take/comp management;
 - VST3/AU/CLAP hosting;
 - plugin-delay compensation;
-- implicit sample-rate conversion;
+- sample-rate conversion;
 - sidechains;
-- warp/time-stretch/pitch shift;
-- mastering-grade processing;
-- generalized commercial release readiness;
-- cloud/multi-user creative authority.
+- generalized commercial realtime readiness.
 
 ## Exact next phase / 다음 단계
 
-> **Implement Issue #130 from canonical main `5fb3796160d95cd11ad0332b23c67e65bd948e08`: define a provenance-bearing realtime execution plan and backend capability/configuration contracts, implement a deterministic fixed-block simulated output backend with transport/cursor/runtime metrics and forced xrun/dropout evidence, keep accepted HEAD unchanged, then promote through a new permanent RTIO-R0 gate.**
+> **Implement Issue #133 from canonical main `c6857700eb599a453ef3e99619c0f4ef8243a783`: define callback request/response and backend-adapter contracts, make the callback engine consume the existing RTIO-R0 plan with exact cursor/final-block/error semantics, prove deterministic callback-harness execution and accepted-HEAD invariance, then promote through a dedicated RTIO-R1 permanent gate.**
 
-See `memory/NEXT_ACTION.md` for the exact execution order.
+See `memory/NEXT_ACTION.md` for exact execution order.
 
 **Repository evidence remains authoritative over conversation/model memory.**

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/studio-routing-view-v0.schema.json",
+  "title": "MUSICA Studio Routing & Native Automation View v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["view_version","project_id","revision_id","branch","blueprint_sha256","audio_material_sha256","routing_material_sha256","automation_material_sha256","accepted_state_is_canonical","browser_state_is_canonical","track_outputs","nodes","sends","native_automation_lanes","accepted_audition","preview","capabilities"],
+  "properties": {
+    "view_version": {"const":"0"},
+    "project_id": {"type":"string","minLength":1},
+    "revision_id": {"type":"string","minLength":1},
+    "branch": {"type":"string","minLength":1},
+    "blueprint_sha256": {"$ref":"#/$defs/sha256"},
+    "audio_material_sha256": {"$ref":"#/$defs/sha256"},
+    "routing_material_sha256": {"$ref":"#/$defs/sha256"},
+    "automation_material_sha256": {"$ref":"#/$defs/sha256"},
+    "accepted_state_is_canonical": {"const":true},
+    "browser_state_is_canonical": {"const":false},
+    "track_outputs": {"type":"array","items":{"type":"object"}},
+    "nodes": {"type":"array","items":{"type":"object"}},
+    "sends": {"type":"array","items":{"type":"object"}},
+    "native_automation_lanes": {"type":"array","items":{"type":"object"}},
+    "accepted_audition": {"type":"object"},
+    "preview": {
+      "oneOf": [
+        {"type":"null"},
+        {
+          "type":"object",
+          "additionalProperties": false,
+          "required": ["preview_id","candidate_revision_id","candidate_blueprint_sha256","candidate_routing_material_sha256","track_outputs","nodes","sends","changed_track_ids","changed_node_ids","changed_send_ids","audition"],
+          "properties": {
+            "preview_id":{"type":"string","minLength":1},
+            "candidate_revision_id":{"type":"string","minLength":1},
+            "candidate_blueprint_sha256":{"$ref":"#/$defs/sha256"},
+            "candidate_routing_material_sha256":{"$ref":"#/$defs/sha256"},
+            "track_outputs":{"type":"array","items":{"type":"object"}},
+            "nodes":{"type":"array","items":{"type":"object"}},
+            "sends":{"type":"array","items":{"type":"object"}},
+            "changed_track_ids":{"type":"array","items":{"type":"string"},"uniqueItems":true},
+            "changed_node_ids":{"type":"array","items":{"type":"string"},"uniqueItems":true},
+            "changed_send_ids":{"type":"array","items":{"type":"string"},"uniqueItems":true},
+            "audition":{"type":"object"}
+          }
+        }
+      ]
+    },
+    "capabilities": {
+      "type":"object",
+      "additionalProperties": false,
+      "required":["source_bound_candidates","preview_only","explicit_accept_required","project_mutation_authorized","browser_state_is_canonical","routed_audition","operations"],
+      "properties":{
+        "source_bound_candidates":{"const":true},
+        "preview_only":{"const":true},
+        "explicit_accept_required":{"const":true},
+        "project_mutation_authorized":{"const":false},
+        "browser_state_is_canonical":{"const":false},
+        "routed_audition":{"const":true},
+        "operations":{
+          "type":"array",
+          "prefixItems":[
+            {"const":"SET_TRACK_OUTPUT"},
+            {"const":"SET_SEND_GAIN"},
+            {"const":"SET_NODE_MIXER"}
+          ],
+          "items":false,
+          "minItems":3,
+          "maxItems":3
+        }
+      }
+    }
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

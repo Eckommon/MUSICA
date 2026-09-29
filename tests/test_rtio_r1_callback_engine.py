@@ -176,7 +176,7 @@ def test_callback_engine_and_adapter_illegal_lifecycle_fail_closed(tmp_path: Pat
     with pytest.raises(ContractError, match="registered callback"):
         adapter.start()
     adapter.open()
-    with pytest.raises(ContractError, match="OPEN state"):
+    with pytest.raises(ContractError, match="illegal lifecycle transition"):
         adapter.open()
 
     engine = CallbackEngine(

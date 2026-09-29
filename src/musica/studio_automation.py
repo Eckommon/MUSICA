@@ -16,6 +16,7 @@ from typing import Any
 from .automation_contracts import (
     automation_locks_from_blueprint,
     automation_material_from_blueprint,
+    native_mixer_automation_lanes,
 )
 from .automation_edit import (
     automation_material_sha256,
@@ -91,16 +92,39 @@ class StudioAutomationSurface:
             baseline_wav_sha256 = hashlib.sha256(baseline_wav).hexdigest()
             preview_midi_sha256 = hashlib.sha256(preview_midi).hexdigest()
 
-            music_ir = compile_blueprint(candidate_blueprint)
-            execution = lower_automation_execution(candidate_blueprint)
-            plan = build_automation_render_plan(music_ir, execution)
-            render_automation_wav(
-                music_ir,
-                execution,
-                pending.wav_path,
-                duration_seconds=float(candidate_blueprint["project"]["duration_seconds"]),
-                sample_rate=DEFAULT_SAMPLE_RATE,
-            )
+            native_lanes = native_mixer_automation_lanes(candidate_blueprint)
+            if native_lanes:
+                from .studio_audio import StudioAudioSurface
+
+                rendered = StudioAudioSurface(self.service)._render_blueprint(
+                    session.session_id,
+                    session.project,
+                    candidate_blueprint,
+                    source_kind="preview-native-automation",
+                )
+                pending.wav_path.write_bytes(rendered.wav_bytes)
+                mapped_lane_ids = [str(lane["lane_id"]) for lane in native_lanes]
+                unmapped_lane_ids: list[str] = []
+                render_plan_hash = str(rendered.plan["routed_mix_plan_sha256"])
+                render_path = "mram-r2-routed-native-mixer"
+                automation_applied = True
+            else:
+                music_ir = compile_blueprint(candidate_blueprint)
+                execution = lower_automation_execution(candidate_blueprint)
+                plan = build_automation_render_plan(music_ir, execution)
+                render_automation_wav(
+                    music_ir,
+                    execution,
+                    pending.wav_path,
+                    duration_seconds=float(candidate_blueprint["project"]["duration_seconds"]),
+                    sample_rate=DEFAULT_SAMPLE_RATE,
+                )
+                mapped_lane_ids = [str(lane["lane_id"]) for lane in plan["mapped_lanes"]]
+                unmapped_lane_ids = [str(lane["lane_id"]) for lane in plan["unmapped_lanes"]]
+                render_plan_hash = automation_render_plan_sha256(plan)
+                render_path = "m7-r3-to-m7-r4-reference-renderer"
+                automation_applied = bool(plan["mapped_lanes"])
+
             accepted_head_after = session.project.head_revision_id()
             if accepted_head_after != accepted_head_before:
                 raise StudioServiceError(
@@ -112,12 +136,12 @@ class StudioAutomationSurface:
             proof = {
                 "audition_version": "0",
                 "candidate_revision_id": str(candidate_blueprint["project"]["revision_id"]),
-                "path": "m7-r3-to-m7-r4-reference-renderer",
-                "automation_applied": bool(plan["mapped_lanes"]),
+                "path": render_path,
+                "automation_applied": automation_applied,
                 "output_differs_from_baseline": preview_wav_sha256 != baseline_wav_sha256,
-                "mapped_lane_ids": [str(lane["lane_id"]) for lane in plan["mapped_lanes"]],
-                "unmapped_lane_ids": [str(lane["lane_id"]) for lane in plan["unmapped_lanes"]],
-                "render_plan_sha256": automation_render_plan_sha256(plan),
+                "mapped_lane_ids": mapped_lane_ids,
+                "unmapped_lane_ids": unmapped_lane_ids,
+                "render_plan_sha256": render_plan_hash,
                 "baseline_wav_sha256": baseline_wav_sha256,
                 "preview_wav_sha256": preview_wav_sha256,
                 "preview_midi_sha256": preview_midi_sha256,

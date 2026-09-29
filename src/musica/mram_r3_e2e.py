@@ -426,7 +426,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
                   && window.MUSICA_ROUTING.state.view
                   && window.MUSICA_ROUTING.state.view.revision_id === revisionId
                   && !window.MUSICA_ROUTING.state.view.preview""",
-                auto_candidate_revision,
+                arg=auto_candidate_revision,
             )
             final_routing = _routing_state(page)["view"]
             final_audio_sha = _browser_audio_sha(page)

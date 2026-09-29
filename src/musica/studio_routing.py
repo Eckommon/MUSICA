@@ -14,7 +14,7 @@ from typing import Any
 from .automation_contracts import native_mixer_automation_lanes
 from .automation_edit import automation_material_sha256
 from .audio_edit import audio_material_sha256, blueprint_sha256
-from .contracts import StudioServiceError if False else ContractError
+from .contracts import ContractError
 from .contracts import validate_contract
 from .diff import structured_diff
 from .routing_contracts import routing_material_from_blueprint, routing_material_sha256

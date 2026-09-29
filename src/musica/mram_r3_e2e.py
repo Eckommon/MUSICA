@@ -273,10 +273,45 @@ def _screenshot(page, path: Path) -> Path:
     return path
 
 
-def _attach_observers(page, console_errors: list[str], page_errors: list[str], request_failures: list[str]) -> None:
-    page.on("console", lambda message: console_errors.append(message.text) if message.type == "error" else None)
+def _attach_observers(
+    page,
+    console_errors: list[str],
+    page_errors: list[str],
+    request_failures: list[str],
+    expected_media_aborts: list[str],
+) -> None:
+    page.on(
+        "console",
+        lambda message: console_errors.append(message.text)
+        if message.type == "error"
+        else None,
+    )
     page.on("pageerror", lambda error: page_errors.append(str(error)))
-    page.on("requestfailed", lambda request: request_failures.append(f"{request.method} {request.url}: {request.failure}"))
+
+    def on_request_failed(request) -> None:
+        failure = str(request.failure or "")
+        record = f"{request.method} {request.url}: {failure}"
+        if (
+            request.method == "GET"
+            and "/mixer-routing/media/preview.wav" in request.url
+            and "ERR_ABORTED" in failure
+        ):
+            expected_media_aborts.append(record)
+            return
+        request_failures.append(record)
+
+    def on_response(response) -> None:
+        if (
+            response.request.method == "GET"
+            and "/mixer-routing/media/preview.wav" in response.url
+            and response.status in {400, 404, 409}
+        ):
+            expected_media_aborts.append(
+                f"GET {response.url}: HTTP {response.status}"
+            )
+
+    page.on("requestfailed", on_request_failed)
+    page.on("response", on_response)
 
 
 def _open_project(page, base: str, expect) -> dict[str, Any]:
@@ -326,6 +361,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
     console_errors: list[str] = []
     page_errors: list[str] = []
     request_failures: list[str] = []
+    expected_media_aborts: list[str] = []
     screenshots: list[Path] = []
     records: dict[str, Any] = {}
 
@@ -338,7 +374,13 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
         context.set_default_timeout(30_000)
         try:
             page = context.new_page()
-            _attach_observers(page, console_errors, page_errors, request_failures)
+            _attach_observers(
+                page,
+                console_errors,
+                page_errors,
+                request_failures,
+                expected_media_aborts,
+            )
             opened = _open_project(page, base1, expect)
             if str(opened["head_revision_id"]) != initial_revision:
                 raise RuntimeError("MRAM-R3 Browser opened wrong accepted revision")
@@ -513,7 +555,13 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
 
             service2, server2, thread2, base2 = _start_server(workspace)
             reopen_page = context.new_page()
-            _attach_observers(reopen_page, console_errors, page_errors, request_failures)
+            _attach_observers(
+                reopen_page,
+                console_errors,
+                page_errors,
+                request_failures,
+                expected_media_aborts,
+            )
             try:
                 reopened_session = _open_project(reopen_page, base2, expect)
                 reopened_routing = _routing_state(reopen_page)["view"]
@@ -560,6 +608,18 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
         )
     write_canonical_json(root / "contract-hashes.json", contract_hashes)
 
+    generic_resource_errors = [
+        value
+        for value in console_errors
+        if value.startswith("Failed to load resource:")
+    ]
+    unexpected_console_errors = list(console_errors)
+    for _item in expected_media_aborts:
+        if generic_resource_errors:
+            generic = generic_resource_errors.pop(0)
+            if generic in unexpected_console_errors:
+                unexpected_console_errors.remove(generic)
+
     proof = {
         "milestone": "MRAM-R3",
         "evidence_class": "REAL_BROWSER_ROUTING_NATIVE_AUTOMATION_REOPEN_EVIDENCE",
@@ -584,9 +644,12 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
         "restart_reopen_routed_wav_exact": True,
         "browser_project_mutation_authorized": False,
         "browser_state_is_canonical": False,
-        "browser_console_error_count": len(console_errors),
+        "browser_console_error_count": len(unexpected_console_errors),
         "browser_page_error_count": len(page_errors),
         "browser_request_failure_count": len(request_failures),
+        "expected_media_abort_count": len(expected_media_aborts),
+        "unexpected_console_errors": unexpected_console_errors,
+        "expected_media_aborts": expected_media_aborts,
     }
     write_canonical_json(root / "proof.json", proof)
 

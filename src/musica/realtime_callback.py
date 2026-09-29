@@ -90,6 +90,9 @@ class DeterministicCallbackAdapter:
     def request(
         self,
         *,
+        callback_index: int | None = None,
+        requested_start_frame: int | None = None,
+        requested_frame_count: int | None = None,
         force_error: bool = False,
         force_short_fill: bool = False,
         force_late: bool = False,
@@ -97,6 +100,9 @@ class DeterministicCallbackAdapter:
         if self.state != "RUNNING" or self._callback is None:
             raise ContractError("callback request requires RUNNING state")
         transaction = self._callback(
+            callback_index=callback_index,
+            requested_start_frame=requested_start_frame,
+            requested_frame_count=requested_frame_count,
             force_error=force_error,
             force_short_fill=force_short_fill,
             force_late=force_late,
@@ -168,6 +174,9 @@ class CallbackEngine:
     def callback(
         self,
         *,
+        callback_index: int | None = None,
+        requested_start_frame: int | None = None,
+        requested_frame_count: int | None = None,
         force_error: bool = False,
         force_short_fill: bool = False,
         force_late: bool = False,
@@ -180,6 +189,12 @@ class CallbackEngine:
 
         requested = self._expected_frame_count()
         start = self._frame_cursor
+        if callback_index is not None and int(callback_index) != self._callback_index:
+            raise ContractError("callback index does not match engine callback cursor")
+        if requested_start_frame is not None and int(requested_start_frame) != start:
+            raise ContractError("callback start frame does not match engine frame cursor")
+        if requested_frame_count is not None and int(requested_frame_count) != requested:
+            raise ContractError("callback requested frame count does not match exact next block")
         end = start + requested
         start_byte = start * 4
         end_byte = end * 4

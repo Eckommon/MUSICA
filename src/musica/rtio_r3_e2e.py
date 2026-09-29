@@ -201,10 +201,10 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
             page.locator("#acceptButton").click()
             expect(page.locator("#projectStateBadge")).to_have_text("ACCEPTED")
             page.wait_for_function(
-                """source => {
-                  const node = document.querySelector("#sideRevision");
-                  return node && node.textContent && node.textContent !== source;
-                }""",
+                """source => window.MUSICA_ROUTING
+                  && window.MUSICA_ROUTING.state.view
+                  && window.MUSICA_ROUTING.state.view.revision_id !== source
+                  && !window.MUSICA_ROUTING.state.view.preview""",
                 arg=source_head,
             )
             final_revision = str(service1.inspect_session(session_id)["head_revision_id"])

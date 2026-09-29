@@ -88,7 +88,7 @@
       <div id="mramRoutingStatus" class="mram-routing-status" role="status" aria-live="polite" hidden></div>
       <div id="mramRoutingWorkspace" hidden>
         <div class="mram-source mono muted" id="mramRoutingSource">—</div>
-        <audio id="mramRoutingAudio" controls preload="metadata"></audio>
+        <audio id="mramRoutingAudio" controls preload="none"></audio>
         <div class="mram-routing-grid">
           <section><h3>Track outputs</h3><div id="mramTrackOutputs"></div></section>
           <section><h3>Nodes</h3><div id="mramNodes"></div></section>

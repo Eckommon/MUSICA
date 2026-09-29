@@ -283,11 +283,12 @@ def run_callback_harness(
         if stop_after_callbacks <= 0 or stop_after_callbacks > total_callbacks:
             raise ContractError("stop_after_callbacks outside valid callback range")
 
+    limit = stop_after_callbacks if stop_after_callbacks is not None else total_callbacks
     error_indices = {int(v) for v in force_error_callback_indices}
     short_indices = {int(v) for v in force_short_fill_callback_indices}
     late_indices = {int(v) for v in force_late_callback_indices}
     _validate_injection_indices(
-        total_callbacks=total_callbacks,
+        total_callbacks=limit,
         error_indices=error_indices,
         short_fill_indices=short_indices,
         late_indices=late_indices,
@@ -306,7 +307,6 @@ def run_callback_harness(
     short_fill_count = 0
     late_count = 0
 
-    limit = stop_after_callbacks if stop_after_callbacks is not None else total_callbacks
     for index in range(limit):
         callbacks_requested += 1
         transaction = adapter.request(

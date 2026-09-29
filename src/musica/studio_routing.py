@@ -324,6 +324,11 @@ class StudioRoutingSurface:
                     "invalid_request",
                     f"unsupported routed audition source: {source_kind}",
                 )
+            if not _routing(blueprint)["nodes"]:
+                raise StudioServiceError(
+                    "invalid_request",
+                    "routed audition requires accepted non-empty routing",
+                )
             rendered = self.audio_surface._render_blueprint(
                 session_id,
                 session.project,

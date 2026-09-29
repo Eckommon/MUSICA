@@ -62,6 +62,7 @@ class ExactFrameTransport:
         self.playhead_frame = 0
         self._engine: CallbackEngine | None = None
         self._adapter: DeterministicCallbackAdapter | None = None
+        self._segment_sink_bytes_consumed = 0
         self._events: list[dict[str, Any]] = []
         self._transactions: list[dict[str, Any]] = []
         self._sink = bytearray()
@@ -145,6 +146,7 @@ class ExactFrameTransport:
         adapter.start()
         self._engine = engine
         self._adapter = adapter
+        self._segment_sink_bytes_consumed = 0
 
     def play(self) -> dict[str, Any]:
         if self.state != "STOPPED":
@@ -234,7 +236,8 @@ class ExactFrameTransport:
         if payload_size:
             # Adapter already owns the exact delivered bytes; append only the newly delivered suffix.
             adapter_payload = bytes(self._adapter.payload)
-            self._sink.extend(adapter_payload[len(self._sink):])
+            self._sink.extend(adapter_payload[self._segment_sink_bytes_consumed:])
+            self._segment_sink_bytes_consumed = len(adapter_payload)
 
         self._metrics["callbacks_requested"] += 1
         self._metrics["frames_requested"] += int(response["requested_frame_count"])

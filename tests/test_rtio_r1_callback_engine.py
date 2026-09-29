@@ -189,6 +189,14 @@ def test_callback_engine_and_adapter_illegal_lifecycle_fail_closed(tmp_path: Pat
     with pytest.raises(ContractError, match="already registered"):
         adapter.register_callback(engine.callback)
     adapter.start()
+    with pytest.raises(ContractError, match="callback index"):
+        adapter.request(callback_index=1)
+    with pytest.raises(ContractError, match="start frame"):
+        adapter.request(requested_start_frame=1)
+    with pytest.raises(ContractError, match="requested frame count"):
+        adapter.request(requested_frame_count=1)
+    assert engine.callback_index == 0
+    assert engine.frame_cursor == 0
     while engine.frame_cursor < engine.plan["duration_frames"]:
         adapter.request()
     with pytest.raises(ContractError, match="end-of-stream"):

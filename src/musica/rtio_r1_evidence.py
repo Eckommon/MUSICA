@@ -10,9 +10,18 @@ import tempfile
 from pathlib import Path
 from typing import Any, Callable
 
-from .automation_edit import accept_automation_edit_preview, build_automation_edit_preview
+from .automation_edit import (
+    accept_automation_edit_preview,
+    automation_material_sha256,
+    blueprint_sha256,
+    build_automation_edit_preview,
+)
 from .audio_assets import import_audio_asset
-from .audio_edit import accept_audio_edit_preview, build_audio_edit_preview
+from .audio_edit import (
+    accept_audio_edit_preview,
+    audio_material_sha256,
+    build_audio_edit_preview,
+)
 from .contracts import ContractError
 from .creative import compose_blueprint
 from .evidence import canonical_json_bytes
@@ -25,8 +34,8 @@ from .realtime_callback import (
     run_callback_harness,
 )
 from .realtime_engine import run_realtime_simulation
+from .routing_contracts import routing_material_from_blueprint, routing_material_sha256
 from .routing_edit import accept_routing_edit_preview, build_routing_edit_preview
-from .rtio_r0_evidence import _native_candidate
 
 ROOT = Path(__file__).resolve().parents[2]
 INTENT_PATH = ROOT / "examples" / "intents" / "dark-electronic-12s.json"
@@ -60,6 +69,63 @@ def _blocked(fn: Callable[[], Any]) -> dict[str, Any]:
     except ContractError as exc:
         return {"blocked": True, "error": str(exc)}
     return {"blocked": False, "error": None}
+
+
+def _automation_source(parent: dict[str, Any]) -> dict[str, Any]:
+    routing = routing_material_from_blueprint(parent)
+    assert routing is not None
+    return {
+        "project_id": parent["project"]["project_id"],
+        "revision_id": parent["project"]["revision_id"],
+        "blueprint_sha256": blueprint_sha256(parent),
+        "automation_material_sha256": automation_material_sha256(parent),
+        "audio_material_sha256": audio_material_sha256(parent),
+        "routing_material_sha256": routing_material_sha256(routing),
+    }
+
+
+def _native_candidate(parent: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "candidate_version": "0",
+        "candidate_id": "RTIO-R1-NATIVE",
+        "authority_target": "blueprint_automation_material",
+        "source": _automation_source(parent),
+        "actor": {"kind": "user", "actor_id": "rtio-r1-evidence"},
+        "reason": "RTIO-R1 native automation fixture.",
+        "operations": [
+            {
+                "operation_id": "RT1-N1",
+                "op": "ADD_LANE",
+                "lane": {
+                    "lane_id": "AUTO-AT001-GAIN",
+                    "target": {
+                        "parameter_id": "mixer.gain_db",
+                        "scope": "audio_track",
+                        "owner_id": "AT-001",
+                        "unit": "decibel",
+                        "minimum": -60.0,
+                        "maximum": 12.0,
+                    },
+                    "section_id": None,
+                    "points": [
+                        {
+                            "point_id": "RT1-P1",
+                            "beat": 0.0,
+                            "value": -3.0,
+                            "interpolation": "linear",
+                        },
+                        {
+                            "point_id": "RT1-P2",
+                            "beat": 1.0,
+                            "value": -6.0,
+                            "interpolation": "hold",
+                        },
+                    ],
+                },
+            }
+        ],
+        "preview_only": True,
+    }
 
 
 def _fixture(temp: Path) -> tuple[Any, str]:

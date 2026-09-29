@@ -126,6 +126,18 @@
     el("mramPreviewNodeMixer").addEventListener("click", previewNodeMixer);
     el("mramSendSelect").addEventListener("change", syncSend);
     el("mramNodeSelect").addEventListener("change", syncNode);
+
+    const acceptButton = el("acceptButton");
+    if (acceptButton) {
+      acceptButton.addEventListener("click", () => {
+        if (!routing.view || !routing.view.preview) return;
+        const audio = el("mramRoutingAudio");
+        if (!audio) return;
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
+      }, true);
+    }
   }
 
   function activeRouting() {

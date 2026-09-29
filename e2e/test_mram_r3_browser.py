@@ -46,4 +46,8 @@ def test_mram_r3_real_browser_routing_native_automation_reopen(tmp_path: Path) -
         "request_failure_count": proof.get("browser_request_failure_count"),
     }
     assert proof["browser_page_error_count"] == 0
-    assert proof["browser_request_failure_count"] == 0
+    assert proof["browser_request_failure_count"] == 0, {
+        "request_failures": proof.get("request_failures", []),
+        "http_error_responses": proof.get("http_error_responses", []),
+        "expected_media_aborts": proof.get("expected_media_aborts", []),
+    }

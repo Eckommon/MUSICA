@@ -1,0 +1,47 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://eckommon.github.io/MUSICA/schemas/realtime-callback-transaction-v0.schema.json",
+  "title":"MUSICA Realtime Callback Transaction v0",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["transaction_version","source","request","response"],
+  "properties":{
+    "transaction_version":{"const":"0"},
+    "source":{
+      "type":"object","additionalProperties":false,
+      "required":["revision_id","realtime_execution_plan_sha256"],
+      "properties":{
+        "revision_id":{"type":"string","minLength":1},
+        "realtime_execution_plan_sha256":{"$ref":"#/$defs/sha256"}
+      }
+    },
+    "request":{
+      "type":"object","additionalProperties":false,
+      "required":["callback_index","start_frame","requested_frame_count","end_frame_exclusive","transport_state"],
+      "properties":{
+        "callback_index":{"type":"integer","minimum":0},
+        "start_frame":{"type":"integer","minimum":0},
+        "requested_frame_count":{"type":"integer","minimum":1},
+        "end_frame_exclusive":{"type":"integer","minimum":1},
+        "transport_state":{"const":"RUNNING"}
+      }
+    },
+    "response":{
+      "type":"object","additionalProperties":false,
+      "required":["callback_index","start_frame","requested_frame_count","delivered_frame_count","end_frame_exclusive","payload_sha256","payload_size_bytes","status","error_code","late"],
+      "properties":{
+        "callback_index":{"type":"integer","minimum":0},
+        "start_frame":{"type":"integer","minimum":0},
+        "requested_frame_count":{"type":"integer","minimum":1},
+        "delivered_frame_count":{"type":"integer","minimum":0},
+        "end_frame_exclusive":{"type":"integer","minimum":1},
+        "payload_sha256":{"$ref":"#/$defs/sha256"},
+        "payload_size_bytes":{"type":"integer","minimum":0},
+        "status":{"enum":["OK","SHORT_FILL","ERROR"]},
+        "error_code":{"type":["string","null"]},
+        "late":{"type":"boolean"}
+      }
+    }
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

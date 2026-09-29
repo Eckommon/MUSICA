@@ -1,0 +1,21 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://eckommon.github.io/MUSICA/schemas/realtime-callback-adapter-capability-v0.schema.json",
+  "title":"MUSICA Realtime Callback Adapter Capability v0",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["capability_version","adapter_id","classification","deterministic","callback_model","supported_failure_injection","host_native_device_claimed"],
+  "properties":{
+    "capability_version":{"const":"0"},
+    "adapter_id":{"const":"musica-deterministic-callback-adapter-v0"},
+    "classification":{"const":"deterministic_test_adapter"},
+    "deterministic":{"const":true},
+    "callback_model":{"const":"registered_pull_callback"},
+    "supported_failure_injection":{
+      "type":"array",
+      "items":{"enum":["ERROR","SHORT_FILL","LATE"]},
+      "minItems":3,"maxItems":3,"uniqueItems":true
+    },
+    "host_native_device_claimed":{"const":false}
+  }
+}

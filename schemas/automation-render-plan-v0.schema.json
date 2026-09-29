@@ -125,7 +125,7 @@
       "properties": {
         "lane_id": {"$ref": "#/$defs/stableId"},
         "parameter_id": {"type": "string", "minLength": 3, "maxLength": 160},
-        "scope": {"enum": ["project", "part"]},
+        "scope": {"enum": ["project", "part", "audio_track", "routing_node"]},
         "unit": {"enum": ["normalized", "decibel", "hertz", "semitone", "ratio"]},
         "code": {"enum": ["UNSUPPORTED_PARAMETER", "UNSUPPORTED_SCOPE", "UNSUPPORTED_UNIT", "UNSUPPORTED_RANGE", "SECTION_SCOPED_UNSUPPORTED"]},
         "reason": {"type": "string", "minLength": 1, "maxLength": 1024}

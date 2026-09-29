@@ -171,11 +171,15 @@ def test_browser_native_automation_preview_accept_reuses_mram_r2_authority_and_r
         ],
     )
     head_before = service.inspect_session("studio-r3-auto")["head_revision_id"]
+    accepted_routed_sha = StudioRoutingSurface(service).routing_view(
+        "studio-r3-auto"
+    )["accepted_audition"]["wav_sha256"]
     preview = automation.preview_automation_edit("studio-r3-auto", candidate=candidate)
     assert preview["preview_installed"] is True
     assert service.inspect_session("studio-r3-auto")["head_revision_id"] == head_before
     assert preview["studio_audition"]["path"] == "mram-r2-routed-native-mixer"
     assert preview["studio_audition"]["automation_applied"] is True
+    assert preview["studio_audition"]["baseline_wav_sha256"] == accepted_routed_sha
 
     accepted_result = service.accept_preview("studio-r3-auto")
     assert accepted_result["revision_record"]["parent_revision_id"] == head_before

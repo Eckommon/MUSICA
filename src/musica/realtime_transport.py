@@ -301,6 +301,49 @@ class ExactFrameTransport:
                 force_late=index in lates,
             )
 
+    def inspection_snapshot(self) -> dict[str, Any]:
+        """Return a typed-friendly derived snapshot without mutating runtime state."""
+
+        callback_index = (
+            None if self._engine is None else int(self._engine.callback_index)
+        )
+        metrics = dict(self._metrics)
+        metrics["xrun_dropout_equivalent_count"] = (
+            int(metrics["error_count"])
+            + int(metrics["short_fill_count"])
+            + int(metrics["late_count"])
+        )
+        return {
+            "transport_id": TRANSPORT_ID,
+            "classification": "derived_noncanonical",
+            "source": {
+                "revision_id": self.revision_id,
+                "realtime_execution_plan_sha256": str(
+                    self.plan["realtime_execution_plan_sha256"]
+                ),
+            },
+            "state": self.state,
+            "playhead_frame": int(self.playhead_frame),
+            "duration_frames": int(self.duration_frames),
+            "callback_index": callback_index,
+            "configuration": {
+                "sample_rate_hz": int(self.sample_rate_hz),
+                "output_channels": int(self.output_channels),
+                "block_size_frames": int(self.block_size_frames),
+            },
+            "latency": {
+                "configured_block_size_frames": int(self.block_size_frames),
+                "nominal_output_latency_frames": int(
+                    self.plan["backend"]["nominal_output_latency_frames"]
+                ),
+                "nominal_source": "simulated_backend_capability",
+                "host_observed_latency_available": False,
+                "wall_clock_guarantee_claimed": False,
+            },
+            "metrics": metrics,
+            "runtime_state_is_canonical": False,
+        }
+
     def finalize(self) -> TransportRun:
         if self.state == "PLAYING":
             raise ContractError("transport finalize requires non-PLAYING state")

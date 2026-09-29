@@ -299,6 +299,15 @@ def generate_rtio_r1_evidence(output_dir: str | Path) -> dict[str, Any]:
         adapter.open()
         adapter.register_callback(engine.callback)
         adapter.start()
+        invalid["callback_index_mismatch"] = _blocked(
+            lambda: adapter.request(callback_index=1)
+        )
+        invalid["callback_start_frame_mismatch"] = _blocked(
+            lambda: adapter.request(requested_start_frame=1)
+        )
+        invalid["callback_frame_count_mismatch"] = _blocked(
+            lambda: adapter.request(requested_frame_count=1)
+        )
         while engine.frame_cursor < int(engine.plan["duration_frames"]):
             adapter.request()
         invalid["callback_after_end_of_stream"] = _blocked(lambda: adapter.request())

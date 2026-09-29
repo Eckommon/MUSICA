@@ -553,6 +553,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
             records["unknown_id_result"] = unknown_data
             records["stale_source_result"] = stale["data"]
             final_revision = str(_session(page)["head_revision_id"])
+            page.wait_for_load_state("networkidle")
             page.close()
 
             _stop_server(server1, thread1)
@@ -590,6 +591,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
                 records["reopened_routing_view"] = reopened_routing
                 records["reopened_automation_view"] = reopened_auto
                 screenshots.append(_screenshot(reopen_page, root / "06-reopened-exact.png"))
+                reopen_page.wait_for_load_state("networkidle")
             finally:
                 reopen_page.close()
                 _stop_server(server2, thread2)

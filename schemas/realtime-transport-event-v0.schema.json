@@ -1,0 +1,26 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://eckommon.github.io/MUSICA/schemas/realtime-transport-event-v0.schema.json",
+  "title":"MUSICA Realtime Transport Event v0",
+  "type":"object","additionalProperties":false,
+  "required":["event_version","sequence_index","source","command","state_before","state_after","playhead_before","playhead_after","target_frame","callback_index","status","error_code","runtime_state_is_canonical"],
+  "properties":{
+    "event_version":{"const":"0"},
+    "sequence_index":{"type":"integer","minimum":0},
+    "source":{"type":"object","additionalProperties":false,"required":["revision_id","realtime_execution_plan_sha256"],"properties":{
+      "revision_id":{"type":"string","minLength":1},
+      "realtime_execution_plan_sha256":{"$ref":"#/$defs/sha256"}
+    }},
+    "command":{"enum":["PLAY","STOP","SEEK","CALLBACK","EOS"]},
+    "state_before":{"enum":["STOPPED","PLAYING","END_OF_STREAM"]},
+    "state_after":{"enum":["STOPPED","PLAYING","END_OF_STREAM"]},
+    "playhead_before":{"type":"integer","minimum":0},
+    "playhead_after":{"type":"integer","minimum":0},
+    "target_frame":{"type":["integer","null"],"minimum":0},
+    "callback_index":{"type":["integer","null"],"minimum":0},
+    "status":{"enum":["OK","SHORT_FILL","ERROR","STATE_TRANSITION"]},
+    "error_code":{"type":["string","null"]},
+    "runtime_state_is_canonical":{"const":false}
+  },
+  "$defs":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

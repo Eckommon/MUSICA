@@ -34,6 +34,7 @@ INTENT_PATH = ROOT / "examples" / "intents" / "dark-electronic-12s.json"
 
 CONTRACT_PATHS = [
     ROOT / "schemas" / "studio-preview-v0.schema.json",
+    ROOT / "schemas" / "studio-session-v0.schema.json",
     ROOT / "schemas" / "studio-automation-view-v0.schema.json",
     ROOT / "schemas" / "studio-routing-view-v0.schema.json",
     ROOT / "src" / "musica" / "studio.py",

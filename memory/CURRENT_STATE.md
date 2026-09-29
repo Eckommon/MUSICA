@@ -2,7 +2,7 @@
 
 ## Project phase / 프로젝트 단계
 
-**CORE PRODUCT LOOP BOUNDEDLY VALIDATED → NATIVE AUDIO FOUNDATION COMPLETED → MIXER ROUTING & AUTOMATION FOUNDATION COMPLETED → REAL-TIME AUDIO ENGINE & DEVICE FOUNDATION COMPLETED → RECORDING & MONITORING FOUNDATION STARTING**
+**CORE PRODUCT LOOP BOUNDEDLY VALIDATED → NATIVE AUDIO FOUNDATION COMPLETED → MIXER ROUTING & AUTOMATION FOUNDATION COMPLETED → REAL-TIME AUDIO ENGINE & DEVICE FOUNDATION COMPLETED → RECORDING & MONITORING FOUNDATION IN PROGRESS**
 
 Long-term governing target:
 
@@ -105,7 +105,7 @@ The long-term dependency chain selects recording/monitoring next, after the real
 
 Selected first rung:
 
-> **Issue #143 — REC-R0: Input/Capture Contracts & Deterministic Simulated Input Backend v0 — CURRENT**
+> **Issue #143 — REC-R0: Input/Capture Contracts & Deterministic Simulated Input Backend v0 — VALIDATED / COMPLETED**
 
 The dependency-safe sequence is:
 
@@ -117,24 +117,60 @@ REC-R0 input/capture contracts + deterministic simulated input
 → parent #142 bounded closure evaluation
 ```
 
-## Exact current rung / 현재 정확한 단계
+## REC-R0 — validated deterministic input/capture substrate
 
-REC-R0 must establish a capture substrate without prematurely granting capture bytes accepted creative authority.
+Issue `#143` — **COMPLETED**
 
-Required direction:
+Implementation PR `#145` — **MERGED**
+
+Canonical implementation merge/main:
+
+> **`fce2797639258ec32418c13fb56bb9266f818b20`**
+
+Durable validation:
+
+- `evidence/REC_R0_VALIDATION.md`
+- implementation/evidence head `f8b0f90a852aeb8ba48f361c5ba1844ecb8325ac` — **29/29 SUCCESS**
+- validation successor `a4d80c9e5ad9d4038bc26cf87dd6f4abbff0c348` — **29/29 SUCCESS**
+- dedicated run `36629133385` — **SUCCESS**
+- artifact ID `11062015980`
+- artifact ZIP SHA-256 `04a9a49aee2a3d719e4de5f97b72e2d3aa9f3607456f984f6c3d3d9049f0f203`
+- artifact size **21,948 bytes**
+- manifest payloads **12/12 PASS**
+- exact Git schema/source/test/workflow inventory **7/7 PASS**
+- nested project objects **3/3 PASS**
+- deterministic normal/failure PCM independently reconstructed byte-for-byte
+
+Validated boundary:
 
 ```text
-accepted Project revision
-+ explicit input capability/config
-→ derived capture plan
-→ deterministic simulated input blocks/callbacks
-→ exact capture frame cursor
-→ derived captured PCM payload + capture report
-≠ accepted audio asset
-≠ accepted track/clip state
+accepted Project revision + explicit simulated input config
+→ provenance-bound derived capture plan
+→ deterministic fixed-block capture
+→ derived PCM payload + capture report
+≠ accepted asset / track / clip
 ```
 
-Initial work should reuse the RTIO capability/lifecycle/provenance discipline where possible but keep input capture contracts distinct from output execution.
+REC-R0 keeps accepted HEAD/audio material unchanged, enforces the strict capture lifecycle, supports exact frame progression and deterministic ERROR/SHORT_FILL/LATE instrumentation, and reproduces plan/trace/payload/report exactly after reopen.
+
+## Exact current rung / 현재 정확한 단계
+
+The current rung is:
+
+> **Issue #146 — REC-R1: Trusted Captured-Asset Finalize & Recording Preview/Accept Authority v0**
+
+REC-R1 must cross the authority boundary REC-R0 intentionally did not cross:
+
+```text
+completed derived capture
+→ source-bound recording-finalize candidate
+→ Preview / accepted HEAD unchanged
+→ explicit trusted Accept
+→ immutable content-addressed captured asset
+→ accepted stable audio track/clip revision
+```
+
+R1 must reuse the existing immutable audio-asset and audio Preview/Accept authority wherever possible rather than create a parallel recording state machine.
 
 ## Current important non-claims / 현재 주요 비주장
 
@@ -156,7 +192,7 @@ Until separately validated, do not claim:
 
 ## Exact next phase / 다음 단계
 
-> **Implement Issue #143 from canonical main `a7ed3f1fcf545fd01dcda020d808fd0f4b9d4294`: inspect the RTIO backend/callback/transport contracts and native audio asset authority, freeze an explicit deterministic input capability + capture-plan/lifecycle model, prove exact simulated capture progression and fail-closed configuration while accepted Project HEAD remains unchanged, then promote through a new permanent REC-R0 evidence gate.**
+> **Implement Issue #146 from canonical main `fce2797639258ec32418c13fb56bb9266f818b20`: re-ground REC-R0 capture identity plus existing immutable audio-asset/audio-edit authority, freeze a source-bound recording-finalize candidate and Preview→explicit Accept path, prove captured bytes become immutable accepted track/clip media exactly once while tampered/stale/bypass/discard paths fail closed, then promote through a new permanent REC-R1 evidence gate.**
 
 See `memory/NEXT_ACTION.md` for the exact execution order.
 

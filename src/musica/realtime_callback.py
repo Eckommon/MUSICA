@@ -74,10 +74,10 @@ class DeterministicCallbackAdapter:
         self._transition("CLOSED", "OPEN")
 
     def register_callback(self, callback: Callable[..., dict[str, Any]]) -> None:
-        if self.state != "OPEN":
-            raise ContractError("callback registration requires OPEN state")
         if self._callback is not None:
             raise ContractError("callback already registered")
+        if self.state != "OPEN":
+            raise ContractError("callback registration requires OPEN state")
         self._callback = callback
         self.state = "CALLBACK_REGISTERED"
         self.lifecycle.append("CALLBACK_REGISTERED")

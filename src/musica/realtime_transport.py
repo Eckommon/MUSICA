@@ -286,6 +286,12 @@ class ExactFrameTransport:
         lates = set() if force_late_callback_indices is None else set(force_late_callback_indices)
         if errors & shorts:
             raise ContractError("transport ERROR and SHORT_FILL callback indices overlap")
+        assert self._engine is not None
+        remaining = self.duration_frames - self._engine.frame_cursor
+        total_callbacks = (remaining + self.block_size_frames - 1) // self.block_size_frames
+        all_indices = errors | shorts | lates
+        if any(index < 0 or index >= total_callbacks for index in all_indices):
+            raise ContractError("transport failure injection index outside current play segment")
         while self.state == "PLAYING":
             assert self._engine is not None
             index = self._engine.callback_index

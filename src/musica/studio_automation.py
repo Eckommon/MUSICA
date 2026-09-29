@@ -23,6 +23,8 @@ from .automation_edit import (
     build_automation_edit_preview,
 )
 from .automation_lowering import lower_automation_execution
+from .audio_edit import audio_material_sha256
+from .routing_contracts import routing_material_from_blueprint, routing_material_sha256
 from .automation_renderer import (
     automation_render_plan_sha256,
     build_automation_render_plan,
@@ -179,6 +181,10 @@ class StudioAutomationSurface:
                 "revision_id": str(revision_id),
                 "blueprint_sha256": blueprint_sha256(accepted),
                 "automation_material_sha256": automation_material_sha256(accepted),
+                "audio_material_sha256": audio_material_sha256(accepted),
+                "routing_material_sha256": routing_material_sha256(
+                    routing_material_from_blueprint(accepted)
+                ),
                 "branch": str(branch),
                 "timing": {
                     "bpm": bpm,
@@ -213,7 +219,13 @@ class StudioAutomationSurface:
             parent_revision_id = session.project.head_revision_id()
             parent = session.project.read_revision(parent_revision_id)
             revision_id = self.service._revision_id(parent_revision_id, "automation_edit", candidate)
-            resolved = build_automation_edit_preview(parent, candidate, revision_id=revision_id)
+            resolved = build_automation_edit_preview(
+                parent,
+                candidate,
+                revision_id=revision_id,
+                project=session.project,
+                branch=session.project.current_branch(),
+            )
             automation_detail = resolved.as_dict()
 
             if not resolved.ready or resolved.blueprint is None:
@@ -237,6 +249,7 @@ class StudioAutomationSurface:
                 detail={
                     "automation_edit": automation_detail,
                     "candidate_id": str(candidate["candidate_id"]),
+                    "source_candidate": copy.deepcopy(candidate),
                     "operations": copy.deepcopy(candidate["operations"]),
                     "audible_automation_validated": False,
                 },

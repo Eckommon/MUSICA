@@ -693,9 +693,12 @@ class StudioService:
                     actor=pending.actor,
                     reason=pending.reason,
                 )
+            artifact_paths = [
+                path for path in (pending.midi_path, pending.wav_path) if path.is_file()
+            ]
             manifest = session.project.bind_artifacts(
                 pending.candidate["project"]["revision_id"],
-                [pending.midi_path, pending.wav_path],
+                artifact_paths,
             )
             accepted_preview_id = pending.descriptor["preview_id"]
             self._clear_pending(session)

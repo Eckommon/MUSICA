@@ -87,6 +87,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + b"\n"
             + _static_bytes("realtime_runtime.js")
             + b"\n"
+            + _static_bytes("recording_monitoring.js")
+            + b"\n"
             + _static_bytes("app.js")
         )
     if name == "app.css":
@@ -104,6 +106,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + _static_bytes("routing_editing.css")
             + b"\n"
             + _static_bytes("realtime_runtime.css")
+            + b"\n"
+            + _static_bytes("recording_monitoring.css")
             + b"\n"
             + _static_bytes("app.css")
         )

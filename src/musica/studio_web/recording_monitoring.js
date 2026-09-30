@@ -192,7 +192,7 @@
         <fieldset class="rec-finalize">
           <legend>REC-R1 finalize authority</legend>
           <label>Destination track<select id="recTrack"></select></label>
-          <label>Clip ID<input id="recClip" value="REC-STUDIO-001" pattern="[A-Za-z0-9][A-Za-z0-9._:-]*"></label>
+          <label>Clip ID<input id="recClip" value="REC-STUDIO-001"></label>
           <label>Timeline start seconds<input id="recStartSeconds" type="number" min="0" step="0.01" value="0"></label>
           <div class="rec-actions">
             <button id="recPreview" class="secondary" type="button">Preview finalize</button>

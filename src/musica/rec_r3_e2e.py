@@ -31,6 +31,7 @@ CONTRACT_PATHS = [
     ROOT / "schemas" / "recording-monitor-run-report-v0.schema.json",
     ROOT / "schemas" / "recording-finalize-candidate-v0.schema.json",
     ROOT / "schemas" / "recording-finalize-authority-result-v0.schema.json",
+    ROOT / "schemas" / "studio-recording-view-v0.schema.json",
     ROOT / "src" / "musica" / "recording_capture.py",
     ROOT / "src" / "musica" / "recording_monitor.py",
     ROOT / "src" / "musica" / "recording_finalize.py",

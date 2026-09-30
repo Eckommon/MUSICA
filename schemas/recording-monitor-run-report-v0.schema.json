@@ -1,0 +1,27 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://eckommon.github.io/MUSICA/schemas/recording-monitor-run-report-v0.schema.json",
+  "title":"MUSICA Recording Monitor Run Report v0",
+  "type":"object","additionalProperties":false,
+  "required":["report_version","classification","source","capture","monitor","accepted_head_unchanged","monitor_state_is_canonical","monitor_output_is_canonical","recording_monitor_run_report_sha256"],
+  "properties":{
+    "report_version":{"const":"0"},"classification":{"const":"derived_noncanonical"},
+    "source":{"type":"object","additionalProperties":false,"required":["revision_id","recording_monitor_plan_sha256"],"properties":{
+      "revision_id":{"type":"string","minLength":1},"recording_monitor_plan_sha256":{"$ref":"#/$defs/sha"}
+    }},
+    "capture":{"type":"object","additionalProperties":false,"required":["recording_capture_run_report_sha256","payload_sha256","payload_size_bytes","captured_frames","error_count","short_fill_count","late_count","dropout_equivalent_count"],"properties":{
+      "recording_capture_run_report_sha256":{"$ref":"#/$defs/sha"},"payload_sha256":{"$ref":"#/$defs/sha"},
+      "payload_size_bytes":{"type":"integer","minimum":0},"captured_frames":{"type":"integer","minimum":0},
+      "error_count":{"type":"integer","minimum":0},"short_fill_count":{"type":"integer","minimum":0},"late_count":{"type":"integer","minimum":0},"dropout_equivalent_count":{"type":"integer","minimum":0}
+    }},
+    "monitor":{"type":"object","additionalProperties":false,"required":["enabled","blocks_requested","blocks_written","frames_written","input_error_drop_count","input_short_fill_count","input_late_count","output_xrun_count","payload_sha256","payload_size_bytes"],"properties":{
+      "enabled":{"type":"boolean"},"blocks_requested":{"type":"integer","minimum":0},"blocks_written":{"type":"integer","minimum":0},
+      "frames_written":{"type":"integer","minimum":0},"input_error_drop_count":{"type":"integer","minimum":0},
+      "input_short_fill_count":{"type":"integer","minimum":0},"input_late_count":{"type":"integer","minimum":0},
+      "output_xrun_count":{"type":"integer","minimum":0},"payload_sha256":{"$ref":"#/$defs/sha"},"payload_size_bytes":{"type":"integer","minimum":0}
+    }},
+    "accepted_head_unchanged":{"const":true},"monitor_state_is_canonical":{"const":false},"monitor_output_is_canonical":{"const":false},
+    "recording_monitor_run_report_sha256":{"$ref":"#/$defs/sha"}
+  },
+  "$defs":{"sha":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 
 import pytest
@@ -148,6 +149,42 @@ def test_recording_capture_tamper_failure_capture_missing_track_duplicate_clip_a
     )
     assert not tampered_preview.ready
     assert "payload SHA-256 mismatch" in tampered_preview.authority_result["conflicts"][0]["reason"]
+
+    tampered_plan_value = copy.deepcopy(run.plan)
+    tampered_plan_value["capture_frames"] = int(tampered_plan_value["capture_frames"]) + 1
+    tampered_plan = SimulatedCaptureRun(
+        plan=tampered_plan_value,
+        block_trace=run.block_trace,
+        captured_payload=run.captured_payload,
+        report=run.report,
+    )
+    tampered_plan_preview = build_recording_finalize_preview(
+        project,
+        accepted,
+        _candidate(accepted, run, candidate_id="REC-PLAN-TAMPER", clip_id="REC-PLAN-TAMPER"),
+        tampered_plan,
+    )
+    assert not tampered_plan_preview.ready
+    assert "plan SHA-256 mismatch" in tampered_plan_preview.authority_result["conflicts"][0]["reason"]
+
+    tampered_report_value = copy.deepcopy(run.report)
+    tampered_report_value["metrics"]["frames_captured"] = (
+        int(tampered_report_value["metrics"]["frames_captured"]) - 1
+    )
+    tampered_report = SimulatedCaptureRun(
+        plan=run.plan,
+        block_trace=run.block_trace,
+        captured_payload=run.captured_payload,
+        report=tampered_report_value,
+    )
+    tampered_report_preview = build_recording_finalize_preview(
+        project,
+        accepted,
+        _candidate(accepted, run, candidate_id="REC-REPORT-TAMPER", clip_id="REC-REPORT-TAMPER"),
+        tampered_report,
+    )
+    assert not tampered_report_preview.ready
+    assert "report SHA-256 mismatch" in tampered_report_preview.authority_result["conflicts"][0]["reason"]
 
     failed = run_recording_capture_simulation(
         project,

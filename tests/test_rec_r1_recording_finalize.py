@@ -9,7 +9,7 @@ from musica.audio_contracts import audio_material_from_blueprint
 from musica.automation_edit import automation_material_sha256
 from musica.audio_edit import audio_material_sha256, blueprint_sha256
 from musica.contracts import ContractError
-from musica.project import MusicaProject
+from musica.project import MusicaProject, ProjectIntegrityError
 from musica.recording_capture import SimulatedCaptureRun, run_recording_capture_simulation
 from musica.recording_finalize import (
     accept_recording_finalize_preview,
@@ -93,7 +93,7 @@ def test_recording_preview_is_asset_and_head_side_effect_free_then_accepts_once(
         canonical_capture_wav_bytes(run)
     ).hexdigest()
 
-    with pytest.raises(Exception, match="unknown or missing audio asset descriptor"):
+    with pytest.raises(ProjectIntegrityError, match="unknown or missing audio asset descriptor"):
         project.commit_revision(preview.blueprint)
     assert project.head_revision_id("main") == head_before
 

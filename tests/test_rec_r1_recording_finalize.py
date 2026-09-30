@@ -214,6 +214,32 @@ def test_stale_recording_preview_and_capture_binding_fail_closed(tmp_path: Path)
     assert "candidate capture binding mismatch" in blocked.authority_result["conflicts"][0]["reason"]
 
 
+def test_recording_preview_rejects_destination_track_sample_rate_mismatch(tmp_path: Path) -> None:
+    project, accepted = _fixture(tmp_path)
+    run = run_recording_capture_simulation(
+        project,
+        accepted["project"]["revision_id"],
+        sample_rate_hz=44100,
+        input_channels=1,
+        block_size_frames=256,
+        capture_frames=4410,
+    )
+    preview = build_recording_finalize_preview(
+        project,
+        accepted,
+        _candidate(
+            accepted,
+            run,
+            candidate_id="REC-RATE-MISMATCH",
+            clip_id="REC-RATE-MISMATCH",
+        ),
+        run,
+    )
+    assert not preview.ready
+    assert preview.authority_result["conflicts"][0]["code"] == "SAMPLE_RATE_MISMATCH"
+    assert "no-resampling policy" in preview.authority_result["conflicts"][0]["reason"]
+
+
 def test_recording_accept_reopen_preserves_asset_clip_and_routed_wav(tmp_path: Path) -> None:
     project, accepted = _fixture(tmp_path)
     run = _capture(project, accepted, frames=1024)

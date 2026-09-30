@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import os
@@ -243,6 +244,46 @@ def generate_rec_r1_evidence(output_dir: str | Path) -> dict[str, Any]:
                 report=latest_capture.report,
             ),
         )
+
+        tampered_plan_value = copy.deepcopy(latest_capture.plan)
+        tampered_plan_value["capture_frames"] = int(tampered_plan_value["capture_frames"]) + 1
+        plan_tamper_preview = build_recording_finalize_preview(
+            project,
+            latest,
+            _candidate(
+                latest,
+                latest_capture,
+                candidate_id="REC-R1-PLAN-TAMPER",
+                clip_id="REC-PLAN-TAMPER",
+            ),
+            SimulatedCaptureRun(
+                plan=tampered_plan_value,
+                block_trace=latest_capture.block_trace,
+                captured_payload=latest_capture.captured_payload,
+                report=latest_capture.report,
+            ),
+        )
+
+        tampered_report_value = copy.deepcopy(latest_capture.report)
+        tampered_report_value["metrics"]["frames_captured"] = (
+            int(tampered_report_value["metrics"]["frames_captured"]) - 1
+        )
+        report_tamper_preview = build_recording_finalize_preview(
+            project,
+            latest,
+            _candidate(
+                latest,
+                latest_capture,
+                candidate_id="REC-R1-REPORT-TAMPER",
+                clip_id="REC-REPORT-TAMPER",
+            ),
+            SimulatedCaptureRun(
+                plan=latest_capture.plan,
+                block_trace=latest_capture.block_trace,
+                captured_payload=latest_capture.captured_payload,
+                report=tampered_report_value,
+            ),
+        )
         missing_preview = build_recording_finalize_preview(
             project,
             latest,
@@ -306,6 +347,8 @@ def generate_rec_r1_evidence(output_dir: str | Path) -> dict[str, Any]:
             "accepted_recording_changes_routed_plan": accepted_render.plan["routed_mix_plan_sha256"] != baseline.plan["routed_mix_plan_sha256"],
             "accepted_recording_changes_routed_wav": accepted_render.wav_sha256 != baseline.wav_sha256,
             "tampered_payload_preview_blocked": not tamper_preview.ready,
+            "tampered_plan_preview_blocked": not plan_tamper_preview.ready,
+            "tampered_report_preview_blocked": not report_tamper_preview.ready,
             "missing_track_preview_blocked": not missing_preview.ready,
             "duplicate_clip_preview_blocked": not duplicate_preview.ready,
             "discard_no_mutation": discard_no_mutation,

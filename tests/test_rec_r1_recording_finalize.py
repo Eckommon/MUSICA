@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from musica.audio_assets import list_audio_assets
+from musica.audio_assets import import_audio_asset_bytes, list_audio_assets
 from musica.audio_contracts import audio_material_from_blueprint
 from musica.automation_edit import automation_material_sha256
 from musica.audio_edit import audio_material_sha256, blueprint_sha256
@@ -93,6 +93,15 @@ def test_recording_preview_is_asset_and_head_side_effect_free_then_accepts_once(
         canonical_capture_wav_bytes(run)
     ).hexdigest()
 
+    with pytest.raises(Exception, match="unknown or missing audio asset descriptor"):
+        project.commit_revision(preview.blueprint)
+    assert project.head_revision_id("main") == head_before
+
+    # Even if the prospective bytes are imported independently as a non-canonical
+    # project resource, public commit still cannot bypass trusted recording/audio
+    # Preview→Accept authority.
+    imported = import_audio_asset_bytes(project, canonical_capture_wav_bytes(run))
+    assert imported["asset_id"] == preview.prospective_asset_id
     with pytest.raises(ContractError, match="trusted audio Preview/Accept authority"):
         project.commit_revision(preview.blueprint)
     assert project.head_revision_id("main") == head_before

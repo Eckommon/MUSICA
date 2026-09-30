@@ -288,12 +288,75 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
             if project1.head_revision_id() != final_revision:
                 raise RuntimeError("REC-R3 dirty capture/reset changed accepted HEAD")
 
+            # Unknown destination stable IDs fail closed through the same Browser-facing REC-R1 authority.
+            clean_again = page.evaluate(
+                """async (sid) => {
+                  const response = await fetch(
+                    "/v0/sessions/" + encodeURIComponent(sid) + "/recording/run",
+                    {
+                      method:"POST",
+                      headers:{"Content-Type":"application/json","Accept":"application/json"},
+                      body:JSON.stringify({
+                        sample_rate_hz:8000,input_channels:2,block_size_frames:256,
+                        capture_frames:800,monitor_enabled:true
+                      })
+                    }
+                  );
+                  return {status:response.status,payload:await response.json()};
+                }""",
+                session_id,
+            )
+            if clean_again["status"] != 200:
+                raise RuntimeError("REC-R3 clean negative-fixture capture failed")
+            negative_runtime_id = str(clean_again["payload"]["data"]["runtime"]["runtime_id"])
+            unknown_destination = page.evaluate(
+                """async ([sid, rid]) => {
+                  const response = await fetch(
+                    "/v0/sessions/" + encodeURIComponent(sid)
+                      + "/recording/" + encodeURIComponent(rid) + "/preview",
+                    {
+                      method:"POST",
+                      headers:{"Content-Type":"application/json","Accept":"application/json"},
+                      body:JSON.stringify({track_id:"AT-MISSING",clip_id:"REC-R3-UNKNOWN",timeline_start_seconds:0,gain_db:0})
+                    }
+                  );
+                  return {status:response.status,payload:await response.json()};
+                }""",
+                [session_id, negative_runtime_id],
+            )
+            if unknown_destination["status"] != 200:
+                raise RuntimeError("REC-R3 unknown-destination Preview request failed")
+            unknown_data = unknown_destination["payload"]["data"]
+            if unknown_data["preview_installed"] is not False:
+                raise RuntimeError("REC-R3 unknown destination incorrectly installed Preview")
+            if unknown_data["authority_result"]["status"] != "BLOCKED":
+                raise RuntimeError("REC-R3 unknown destination authority status mismatch")
+            conflicts = unknown_data["authority_result"]["conflicts"]
+            if not conflicts or conflicts[0]["code"] != "UNKNOWN_TRACK":
+                raise RuntimeError("REC-R3 unknown destination did not fail with UNKNOWN_TRACK")
+            negative_reset = page.evaluate(
+                """async ([sid, rid]) => {
+                  const response = await fetch(
+                    "/v0/sessions/" + encodeURIComponent(sid)
+                      + "/recording/" + encodeURIComponent(rid) + "/reset",
+                    {method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:"{}"}
+                  );
+                  return {status:response.status,payload:await response.json()};
+                }""",
+                [session_id, negative_runtime_id],
+            )
+            if negative_reset["status"] != 200:
+                raise RuntimeError("REC-R3 unknown-destination runtime reset failed")
+            if project1.head_revision_id() != final_revision:
+                raise RuntimeError("REC-R3 unknown destination path changed accepted HEAD")
+
             records["source_recording_view"] = source_view
             records["clean_capture_view"] = capture_state["view"]
             records["finalize_preview"] = finalize_preview
             records["accepted_recording_view"] = accepted_state["view"]
             records["dirty_capture_view"] = dirty_view
             records["dirty_finalize_result"] = blocked_data
+            records["unknown_destination_result"] = unknown_data
             records["stale_runtime_result"] = stale_handle
             records["final_routed_plan"] = final_render_before.plan
             (root / "final-routed-before.wav").write_bytes(final_render_before.wav_bytes)
@@ -415,6 +478,7 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
         "stale_runtime_handle_blocked": True,
         "dirty_capture_visibly_blocked": True,
         "dirty_runtime_reset_head_unchanged": True,
+        "unknown_destination_blocked": True,
         "restart_reopen_revision_exact": True,
         "restart_reopen_recording_exact": True,
         "transient_runtime_not_persisted": True,

@@ -15,7 +15,7 @@ from typing import Any
 from .automation_edit import automation_material_sha256
 from .audio_contracts import audio_material_from_blueprint
 from .audio_edit import audio_material_sha256, blueprint_sha256
-from .contracts import ContractError
+from .contracts import ContractError, validate_contract
 from .recording_finalize import (
     RecordingFinalizePreview,
     accept_recording_finalize_preview,
@@ -221,7 +221,7 @@ class StudioRecordingSurface:
                 "finalize_preview": None if preview is None else preview.as_dict(),
             }
 
-        return {
+        value = {
             "view_version": "0",
             "project_id": source["project_id"],
             "revision_id": revision_id,
@@ -259,6 +259,8 @@ class StudioRecordingSurface:
                 "restart_resets_runtime": True,
             },
         }
+        validate_contract(value, "studio-recording-view-v0.schema.json")
+        return value
 
     def run_capture_monitor(
         self,

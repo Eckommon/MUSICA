@@ -1,0 +1,44 @@
+name: REC-R2 Monitoring Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rec-r2-monitoring-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA / MUSICA 설치
+        run: python -m pip install -e '.[dev]'
+      - name: Run REC-R2 regressions / REC-R2 회귀 테스트
+        run: >-
+          pytest -q
+          tests/test_rec_r2_monitoring.py
+          tests/test_rec_r1_recording_finalize.py
+          tests/test_rec_r0_capture.py
+          tests/test_rtio_r0_realtime_simulated_backend.py
+      - name: Generate REC-R2 evidence A / REC-R2 근거 A 생성
+        env:
+          MUSICA_REC_R2_EVIDENCE_OUT: artifacts/rec-r2-monitoring-a
+        run: python -m musica.rec_r2_evidence
+      - name: Generate REC-R2 evidence B / REC-R2 근거 B 생성
+        env:
+          MUSICA_REC_R2_EVIDENCE_OUT: artifacts/rec-r2-monitoring-b
+        run: python -m musica.rec_r2_evidence
+      - name: Prove byte-reproducible REC-R2 evidence / REC-R2 근거 byte 재현성 증명
+        run: diff -qr artifacts/rec-r2-monitoring-a artifacts/rec-r2-monitoring-b
+      - name: Upload REC-R2 evidence / REC-R2 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-rec-r2-monitoring-evidence
+          path: artifacts/rec-r2-monitoring-a
+          if-no-files-found: error

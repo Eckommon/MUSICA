@@ -1,0 +1,32 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://eckommon.github.io/MUSICA/schemas/recording-monitor-plan-v0.schema.json",
+  "title":"MUSICA Recording Monitor Plan v0",
+  "type":"object","additionalProperties":false,
+  "required":["plan_version","engine_id","classification","source","input","output","sample_rate_hz","channels","block_size_frames","capture_frames","monitor_enabled","policy","recording_monitor_plan_sha256"],
+  "properties":{
+    "plan_version":{"const":"0"},
+    "engine_id":{"const":"musica-recording-monitor-v0"},
+    "classification":{"const":"derived_noncanonical"},
+    "source":{"type":"object","additionalProperties":false,"required":["project_id","revision_id","blueprint_sha256","audio_material_sha256","routing_material_sha256","automation_material_sha256","recording_capture_plan_sha256"],"properties":{
+      "project_id":{"type":"string","minLength":1},"revision_id":{"type":"string","minLength":1},
+      "blueprint_sha256":{"$ref":"#/$defs/sha"},"audio_material_sha256":{"$ref":"#/$defs/sha"},
+      "routing_material_sha256":{"$ref":"#/$defs/sha"},"automation_material_sha256":{"$ref":"#/$defs/sha"},
+      "recording_capture_plan_sha256":{"$ref":"#/$defs/sha"}
+    }},
+    "input":{"type":"object","additionalProperties":false,"required":["backend_id","capability_sha256"],"properties":{"backend_id":{"const":"musica-simulated-input-v0"},"capability_sha256":{"$ref":"#/$defs/sha"}}},
+    "output":{"type":"object","additionalProperties":false,"required":["backend_id","capability_sha256","classification"],"properties":{
+      "backend_id":{"const":"musica-simulated-output-v0"},"capability_sha256":{"$ref":"#/$defs/sha"},"classification":{"const":"simulated_test_backend"}
+    }},
+    "sample_rate_hz":{"type":"integer","minimum":8000,"maximum":192000},
+    "channels":{"const":2},"block_size_frames":{"type":"integer","minimum":1},"capture_frames":{"type":"integer","minimum":1},
+    "monitor_enabled":{"type":"boolean"},
+    "policy":{"type":"object","additionalProperties":false,"required":["tap","sample_format","rate_policy","channel_policy","monitor_gain","monitor_state_is_canonical","monitor_output_is_canonical"],"properties":{
+      "tap":{"const":"direct_input_post_capture_copy"},"sample_format":{"const":"pcm16_little_endian"},
+      "rate_policy":{"const":"exact_match_required_no_resampling"},"channel_policy":{"const":"exact_stereo_only"},
+      "monitor_gain":{"const":"unity_only_v0"},"monitor_state_is_canonical":{"const":false},"monitor_output_is_canonical":{"const":false}
+    }},
+    "recording_monitor_plan_sha256":{"$ref":"#/$defs/sha"}
+  },
+  "$defs":{"sha":{"type":"string","pattern":"^[0-9a-f]{64}$"}}
+}

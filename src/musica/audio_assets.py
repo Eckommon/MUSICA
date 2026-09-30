@@ -185,17 +185,17 @@ def audio_asset_bytes(project: MusicaProject, asset_id: str) -> bytes:
     return project._object_path(str(descriptor["object_sha256"])).read_bytes()
 
 
-def import_audio_asset(project: MusicaProject, source_path: str | Path) -> dict[str, Any]:
-    """Import one bounded WAV source into the existing project CAS.
+def import_audio_asset_bytes(project: MusicaProject, data: bytes) -> dict[str, Any]:
+    """Import exact WAV bytes into the immutable project CAS.
 
-    The internal asset path is derived only from SHA-256; an untrusted source filename
-    is never used as a project-relative path. Re-importing identical bytes is idempotent.
+    This is a resource operation, not creative acceptance. REC-R1 calls it only after
+    explicit recording Accept has revalidated the exact capture and accepted source.
+    Re-importing identical bytes remains idempotent.
     """
 
-    source = Path(source_path)
-    if not source.is_file():
-        raise ContractError(f"audio asset source does not exist: {source}")
-    data = source.read_bytes()
+    if not isinstance(data, (bytes, bytearray)):
+        raise ContractError("audio asset bytes must be bytes")
+    data = bytes(data)
     expected = _descriptor_for_bytes(data)
     digest = str(expected["object_sha256"])
     asset_id = str(expected["asset_id"])
@@ -225,6 +225,15 @@ def import_audio_asset(project: MusicaProject, source_path: str | Path) -> dict[
         descriptor_sha256=descriptor_sha,
     )
     return read_audio_asset(project, asset_id)
+
+
+def import_audio_asset(project: MusicaProject, source_path: str | Path) -> dict[str, Any]:
+    """Import one bounded WAV source into the existing project CAS."""
+
+    source = Path(source_path)
+    if not source.is_file():
+        raise ContractError(f"audio asset source does not exist: {source}")
+    return import_audio_asset_bytes(project, source.read_bytes())
 
 
 def list_audio_assets(project: MusicaProject) -> list[dict[str, Any]]:

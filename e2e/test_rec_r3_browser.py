@@ -34,6 +34,7 @@ def test_rec_r3_real_browser_recording_monitor_preview_accept_restart(
     assert proof["stale_runtime_handle_blocked"] is True
     assert proof["dirty_capture_visibly_blocked"] is True
     assert proof["dirty_runtime_reset_head_unchanged"] is True
+    assert proof["unknown_destination_blocked"] is True
     assert proof["restart_reopen_revision_exact"] is True
     assert proof["restart_reopen_recording_exact"] is True
     assert proof["transient_runtime_not_persisted"] is True

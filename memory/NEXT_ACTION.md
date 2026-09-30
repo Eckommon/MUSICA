@@ -2,123 +2,224 @@
 
 ## Exact resume point / 정확한 재개점
 
-**REC-R2 — BOUNDED INPUT MONITORING & CAPTURE/DROPOUT INSTRUMENTATION v0**
+**REC-R3 — STUDIO/BROWSER RECORDING & MONITORING SURFACE + RESTART/REOPEN LIFECYCLE v0**
 
-Issue #149 — OPEN
-Parent mission: Issue #142 — Recording & Monitoring Foundation v0 — OPEN
+Issue `#152` — **OPEN**  
+Parent mission: Issue `#142` — **Recording & Monitoring Foundation v0 — OPEN**
 
-REC-R1 is validated, merged and completed. The next dependency-safe step is to add a bounded deterministic monitor path for the same provenance-bound simulated input used by REC-R0 capture, while proving that monitoring remains runtime-only and cannot alter recorded bytes or accepted creative state.
+REC-R2 is validated, merged and completed. The next dependency-safe step is to expose the already validated capture, monitoring and recording-finalize authority through a truthful real Studio/Browser surface, then prove fresh service/process restart + project reopen lifecycle exactness.
 
 ## Canonical base / 공식 기준점
 
-- canonical main after REC-R1 merge: 284c823fa6b0e29a9abf78f3425054c2339e0bdb
-- REC-R1 Issue #146 — COMPLETED
-- REC-R1 PR #148 — MERGED
-- implementation/evidence head 023db631c827ebbea6068f0709ce57d341fde8e3 — 30/30 SUCCESS
-- validation-record successor c066136b79919eb28f40b9bddeddc489403f67c4 — 30/30 SUCCESS
-- durable validation: evidence/REC_R1_VALIDATION.md
-- dedicated artifact ID 11072283272
-- artifact ZIP SHA-256 5b4047fb3471e7a082143f2b4098ec497a39bd3c89fa0729ce42673065d3699f
-- permanent workflow count: 30
+- canonical main after REC-R2 merge: `4d0e7988b979c05ee7f5a04ed7fb4cb043a2b60e`
+- REC-R2 Issue `#149` — **COMPLETED**
+- REC-R2 PR `#151` — **MERGED**
+- implementation/evidence exact head `ec338120a61e1796a2cecd99aa66126fe6eebe29` — **31/31 SUCCESS**
+- validation-record successor `af2a23e120123546a33791b902e685bd9da10738` — **31/31 SUCCESS**
+- durable validation: `evidence/REC_R2_VALIDATION.md`
+- dedicated artifact ID `11083583035`
+- artifact ZIP SHA-256 `fa586bf0239901273eb4dcd77c3839b7a074a5bfd94dea569df96791d8404665`
+- permanent workflow count: **31**
 
 ## Inherited authority / 상속 권한
 
+```text
 REC-R0:
 accepted revision + explicit simulated input config
 → deterministic capture plan/runtime
-→ exact PCM payload + capture report
+→ exact PCM/report
 → derived only
 
 REC-R1:
-clean completed capture
-→ source-bound finalize candidate
-→ Preview / HEAD unchanged
+clean capture
+→ source-bound recording-finalize candidate
+→ Preview / HEAD + asset store unchanged
 → explicit Accept
-→ immutable asset
-→ accepted stable track/clip revision
+→ immutable asset + accepted track/clip
 
-RTIO:
-accepted revision
-→ deterministic realtime plan
-→ simulated output/callback/transport runtime
-→ derived only
+REC-R2:
+same capture blocks
+→ copy-only direct monitor tap
+→ deterministic simulated monitor sink/metrics
+→ derived/runtime-only
+```
 
-REC-R2 must compose these boundaries without turning monitor runtime/output/metrics into accepted creative state.
+REC-R3 must connect Studio/Browser to these existing authorities. It must not create a Browser-only recording store, direct asset import authority or direct audio-material commit endpoint.
 
 ## Exact implementation order / 정확한 구현 순서
 
-### 1. Re-ground capture and output runtime contracts
+### 1. Re-ground Studio/Browser lifecycle and existing authority surfaces
 
-Inspect recording_capture.py, REC-R0 schemas/tests/validation, recording_finalize.py, REC-R1 schemas/tests/validation, RTIO-R0/R1/R2/R3 plan/runtime/backend/transport modules, the simulated output sink representation and Project source/hash binding helpers.
+Inspect at minimum:
 
-Identify the smallest existing deterministic output/runtime boundary suitable for monitoring. Do not create a second unrelated realtime engine.
+- `src/musica/studio_service.py`;
+- `src/musica/studio_http.py`;
+- `src/musica/studio_web/*`;
+- current RTIO-R3 Studio runtime projection/restart implementation;
+- MRAM-R3 Browser Preview/Accept patterns;
+- `src/musica/recording_capture.py`;
+- `src/musica/recording_monitor.py`;
+- `src/musica/recording_finalize.py`;
+- REC-R0/R1/R2 tests and durable validations.
 
-### 2. Freeze monitoring plan v0
+Prefer extension of existing typed service/session projections rather than parallel state.
 
-Define a derived/non-canonical monitoring plan binding exact project/revision ID, Blueprint/audio/routing/automation hashes, input backend capability/config identity, sample rate, channels, block size, input generator identity, monitor enabled state, supported simulated monitor output backend, compatible output config, optional exact monitor gain, plan/compiler/version identity and self-hash.
+### 2. Freeze a typed recording/monitoring Browser projection
 
-Use exact-match only. No resampling.
+Bind exact:
 
-### 3. Use one input block stream for capture and monitor
+- session/project identity;
+- accepted revision ID;
+- Blueprint/audio/routing/automation hashes;
+- input backend/config identity;
+- capture-plan/report SHA;
+- capture clean/dirty/finalizable status;
+- monitor enabled state;
+- monitor-plan/report SHA;
+- exact capture/monitor counters;
+- prospective destination track/clip IDs where applicable;
+- explicit authority flags showing runtime/Browser state is non-canonical.
 
-For every input block N, fork the same bytes to capture and monitor. Do not regenerate a separate pseudo-input for monitoring. Captured PCM must be taken before any monitor-only gain or processing.
+Do not infer IDs from display labels or array positions.
 
-### 4. Prove monitor OFF/ON capture equality
+### 3. Inspection-first capture and monitoring surface
 
-For the same source/config and clean input, monitor-OFF capture payload and monitor-ON capture payload must be byte-for-byte identical, with the same payload identity and exact frame count.
+Expose truthful derived values for:
 
-### 5. Deterministic monitor output
+- input sample rate/channels/block size/capture frames;
+- capture cursor and frames captured;
+- ERROR/SHORT_FILL/LATE/dropout-equivalent counts;
+- monitor enabled state;
+- monitor frames/blocks written;
+- monitor-side output xrun count;
+- source/report self-hashes;
+- clean vs dirty capture status.
 
-When enabled, derive deterministic monitor sink bytes/trace/metrics binding exact source block/frame ranges, sink frames, payload SHA where materialized, block/callback counts, lifecycle, enabled state and monitoring-plan SHA. Repeat execution must reproduce exact outputs.
+No Browser interaction may directly mutate accepted creative state.
 
-### 6. Monitoring state is runtime-only
+### 4. Bounded Browser capture/monitor runtime actions
 
-Monitor enable/disable/start/stop/reset must leave Project HEAD, Blueprint hash, accepted audio/routing/automation material and immutable asset inventory unchanged. Transient monitor cursors/counters are not creative state.
+If runtime actions are exposed, delegate only to the existing REC-R0/R2 runtime semantics.
 
-### 7. Optional monitor gain
+Preferred bounded actions:
 
-Only implement if an existing exact gain law/range can be reused. If supported, prove the capture payload SHA remains identical while monitor output SHA changes. Never apply monitor gain to captured PCM.
+- start one deterministic capture scenario;
+- enable/disable bounded monitoring;
+- stop/finalize runtime capture;
+- discard/reset transient capture/monitor state.
 
-### 8. Capture/dropout/error instrumentation
+Runtime actions must preserve accepted Project HEAD and asset/audio material.
 
-Preserve REC-R0 exact counters and add only explicitly defined monitor-side metrics. Exercise clean, SHORT_FILL, LATE, ERROR and a monitor-side dropped/underrun case only if separately modeled. No hidden padding, replay or repair.
+### 5. Reuse REC-R1 finalize authority unchanged
 
-### 9. REC-R1 finalize compatibility
+A clean completed capture may produce a typed Browser recording-finalize proposal.
 
-A clean monitored capture must remain finalizable through the unchanged REC-R1 Preview→Accept authority. A failed/non-clean capture must remain non-finalizable. Monitoring state itself must not gain creative authority.
+Required invariant:
 
-### 10. Fail-closed matrix
+```text
+clean capture + accepted revision
+→ Browser typed finalize proposal
+→ existing build_recording_finalize_preview()
+→ PREVIEW / HEAD and asset store unchanged
+→ explicit Browser Accept
+→ existing accept_recording_finalize_preview()
+→ exactly one accepted recording revision
+```
 
-Reject stale accepted source, unsupported input or monitor backend/config, rate/channel mismatch, incompatible block size where required, malformed monitoring-plan/self-hash, corrupted validated trace, unsupported monitor gain/range and any attempt to treat monitor output as accepted audio without REC-R1 authority.
+Do not create a second Browser recording Accept implementation.
 
-### 11. Runtime reconstruction
+### 6. Dirty capture truthfulness
 
-Reconstructing the derived monitor runtime from the same accepted revision/config should reproduce the same plan and deterministic scenario output while transient counters/state reset according to contract.
+A capture with ERROR/SHORT_FILL/LATE/dropout-equivalent failure must remain visibly non-finalizable under the unchanged REC-R1 rules.
 
-No Browser/UI claim is required in R2.
+The UI must not imply that monitored/dirty runtime bytes are accepted media.
 
-### 12. Dedicated evidence and permanent gate
+### 7. Stale and unknown-handle fail-closed matrix
 
-Add one REC-R2 workflow without weakening the existing 30 gates. Expected total after R2: 31 permanent workflows.
+Reject at minimum:
 
-Evidence must prove exact source/input/output binding, monitor OFF/ON capture equality, deterministic monitor output/metrics, runtime-only authority, exact failure instrumentation, REC-R1 clean-finalize compatibility, fail-closed incompatible/stale paths and reconstruction repeatability.
+- stale session ID;
+- stale accepted revision;
+- stale capture/monitor plan/report binding;
+- stale recording Preview after HEAD advance;
+- unknown destination track ID;
+- duplicate/unknown clip identity;
+- direct asset/audio mutation request;
+- runtime action against an invalid lifecycle state.
+
+### 8. Audition/accepted-state truthfulness
+
+After explicit recording Accept:
+
+- accepted Browser projection must show the exact new asset/track/clip identity;
+- any routed/native audition must use accepted project state;
+- transient capture/monitor sink bytes must never masquerade as accepted project media.
+
+### 9. Fresh restart/reopen lifecycle
+
+Use a genuinely fresh service/process boundary.
+
+Prove:
+
+```text
+accepted recording revision
+→ stop Studio/service
+→ start fresh Studio/service
+→ reopen project
+→ same accepted revision
+→ same immutable recording asset
+→ same track/clip identity
+→ same accepted audio material
+→ same deterministic downstream plan/WAV where applicable
+→ transient capture/monitor runtime absent/reset
+```
+
+Runtime reset is expected; accepted creative state persistence is required.
+
+### 10. Real Chromium evidence
+
+At minimum:
+
+1. open source project;
+2. inspect exact recording/monitoring projection;
+3. run a deterministic clean monitored capture;
+4. inspect clean status and exact metrics;
+5. build recording Preview;
+6. verify HEAD unchanged;
+7. explicitly Accept;
+8. verify accepted recording identity;
+9. exercise a dirty capture and verify finalize blocked;
+10. discard/reset without accepted mutation;
+11. restart service/process;
+12. reopen and verify accepted recording persists while runtime resets;
+13. verify no unexpected console/page/request errors.
+
+### 11. Dedicated evidence and permanent gate
+
+Add a dedicated REC-R3 permanent workflow without weakening the existing **31** gates.
+
+Expected total after R3: **32** permanent workflows.
+
+Evidence should combine deterministic API/runtime evidence with real-browser screenshots/interactions and fresh restart/reopen proof.
+
+### 12. Parent Issue #142 bounded closure evaluation
+
+After R3 validates, evaluate every required capability in Issue #142 requirement-by-requirement.
+
+Do not close the parent merely because R3 merged. Open the smallest missing rung if a material v0 requirement remains unproved.
 
 ### 13. Promotion
 
-Implementation/evidence complete → dedicated REC-R2 gate green → 31/31 exact-head green → independent artifact inspection → durable REC-R2 validation → validation successor 31/31 green → expected-head squash merge → Issue #149 completed → separate state-only closure to REC-R3.
+Implementation/evidence → dedicated REC-R3 gate → all workflows green on exact evidence head → independent artifact inspection → durable REC-R3 validation → successor exact-head full rerun → expected-head squash merge → Issue #152 completed → separate state-only parent #142 closure evaluation.
 
-## REC-R2 non-goals / 비목표
+## REC-R3 non-goals / 비목표
 
-No Browser recording/monitoring UI, host-native microphone or speaker monitoring, measured host-native latency, zero-latency/hardware monitoring, take/comp, punch recording, effects/plugin monitoring, VST3/AU/CLAP hosting, PDC, sidechains, resampling, mastering or generalized commercial recording readiness.
+No host-native microphone/line input, host-native speaker monitoring, measured host-native latency, hardware/zero-latency monitoring, take/comp, punch-in/out, effects/plugin monitoring, VST3/AU/CLAP hosting, PDC, resampling, sidechains, mastering or generalized commercial recording readiness.
 
-## Successor after R2
+## Maximum intended REC-R3 outcome
 
-If R2 validates cleanly: REC-R3 — truthful Studio/Browser recording + monitoring lifecycle surface with fresh restart/reopen proof, followed by parent Issue #142 bounded closure evaluation.
+> **MUSICA can truthfully inspect bounded capture/monitoring runtime in Studio/Browser, finalize a clean capture through the existing REC-R1 Preview→explicit Accept authority, and recover the accepted recording exactly after fresh restart/reopen while transient Browser/runtime state remains derived and non-canonical.**
 
-## Maximum intended REC-R2 outcome
-
-> MUSICA can run a bounded deterministic input-monitoring path from the same provenance-bound simulated input used for capture, keep monitoring strictly runtime-only, prove monitoring does not alter captured recording bytes, and deterministically instrument capture/monitor failures while preserving REC-R1 finalize authority.
-
-This remains a target claim until R2 is implemented, evidenced, merged and state-closed.
+This remains a target claim until REC-R3 is implemented, evidenced, merged and state-closed.
 
 **Repository evidence remains authoritative over conversation/model memory.**

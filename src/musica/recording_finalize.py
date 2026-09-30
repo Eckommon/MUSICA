@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .automation_edit import automation_material_sha256
-from .audio_assets import import_audio_asset_bytes, list_audio_assets
+from .audio_assets import import_audio_asset_bytes, list_audio_assets, read_audio_asset
 from .audio_contracts import (
     audio_material_from_blueprint,
     validate_audio_material,
@@ -336,6 +336,27 @@ def build_recording_finalize_preview(
             candidate,
             capture_run,
             [_conflict(1, "DUPLICATE_CLIP", f"audio clip_id already exists: {clip_id}", track_id=track_id, clip_id=clip_id)],
+        )
+
+    capture_rate = int(capture_run.plan["sample_rate_hz"])
+    existing_rates = {
+        int(read_audio_asset(project, str(clip["asset_id"]))["format"]["sample_rate_hz"])
+        for clip in track["clips"]
+    }
+    if existing_rates and existing_rates != {capture_rate}:
+        return _blocked_preview(
+            parent_blueprint,
+            candidate,
+            capture_run,
+            [
+                _conflict(
+                    1,
+                    "SAMPLE_RATE_MISMATCH",
+                    f"recording capture sample rate {capture_rate} does not match destination track source rates {sorted(existing_rates)} under no-resampling policy",
+                    track_id=track_id,
+                    clip_id=clip_id,
+                )
+            ],
         )
 
     wav_bytes = canonical_capture_wav_bytes(capture_run)

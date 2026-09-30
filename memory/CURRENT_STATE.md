@@ -115,29 +115,92 @@ Maximum validated REC-R1 claim:
 
 > MUSICA can finalize a validated derived capture into immutable content-addressed project media and place it into stable accepted track/clip state only through a source-bound Preview→explicit Accept recording authority, while stale, tampered, bypass, incompatible and discard paths remain fail-closed.
 
+## REC-R2 — validated bounded input monitoring + capture/dropout instrumentation
+
+Issue #149 — **COMPLETED**  
+PR #151 — **MERGED**  
+Canonical implementation merge/main:
+
+> **`4d0e7988b979c05ee7f5a04ed7fb4cb043a2b60e`**
+
+Durable validation: `evidence/REC_R2_VALIDATION.md`
+
+Promotion facts:
+
+- implementation/evidence exact head `ec338120a61e1796a2cecd99aa66126fe6eebe29` — **31/31 permanent workflows SUCCESS**
+- validation-record successor `af2a23e120123546a33791b902e685bd9da10738` — **31/31 SUCCESS**
+- dedicated workflow: **REC-R2 Monitoring Evidence**
+- dedicated run `36685344816` — **SUCCESS**
+- artifact ID `11083583035`
+- artifact ZIP SHA-256 `fa586bf0239901273eb4dcd77c3839b7a074a5bfd94dea569df96791d8404665`
+- artifact ZIP size **40,001 bytes**
+- manifest payloads **14/14 exact SHA-256 + byte-size PASS**
+- exact Git schema/source/test/workflow inventory **9/9 PASS**
+- nested Project object store **18/18 content hashes PASS**
+- monitor plan/report self-hashes **6/6 independently recomputed PASS**
+
+Validated REC-R2 execution boundary:
+
+```text
+accepted revision + exact simulated stereo input config
+→ REC-R0 capture plan/runtime
+→ exact captured PCM block
+   ├→ capture backend records exact bytes
+   └→ copy-only REC-R2 direct monitor tap
+      → validated simulated stereo output backend
+      → derived monitor sink/metrics
+```
+
+Key evidence:
+
+- monitor OFF capture PCM = monitor ON capture PCM = clean monitor sink:
+  `8bd5917d21004e7fe2143c04dfd2f20f9d546c993cd4cde41b4cb6be5b012aed`
+- each clean payload is **3,200 bytes / 800 stereo frames**
+- injected monitor-output xrun count **1** leaves capture PCM/report unchanged
+- xrun monitor sink becomes **2,176 bytes**, SHA `137d1a6ff36272831d0a297e909b4078d515fe0373b72f92caac7fc2dc3daa35`
+- injected input ERROR + SHORT_FILL + LATE produce exact capture dropout-equivalent count **3**
+- monitor correlation counters are exactly **1 / 1 / 1**
+- no hidden padding, replay or repair
+- clean monitored capture reuses unchanged REC-R1 finalize Preview→explicit Accept authority
+- reopen reproduces exact capture/monitor plan, trace, PCM, sink and report
+
+Bounded v0 intentionally supports exact stereo/no-resampling/unity monitoring only because the validated simulated output backend is stereo-only. Mono monitor conversion, monitor DSP and host-native device claims remain outside the validated scope.
+
+Maximum validated REC-R2 claim:
+
+> **MUSICA can run a bounded deterministic input-monitoring path from the same provenance-bound simulated input used for capture, keep monitoring strictly runtime-only, prove monitoring does not alter captured recording bytes, and deterministically instrument capture/monitor failures while preserving REC-R1 finalize authority.**
+
 ## Exact current rung / 현재 정확한 단계
 
-Issue #149 — REC-R2: Bounded Input Monitoring & Capture/Dropout Instrumentation v0 — CURRENT
+> **Issue #152 — REC-R3: Studio/Browser Recording & Monitoring Surface + Restart/Reopen Lifecycle v0 — CURRENT**
+
+REC-R3 must project the already validated REC-R0/R1/R2 recording and monitoring truth into a real Studio/Browser surface without creating Browser-only recording authority.
 
 Required direction:
 
-same accepted revision + same simulated input
-→ capture path → exact captured PCM/report
-→ derived monitor path → deterministic monitor sink/metrics
+```text
+accepted project revision
+→ derived capture/monitor runtime projection
+→ Browser recording-finalize proposal
+→ existing REC-R1 Preview / HEAD unchanged
+→ explicit REC-R1 Accept
+→ accepted immutable asset + track/clip
+→ fresh service/process restart
+→ project reopen
+→ accepted recording persists exactly
+→ transient capture/monitor state resets
+```
 
-monitor OFF capture bytes == monitor ON capture bytes
-monitor runtime/metrics/output != accepted creative authority
-
-REC-R2 should reuse REC-R0 input source and RTIO simulated output/runtime boundaries, preserve REC-R1 finalize authority unchanged, and add only exact monitoring/failure semantics.
+The Browser must expose exact source/config/hash identity and runtime-only authority labels, reject stale/unknown handles, and delegate recording finalization to the existing REC-R1 authority rather than adding a direct asset/audio commit path.
 
 ## Current non-claims
 
-No Browser recording/monitoring UI, host-native microphone/line input, host-native speaker monitoring, measured host-native input/monitor latency, zero-latency/hardware monitoring, take/comp, punch-in/out, effects/plugin monitoring, VST3/AU/CLAP hosting, PDC, resampling, sidechains, mastering or generalized commercial recording readiness is yet validated.
+No host-native microphone/line input, host-native speaker monitoring, measured host-native monitoring latency, zero-latency/hardware monitoring, take/comp, punch-in/out, plugin/effect monitoring, VST3/AU/CLAP hosting, PDC, resampling, sidechains, mastering or generalized commercial recording readiness is validated.
 
 ## Exact next phase / 다음 단계
 
-Implement Issue #149 from canonical main 284c823fa6b0e29a9abf78f3425054c2339e0bdb: re-ground REC-R0 input/capture and RTIO output/runtime contracts, freeze one source-bound derived monitoring plan, prove monitor OFF/ON capture-byte equality plus deterministic monitor sink/metrics and failure instrumentation, preserve REC-R1 finalize authority unchanged, then promote through a new permanent REC-R2 evidence gate.
+> **Implement Issue #152 from canonical main `4d0e7988b979c05ee7f5a04ed7fb4cb043a2b60e`: re-ground Studio/Browser session and runtime projection patterns, expose truthful REC-R0/R2 capture+monitor inspection, connect a bounded recording-finalize Browser proposal to existing REC-R1 Preview→explicit Accept, prove dirty/stale/discard paths fail closed, then prove fresh service restart + project reopen preserves accepted recording while transient runtime resets.**
 
-See memory/NEXT_ACTION.md for the exact execution order.
+See `memory/NEXT_ACTION.md` for the exact execution order.
 
 **Repository evidence remains authoritative over conversation/model memory.**

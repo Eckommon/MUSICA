@@ -1,0 +1,40 @@
+name: REC-R3 Studio Recording & Restart Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rec-r3-studio-recording-restart-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA + browser evidence dependencies / MUSICA + browser 근거 의존성 설치
+        run: python -m pip install -e '.[dev,e2e]'
+      - name: Install Chromium for Playwright / Playwright Chromium 설치
+        run: python -m playwright install --with-deps chromium
+      - name: Run REC-R3 service regressions / REC-R3 서비스 회귀 테스트
+        run: >-
+          pytest -q
+          tests/test_rec_r3_studio_recording.py
+          tests/test_rec_r2_monitoring.py
+          tests/test_rec_r1_recording_finalize.py
+          tests/test_rec_r0_capture.py
+      - name: Run REC-R3 real-browser lifecycle / REC-R3 실제 Browser lifecycle 실행
+        env:
+          MUSICA_REC_R3_E2E_OUT: artifacts/rec-r3-studio-recording-reopen-evidence
+        run: pytest -q e2e/test_rec_r3_browser.py
+      - name: Upload REC-R3 evidence / REC-R3 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-rec-r3-studio-recording-reopen-evidence
+          path: artifacts/rec-r3-studio-recording-reopen-evidence
+          if-no-files-found: error

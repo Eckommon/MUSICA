@@ -27,6 +27,33 @@
     return payload.data;
   }
 
+  function recordingPrerequisiteReady() {
+    const routingView =
+      window.MUSICA_ROUTING && window.MUSICA_ROUTING.state
+        ? window.MUSICA_ROUTING.state.view
+        : null;
+    return Boolean(
+      routingView
+      && Array.isArray(routingView.track_outputs)
+      && routingView.track_outputs.length > 0
+    );
+  }
+
+  function scheduleRefresh(attempt = 0) {
+    if (!rec.sessionId || !rec.root) return;
+    if (recordingPrerequisiteReady()) {
+      refresh(true);
+      return;
+    }
+    if (attempt < 20) {
+      window.setTimeout(() => scheduleRefresh(attempt + 1), 50);
+    } else {
+      rec.view = null;
+      rec.runtimeId = null;
+      render();
+    }
+  }
+
   function observeSessionPayload(payload) {
     if (!payload || typeof payload !== "object") return;
     const data = payload.data && typeof payload.data === "object" ? payload.data : payload;
@@ -38,7 +65,7 @@
       rec.view = null;
       rec.runtimeId = null;
     }
-    queueMicrotask(() => refresh(true));
+    queueMicrotask(() => scheduleRefresh(0));
   }
 
   window.fetch = async (...args) => {
@@ -216,6 +243,13 @@
 
   async function refresh(quiet = true) {
     if (!rec.sessionId || !rec.root) return;
+    if (!recordingPrerequisiteReady()) {
+      rec.view = null;
+      rec.runtimeId = null;
+      render();
+      if (!quiet) status("Recording requires an accepted routed native-audio project.", "info");
+      return;
+    }
     try {
       rec.view = await api(`/v0/sessions/${encodeURIComponent(rec.sessionId)}/recording`);
       render();

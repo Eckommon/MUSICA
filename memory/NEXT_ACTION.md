@@ -2,97 +2,123 @@
 
 ## Exact resume point / 정확한 재개점
 
-**REC-R1 — TRUSTED CAPTURED-ASSET FINALIZE & RECORDING PREVIEW/ACCEPT AUTHORITY v0**
+**REC-R2 — BOUNDED INPUT MONITORING & CAPTURE/DROPOUT INSTRUMENTATION v0**
 
-Issue `#146` — **OPEN**
+Issue #149 — OPEN
+Parent mission: Issue #142 — Recording & Monitoring Foundation v0 — OPEN
 
-Parent mission: Issue `#142` — **Recording & Monitoring Foundation v0 — OPEN**
-
-REC-R0 is validated, merged and completed. The next dependency-safe step is to turn one exact completed derived capture into immutable accepted project media only through explicit source-bound recording authority.
+REC-R1 is validated, merged and completed. The next dependency-safe step is to add a bounded deterministic monitor path for the same provenance-bound simulated input used by REC-R0 capture, while proving that monitoring remains runtime-only and cannot alter recorded bytes or accepted creative state.
 
 ## Canonical base / 공식 기준점
 
-- canonical main after REC-R0 merge: `fce2797639258ec32418c13fb56bb9266f818b20`
-- REC-R0 Issue `#143` — **COMPLETED**
-- REC-R0 PR `#145` — **MERGED**
-- implementation/evidence head `f8b0f90a852aeb8ba48f361c5ba1844ecb8325ac` — **29/29 SUCCESS**
-- validation successor `a4d80c9e5ad9d4038bc26cf87dd6f4abbff0c348` — **29/29 SUCCESS**
-- durable validation: `evidence/REC_R0_VALIDATION.md`
-- artifact ID `11062015980`
-- artifact ZIP SHA `04a9a49aee2a3d719e4de5f97b72e2d3aa9f3607456f984f6c3d3d9049f0f203`
-- permanent workflow count: **29**
+- canonical main after REC-R1 merge: 284c823fa6b0e29a9abf78f3425054c2339e0bdb
+- REC-R1 Issue #146 — COMPLETED
+- REC-R1 PR #148 — MERGED
+- implementation/evidence head 023db631c827ebbea6068f0709ce57d341fde8e3 — 30/30 SUCCESS
+- validation-record successor c066136b79919eb28f40b9bddeddc489403f67c4 — 30/30 SUCCESS
+- durable validation: evidence/REC_R1_VALIDATION.md
+- dedicated artifact ID 11072283272
+- artifact ZIP SHA-256 5b4047fb3471e7a082143f2b4098ec497a39bd3c89fa0729ce42673065d3699f
+- permanent workflow count: 30
 
 ## Inherited authority / 상속 권한
 
-```text
-ATCM immutable assets + audio Preview/Accept
-+ REC-R0 exact capture plan/report/PCM identity
-→ REC-R1 trusted recording-finalize authority
-```
+REC-R0:
+accepted revision + explicit simulated input config
+→ deterministic capture plan/runtime
+→ exact PCM payload + capture report
+→ derived only
 
-Capture runtime remains derived. REC-R1 must not promote runtime objects or a report directly into accepted creative state.
+REC-R1:
+clean completed capture
+→ source-bound finalize candidate
+→ Preview / HEAD unchanged
+→ explicit Accept
+→ immutable asset
+→ accepted stable track/clip revision
+
+RTIO:
+accepted revision
+→ deterministic realtime plan
+→ simulated output/callback/transport runtime
+→ derived only
+
+REC-R2 must compose these boundaries without turning monitor runtime/output/metrics into accepted creative state.
 
 ## Exact implementation order / 정확한 구현 순서
 
-### 1. Re-ground asset and audio-edit authority
+### 1. Re-ground capture and output runtime contracts
 
-Inspect `audio_assets.py`, `audio_contracts.py`, `audio_edit.py`, audio schemas/tests/validations, `recording_capture.py`, REC-R0 validation, and Project object-store/export-import integrity.
+Inspect recording_capture.py, REC-R0 schemas/tests/validation, recording_finalize.py, REC-R1 schemas/tests/validation, RTIO-R0/R1/R2/R3 plan/runtime/backend/transport modules, the simulated output sink representation and Project source/hash binding helpers.
 
-### 2. Freeze recording-finalize candidate v0
+Identify the smallest existing deterministic output/runtime boundary suitable for monitoring. Do not create a second unrelated realtime engine.
 
-Bind exact project/revision and Blueprint/audio/routing/automation hashes, capture-plan SHA, capture-report SHA, PCM SHA/size/rate/channels/frame count, destination stable track ID, new stable clip ID, timeline start/source range/gain, actor/reason, and `preview_only=true`.
+### 2. Freeze monitoring plan v0
 
-### 3. Deterministic captured-media representation
+Define a derived/non-canonical monitoring plan binding exact project/revision ID, Blueprint/audio/routing/automation hashes, input backend capability/config identity, sample rate, channels, block size, input generator identity, monitor enabled state, supported simulated monitor output backend, compatible output config, optional exact monitor gain, plan/compiler/version identity and self-hash.
 
-If the immutable asset domain requires WAV, define one deterministic PCM16 little-endian → WAV wrapping path. No resampling, gain processing, hidden padding or channel reinterpretation. Preserve raw capture SHA as provenance.
+Use exact-match only. No resampling.
 
-### 4. Preview without accepted mutation
+### 3. Use one input block stream for capture and monitor
 
-```text
-accepted revision R + exact capture C
-→ validate source/capture/destination
-→ Preview
-→ accepted HEAD remains R
-```
+For every input block N, fork the same bytes to capture and monitor. Do not regenerate a separate pseudo-input for monitoring. Captured PCM must be taken before any monitor-only gain or processing.
 
-Preview must not create accepted track/clip state.
+### 4. Prove monitor OFF/ON capture equality
 
-### 5. Explicit trusted Accept
+For the same source/config and clean input, monitor-OFF capture payload and monitor-ON capture payload must be byte-for-byte identical, with the same payload identity and exact frame count.
 
-Revalidate HEAD, persisted source hashes, plan/report self-hashes, exact PCM bytes, destination track/clip identity and no-resampling constraints. Only then create/reuse immutable captured asset and commit accepted audio material exactly once.
+### 5. Deterministic monitor output
 
-### 6. Fail-closed authority matrix
+When enabled, derive deterministic monitor sink bytes/trace/metrics binding exact source block/frame ranges, sink frames, payload SHA where materialized, block/callback counts, lifecycle, enabled state and monitoring-plan SHA. Repeat execution must reproduce exact outputs.
 
-Reject generic commit/runtime promotion, second Accept, stale Preview, payload/report/plan tamper, wrong revision binding, unsupported format/rate/channels, missing track, duplicate clip ID, invalid timing/range and any configuration requiring resampling.
+### 6. Monitoring state is runtime-only
 
-### 7. Cancel/discard proof
+Monitor enable/disable/start/stop/reset must leave Project HEAD, Blueprint hash, accepted audio/routing/automation material and immutable asset inventory unchanged. Transient monitor cursors/counters are not creative state.
 
-Abandoning a candidate must leave accepted HEAD/audio material unchanged and must not surface accepted recording media through a hidden path. If staged object bytes exist, explicitly distinguish object-store presence from accepted authority.
+### 7. Optional monitor gain
 
-### 8. Accepted recording proof
+Only implement if an existing exact gain law/range can be reused. If supported, prove the capture payload SHA remains identical while monitor output SHA changes. Never apply monitor gain to captured PCM.
 
-Prove exactly one revision advance, exact immutable asset identity, target track ID, new clip ID, timing/source range/gain, and deterministic downstream native/routed plan/WAV change.
+### 8. Capture/dropout/error instrumentation
 
-### 9. Reopen compatibility
+Preserve REC-R0 exact counters and add only explicitly defined monitor-side metrics. Exercise clean, SHORT_FILL, LATE, ERROR and a monitor-side dropped/underrun case only if separately modeled. No hidden padding, replay or repair.
 
-Export/import reopen must preserve asset/track/clip identity, accepted audio material SHA and downstream plan/WAV identities.
+### 9. REC-R1 finalize compatibility
 
-### 10. Dedicated evidence and permanent gate
+A clean monitored capture must remain finalizable through the unchanged REC-R1 Preview→Accept authority. A failed/non-clean capture must remain non-finalizable. Monitoring state itself must not gain creative authority.
 
-Add a REC-R1 workflow without weakening the existing 29 gates. Expected total: **30** permanent workflows.
+### 10. Fail-closed matrix
 
-### 11. Promotion
+Reject stale accepted source, unsupported input or monitor backend/config, rate/channel mismatch, incompatible block size where required, malformed monitoring-plan/self-hash, corrupted validated trace, unsupported monitor gain/range and any attempt to treat monitor output as accepted audio without REC-R1 authority.
 
-Implementation/evidence → 30/30 exact-head green → independent artifact inspection → durable `evidence/REC_R1_VALIDATION.md` → successor 30/30 green → expected-head squash merge → Issue #146 completed → state-only closure to REC-R2.
+### 11. Runtime reconstruction
 
-## Non-goals
+Reconstructing the derived monitor runtime from the same accepted revision/config should reproduce the same plan and deterministic scenario output while transient counters/state reset according to contract.
 
-No Browser recording UI, live monitoring, take/comp, punch recording, host-native microphone/line input, measured host-native latency, resampling, plugin hosting/PDC, sidechains or generalized commercial recording readiness.
+No Browser/UI claim is required in R2.
 
-## Maximum intended REC-R1 outcome
+### 12. Dedicated evidence and permanent gate
 
-> **MUSICA can finalize a validated derived capture into immutable content-addressed project media and place it into stable accepted track/clip state only through a source-bound Preview→explicit Accept recording authority, while stale/tampered/bypass/discard paths remain fail-closed.**
+Add one REC-R2 workflow without weakening the existing 30 gates. Expected total after R2: 31 permanent workflows.
 
-This remains a target claim until REC-R1 is implemented, evidenced, merged and state-closed.
+Evidence must prove exact source/input/output binding, monitor OFF/ON capture equality, deterministic monitor output/metrics, runtime-only authority, exact failure instrumentation, REC-R1 clean-finalize compatibility, fail-closed incompatible/stale paths and reconstruction repeatability.
+
+### 13. Promotion
+
+Implementation/evidence complete → dedicated REC-R2 gate green → 31/31 exact-head green → independent artifact inspection → durable REC-R2 validation → validation successor 31/31 green → expected-head squash merge → Issue #149 completed → separate state-only closure to REC-R3.
+
+## REC-R2 non-goals / 비목표
+
+No Browser recording/monitoring UI, host-native microphone or speaker monitoring, measured host-native latency, zero-latency/hardware monitoring, take/comp, punch recording, effects/plugin monitoring, VST3/AU/CLAP hosting, PDC, sidechains, resampling, mastering or generalized commercial recording readiness.
+
+## Successor after R2
+
+If R2 validates cleanly: REC-R3 — truthful Studio/Browser recording + monitoring lifecycle surface with fresh restart/reopen proof, followed by parent Issue #142 bounded closure evaluation.
+
+## Maximum intended REC-R2 outcome
+
+> MUSICA can run a bounded deterministic input-monitoring path from the same provenance-bound simulated input used for capture, keep monitoring strictly runtime-only, prove monitoring does not alter captured recording bytes, and deterministically instrument capture/monitor failures while preserving REC-R1 finalize authority.
+
+This remains a target claim until R2 is implemented, evidenced, merged and state-closed.
 
 **Repository evidence remains authoritative over conversation/model memory.**

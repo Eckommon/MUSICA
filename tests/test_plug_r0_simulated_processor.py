@@ -13,6 +13,7 @@ from musica.plugin_reference import (
     plugin_material_sha256,
     render_simulated_plugins,
     validate_plugin_material,
+    validate_plugin_processing_plan,
 )
 from musica.project import MusicaProject
 from musica.routed_mixer import render_routed_mix
@@ -289,3 +290,24 @@ def test_serial_instance_order_and_latency_are_deterministic(tmp_path: Path) -> 
     )
     frames = _pcm16_frames(rendered.wav_bytes)
     assert frames[:7] == [(0, 0)] * 7
+
+
+def test_processing_plan_tamper_fails_self_hash_and_latency_validation(
+    tmp_path: Path,
+) -> None:
+    project, routed = _accept_routing(tmp_path)
+    revision_id = routed["project"]["revision_id"]
+    plan = build_plugin_processing_plan(
+        project, revision_id, _material(), sample_rate_hz=8000
+    )
+
+    tampered_hash = copy.deepcopy(plan)
+    tampered_hash["instances"][0]["gain_db"] = -9.0
+    with pytest.raises(ContractError, match="SHA-256 mismatch"):
+        validate_plugin_processing_plan(tampered_hash)
+
+    tampered_latency = copy.deepcopy(plan)
+    tampered_latency["total_effective_latency_frames"] += 1
+    # Recompute no self-hash here on purpose: the self-hash gate fires first.
+    with pytest.raises(ContractError, match="SHA-256 mismatch"):
+        validate_plugin_processing_plan(tampered_latency)

@@ -43,7 +43,7 @@
     "descriptor": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["plugin_id", "format", "vendor", "name", "version", "processor_id", "io", "parameters"],
+      "required": ["plugin_id", "format", "vendor", "name", "version", "processor_id", "io", "latency", "parameters"],
       "properties": {
         "plugin_id": {"$ref": "#/$defs/stableId"},
         "format": {"const": "simulated_reference_v0"},
@@ -60,6 +60,16 @@
             "output_channels": {"const": 2},
             "sample_format": {"const": "float64"},
             "sample_rate_policy": {"const": "exact_match_required_no_resampling"}
+          }
+        },
+        "latency": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "parameter_id", "unit"],
+          "properties": {
+            "mode": {"const": "state_parameter"},
+            "parameter_id": {"const": "delay_frames"},
+            "unit": {"const": "frames"}
           }
         },
         "parameters": {

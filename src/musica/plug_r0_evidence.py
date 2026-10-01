@@ -72,6 +72,11 @@ def _material(*, gain_db: float, delay_frames: int, bypass: bool = False) -> dic
                     "sample_format": "float64",
                     "sample_rate_policy": "exact_match_required_no_resampling",
                 },
+                "latency": {
+                    "mode": "state_parameter",
+                    "parameter_id": "delay_frames",
+                    "unit": "frames",
+                },
                 "parameters": [
                     {
                         "parameter_id": "gain_db",

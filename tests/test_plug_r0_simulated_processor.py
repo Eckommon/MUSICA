@@ -43,6 +43,11 @@ def _material(
                     "sample_format": "float64",
                     "sample_rate_policy": "exact_match_required_no_resampling",
                 },
+                "latency": {
+                    "mode": "state_parameter",
+                    "parameter_id": "delay_frames",
+                    "unit": "frames",
+                },
                 "parameters": [
                     {
                         "parameter_id": "gain_db",
@@ -261,3 +266,26 @@ def test_export_import_reopen_reproduces_detached_plan_and_output(
     assert plan_after == plan_before
     assert render_after.wav_bytes == render_before.wav_bytes
     assert reopened.verify_integrity()["status"] == "PASS"
+
+
+def test_serial_instance_order_and_latency_are_deterministic(tmp_path: Path) -> None:
+    project, routed = _accept_routing(tmp_path)
+    revision_id = routed["project"]["revision_id"]
+    material = _material(gain_db=-3.0, delay_frames=3)
+    second = copy.deepcopy(material["instances"][0])
+    second["instance_id"] = "PI-002"
+    second["slot"] = 1
+    second["state"] = {"gain_db": -2.0, "delay_frames": 4}
+    material["instances"].append(second)
+
+    plan = build_plugin_processing_plan(
+        project, revision_id, material, sample_rate_hz=8000
+    )
+    assert [item["instance_id"] for item in plan["instances"]] == ["PI-001", "PI-002"]
+    assert plan["total_effective_latency_frames"] == 7
+
+    rendered = render_simulated_plugins(
+        project, revision_id, material, sample_rate_hz=8000
+    )
+    frames = _pcm16_frames(rendered.wav_bytes)
+    assert frames[:7] == [(0, 0)] * 7

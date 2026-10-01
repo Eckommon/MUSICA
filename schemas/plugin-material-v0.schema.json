@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/plugin-material-v0.schema.json",
+  "title": "MUSICA Plugin Material Proposal v0",
+  "description": "PLUG-R0 detached non-canonical plugin descriptor/instance proposal. Accepted Blueprint mutation remains closed until a later trusted authority rung.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["material_version", "classification", "descriptors", "instances"],
+  "properties": {
+    "material_version": {"const": "0"},
+    "classification": {"const": "noncanonical_proposal"},
+    "descriptors": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {"$ref": "#/$defs/descriptor"}
+    },
+    "instances": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {"$ref": "#/$defs/instance"}
+    }
+  },
+  "$defs": {
+    "stableId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "parameterDescriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["parameter_id", "unit", "minimum", "maximum", "default"],
+      "properties": {
+        "parameter_id": {"enum": ["gain_db", "delay_frames"]},
+        "unit": {"enum": ["decibel", "frames"]},
+        "minimum": {"type": "number"},
+        "maximum": {"type": "number"},
+        "default": {"type": "number"}
+      }
+    },
+    "descriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plugin_id", "format", "vendor", "name", "version", "processor_id", "io", "latency", "parameters"],
+      "properties": {
+        "plugin_id": {"$ref": "#/$defs/stableId"},
+        "format": {"const": "simulated_reference_v0"},
+        "vendor": {"type": "string", "minLength": 1, "maxLength": 128},
+        "name": {"type": "string", "minLength": 1, "maxLength": 128},
+        "version": {"type": "string", "minLength": 1, "maxLength": 64},
+        "processor_id": {"const": "musica-simulated-gain-delay-v0"},
+        "io": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["input_channels", "output_channels", "sample_format", "sample_rate_policy"],
+          "properties": {
+            "input_channels": {"const": 2},
+            "output_channels": {"const": 2},
+            "sample_format": {"const": "float64"},
+            "sample_rate_policy": {"const": "exact_match_required_no_resampling"}
+          }
+        },
+        "latency": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "parameter_id", "unit"],
+          "properties": {
+            "mode": {"const": "state_parameter"},
+            "parameter_id": {"const": "delay_frames"},
+            "unit": {"const": "frames"}
+          }
+        },
+        "parameters": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"$ref": "#/$defs/parameterDescriptor"}
+        }
+      }
+    },
+    "instance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instance_id", "plugin_id", "owner", "slot", "bypass", "state"],
+      "properties": {
+        "instance_id": {"$ref": "#/$defs/stableId"},
+        "plugin_id": {"$ref": "#/$defs/stableId"},
+        "owner": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "owner_id"],
+          "properties": {
+            "kind": {"const": "routing_node"},
+            "owner_id": {"$ref": "#/$defs/stableId"}
+          }
+        },
+        "slot": {"type": "integer", "minimum": 0, "maximum": 255},
+        "bypass": {"type": "boolean"},
+        "state": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["gain_db", "delay_frames"],
+          "properties": {
+            "gain_db": {"type": "number", "minimum": -60.0, "maximum": 12.0},
+            "delay_frames": {"type": "integer", "minimum": 0, "maximum": 4096}
+          }
+        }
+      }
+    }
+  }
+}

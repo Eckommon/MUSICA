@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/studio-recording-view-v0.schema.json",
+  "title": "MUSICA Studio Recording View v0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "view_version","project_id","revision_id","branch","source",
+    "audio_tracks","runtime","authority","capabilities"
+  ],
+  "properties": {
+    "view_version": {"const": "0"},
+    "project_id": {"type": "string", "minLength": 1},
+    "revision_id": {"type": "string", "minLength": 1},
+    "branch": {"type": "string", "minLength": 1},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "blueprint_sha256","audio_material_sha256",
+        "routing_material_sha256","automation_material_sha256"
+      ],
+      "properties": {
+        "blueprint_sha256": {"$ref": "#/$defs/sha256"},
+        "audio_material_sha256": {"$ref": "#/$defs/sha256"},
+        "routing_material_sha256": {"$ref": "#/$defs/sha256"},
+        "automation_material_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "audio_tracks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["track_id","name","clip_ids"],
+        "properties": {
+          "track_id": {"$ref": "#/$defs/stableId"},
+          "name": {"type": "string", "minLength": 1},
+          "clip_ids": {
+            "type": "array",
+            "items": {"$ref": "#/$defs/stableId"}
+          }
+        }
+      }
+    },
+    "runtime": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "runtime_id","source_revision_id","recording_monitor_plan_sha256",
+            "recording_capture_plan_sha256","recording_capture_run_report_sha256",
+            "recording_monitor_run_report_sha256","capture_payload_sha256",
+            "monitor_enabled","capture_clean","capture_metrics","monitor_metrics",
+            "finalize_preview"
+          ],
+          "properties": {
+            "runtime_id": {"$ref": "#/$defs/stableId"},
+            "source_revision_id": {"type": "string", "minLength": 1},
+            "recording_monitor_plan_sha256": {"$ref": "#/$defs/sha256"},
+            "recording_capture_plan_sha256": {"$ref": "#/$defs/sha256"},
+            "recording_capture_run_report_sha256": {"$ref": "#/$defs/sha256"},
+            "recording_monitor_run_report_sha256": {"$ref": "#/$defs/sha256"},
+            "capture_payload_sha256": {"$ref": "#/$defs/sha256"},
+            "monitor_enabled": {"type": "boolean"},
+            "capture_clean": {"type": "boolean"},
+            "capture_metrics": {"type": "object", "additionalProperties": true},
+            "monitor_metrics": {"type": "object", "additionalProperties": true},
+            "finalize_preview": {
+              "oneOf": [
+                {"type": "null"},
+                {"type": "object", "additionalProperties": true}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accepted_project_state_is_canonical",
+        "recording_runtime_is_canonical",
+        "monitor_state_is_canonical",
+        "browser_state_is_canonical",
+        "runtime_may_import_assets",
+        "runtime_may_commit_audio_material",
+        "finalize_authority"
+      ],
+      "properties": {
+        "accepted_project_state_is_canonical": {"const": true},
+        "recording_runtime_is_canonical": {"const": false},
+        "monitor_state_is_canonical": {"const": false},
+        "browser_state_is_canonical": {"const": false},
+        "runtime_may_import_assets": {"const": false},
+        "runtime_may_commit_audio_material": {"const": false},
+        "finalize_authority": {"const": "REC-R1_PREVIEW_EXPLICIT_ACCEPT"}
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "simulated_input_only","simulated_monitor_output_only",
+        "capture_monitor_runtime","finalize_preview",
+        "explicit_accept_required","restart_resets_runtime"
+      ],
+      "properties": {
+        "simulated_input_only": {"const": true},
+        "simulated_monitor_output_only": {"const": true},
+        "capture_monitor_runtime": {"const": true},
+        "finalize_preview": {"const": true},
+        "explicit_accept_required": {"const": true},
+        "restart_resets_runtime": {"const": true}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "stableId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    }
+  }
+}

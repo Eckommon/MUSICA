@@ -22,6 +22,7 @@ from .studio_compare import StudioRevisionCompareSurface
 from .studio_notes import StudioNoteSurface
 from .studio_routing import StudioRoutingSurface
 from .studio_realtime import StudioRealtimeSurface
+from .studio_recording import StudioRecordingSurface
 
 MAX_JSON_BODY_BYTES = 1_048_576
 DEFAULT_HOST = "127.0.0.1"
@@ -86,6 +87,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + b"\n"
             + _static_bytes("realtime_runtime.js")
             + b"\n"
+            + _static_bytes("recording_monitoring.js")
+            + b"\n"
             + _static_bytes("app.js")
         )
     if name == "app.css":
@@ -104,6 +107,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + b"\n"
             + _static_bytes("realtime_runtime.css")
             + b"\n"
+            + _static_bytes("recording_monitoring.css")
+            + b"\n"
             + _static_bytes("app.css")
         )
     return _static_bytes(name)
@@ -116,6 +121,7 @@ def make_handler(application: StudioApplication):
     compare_surface = StudioRevisionCompareSurface(application.service)
     routing_surface = StudioRoutingSurface(application.service)
     realtime_surface = StudioRealtimeSurface(application.service)
+    recording_surface = StudioRecordingSurface(application.service)
 
     class StudioRequestHandler(BaseHTTPRequestHandler):
         server_version = "MUSICAStudio/0.6"
@@ -208,6 +214,9 @@ def make_handler(application: StudioApplication):
                             "native_mixer_automation_surface": True,
                             "realtime_runtime_inspection": True,
                             "realtime_runtime_commands_are_project_mutations": False,
+                            "recording_monitoring_surface": True,
+                            "recording_finalize_uses_rec_r1_authority": True,
+                            "recording_runtime_is_canonical": False,
                         },
                     )
                     return
@@ -382,6 +391,61 @@ def make_handler(application: StudioApplication):
                         raise StudioServiceError("invalid_request", "automation Preview requires candidate object")
                     data = automation_surface.preview_automation_edit(parts[2], candidate=candidate)
                     self._send_json(HTTPStatus.OK, application._response("preview_automation_edit", data))
+                    return
+
+                if (
+                    method == "GET"
+                    and len(parts) == 4
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3] == "recording"
+                ):
+                    data = recording_surface.recording_view(parts[2])
+                    self._send_json(
+                        HTTPStatus.OK,
+                        application._response("recording_view", data),
+                    )
+                    return
+
+                if (
+                    method == "POST"
+                    and len(parts) == 5
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3:] == ["recording", "run"]
+                ):
+                    body = self._read_json()
+                    data = recording_surface.run_capture_monitor(parts[2], **body)
+                    self._send_json(
+                        HTTPStatus.OK,
+                        application._response("recording_run", data),
+                    )
+                    return
+
+                if (
+                    method == "POST"
+                    and len(parts) == 6
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3] == "recording"
+                    and parts[5] in {"preview", "accept", "discard", "reset"}
+                ):
+                    body = self._read_json()
+                    runtime_id = parts[4]
+                    command = parts[5]
+                    if command == "preview":
+                        data = recording_surface.preview_finalize(
+                            parts[2], runtime_id, **body
+                        )
+                    elif command == "accept":
+                        data = recording_surface.accept_finalize(parts[2], runtime_id)
+                    elif command == "discard":
+                        data = recording_surface.discard_finalize_preview(
+                            parts[2], runtime_id
+                        )
+                    else:
+                        data = recording_surface.reset_runtime(parts[2], runtime_id)
+                    self._send_json(
+                        HTTPStatus.OK,
+                        application._response(f"recording_{command}", data),
+                    )
                     return
 
                 if (

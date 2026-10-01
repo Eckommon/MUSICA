@@ -12,6 +12,7 @@ from typing import Any
 
 from .audio_assets import import_audio_asset
 from .audio_edit import accept_audio_edit_preview, build_audio_edit_preview
+from .contracts import ContractError
 from .creative import compose_blueprint
 from .evidence import canonical_json_bytes
 from .mram_r1_evidence import (
@@ -227,7 +228,7 @@ def generate_plug_r0_evidence(output_dir: str | Path) -> dict[str, Any]:
                 sample_rate_hz=8000,
                 force_error_instance_ids={"PI-001"},
             )
-        except Exception:
+        except ContractError:
             forced_error_blocked = True
 
         archive = project.export_to(out / "project.musica.zip")

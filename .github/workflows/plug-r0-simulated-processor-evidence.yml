@@ -1,0 +1,44 @@
+name: PLUG-R0 Simulated Plugin Processor Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plug-r0-simulated-processor-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA / MUSICA 설치
+        run: python -m pip install -e '.[dev]'
+      - name: Run PLUG-R0 regressions / PLUG-R0 회귀 테스트
+        run: >-
+          pytest -q
+          tests/test_plug_r0_simulated_processor.py
+          tests/test_mram_r1_routing_authority_mixer.py
+          tests/test_mram_r2_native_mixer_automation.py
+          tests/test_rtio_r0_realtime_simulated_backend.py
+      - name: Generate PLUG-R0 evidence A / PLUG-R0 근거 A 생성
+        env:
+          MUSICA_PLUG_R0_EVIDENCE_OUT: artifacts/plug-r0-simulated-processor-a
+        run: python -m musica.plug_r0_evidence
+      - name: Generate PLUG-R0 evidence B / PLUG-R0 근거 B 생성
+        env:
+          MUSICA_PLUG_R0_EVIDENCE_OUT: artifacts/plug-r0-simulated-processor-b
+        run: python -m musica.plug_r0_evidence
+      - name: Prove byte-reproducible PLUG-R0 evidence / PLUG-R0 근거 byte 재현성 증명
+        run: diff -qr artifacts/plug-r0-simulated-processor-a artifacts/plug-r0-simulated-processor-b
+      - name: Upload PLUG-R0 evidence / PLUG-R0 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-plug-r0-simulated-processor-evidence
+          path: artifacts/plug-r0-simulated-processor-a
+          if-no-files-found: error

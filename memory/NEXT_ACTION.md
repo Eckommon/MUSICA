@@ -2,224 +2,283 @@
 
 ## Exact resume point / 정확한 재개점
 
-**REC-R3 — STUDIO/BROWSER RECORDING & MONITORING SURFACE + RESTART/REOPEN LIFECYCLE v0**
+**PLUG-R0 — PLUGIN CONTRACTS & DETERMINISTIC SIMULATED PROCESSOR v0**
 
-Issue `#152` — **OPEN**  
-Parent mission: Issue `#142` — **Recording & Monitoring Foundation v0 — OPEN**
+Issue #156 — **OPEN**
 
-REC-R2 is validated, merged and completed. The next dependency-safe step is to expose the already validated capture, monitoring and recording-finalize authority through a truthful real Studio/Browser surface, then prove fresh service/process restart + project reopen lifecycle exactness.
+Parent mission: Issue #155 — **Plugin Hosting & Latency Compensation Foundation v0 — OPEN**
+
+Recording & Monitoring Foundation v0 is completed. The next dependency-safe step in the commercial-workstation sequence is to establish plugin identity/state/execution/latency contracts with a deterministic simulated processor before any real VST3/AU/CLAP binary-hosting claim.
 
 ## Canonical base / 공식 기준점
 
-- canonical main after REC-R2 merge: `4d0e7988b979c05ee7f5a04ed7fb4cb043a2b60e`
-- REC-R2 Issue `#149` — **COMPLETED**
-- REC-R2 PR `#151` — **MERGED**
-- implementation/evidence exact head `ec338120a61e1796a2cecd99aa66126fe6eebe29` — **31/31 SUCCESS**
-- validation-record successor `af2a23e120123546a33791b902e685bd9da10738` — **31/31 SUCCESS**
-- durable validation: `evidence/REC_R2_VALIDATION.md`
-- dedicated artifact ID `11083583035`
-- artifact ZIP SHA-256 `fa586bf0239901273eb4dcd77c3839b7a074a5bfd94dea569df96791d8404665`
-- permanent workflow count: **31**
+- canonical main after REC-R3 implementation merge:
+  ed77897bba8b50a4feaf0742961494dc44545fc6
+- Recording & Monitoring parent Issue #142 — **COMPLETED**
+- REC-R3 Issue #152 — **COMPLETED**
+- REC-R3 PR #154 — **MERGED**
+- REC-R3 implementation/evidence exact head:
+  8f238170fcf2617683adb159bd42f606c10d4e4a — **32/32 SUCCESS**
+- REC-R3 validation-record successor:
+  14272648a8c7191270963e5d86197783ba1be1e0 — **32/32 SUCCESS**
+- durable validation:
+  evidence/REC_R3_VALIDATION.md
+- dedicated artifact ID:
+  11101801176
+- artifact ZIP SHA-256:
+  cad4ced5e9781d19f8a531a5362093bfca2546aa0f079293ce20939ece3add9c
+- permanent workflow count: **32**
 
 ## Inherited authority / 상속 권한
 
-```text
-REC-R0:
-accepted revision + explicit simulated input config
-→ deterministic capture plan/runtime
-→ exact PCM/report
-→ derived only
+PLUG-R0 inherits:
 
-REC-R1:
-clean capture
-→ source-bound recording-finalize candidate
-→ Preview / HEAD + asset store unchanged
-→ explicit Accept
-→ immutable asset + accepted track/clip
+~~~text
+ATCM:
+immutable audio assets/tracks/clips
+→ static mixer
+→ deterministic native mix
 
-REC-R2:
-same capture blocks
-→ copy-only direct monitor tap
-→ deterministic simulated monitor sink/metrics
-→ derived/runtime-only
-```
+MRAM:
+accepted routing DAG + native mixer automation
+→ deterministic routed processing
 
-REC-R3 must connect Studio/Browser to these existing authorities. It must not create a Browser-only recording store, direct asset import authority or direct audio-material commit endpoint.
+RTIO:
+provenance-bound realtime plans/callback/transport/runtime
+→ derived device/runtime state only
+
+REC:
+deterministic capture + runtime-only monitoring
+→ trusted recording Preview/Accept
+→ immutable accepted recording media
+~~~
+
+PLUG-R0 must add plugin representation and deterministic reference execution without creating a new creative authority path.
 
 ## Exact implementation order / 정확한 구현 순서
 
-### 1. Re-ground Studio/Browser lifecycle and existing authority surfaces
+### 1. Re-ground current signal/execution boundaries
 
 Inspect at minimum:
 
-- `src/musica/studio_service.py`;
-- `src/musica/studio_http.py`;
-- `src/musica/studio_web/*`;
-- current RTIO-R3 Studio runtime projection/restart implementation;
-- MRAM-R3 Browser Preview/Accept patterns;
-- `src/musica/recording_capture.py`;
-- `src/musica/recording_monitor.py`;
-- `src/musica/recording_finalize.py`;
-- REC-R0/R1/R2 tests and durable validations.
+- src/musica/routed_mixer.py;
+- src/musica/native_mixer.py;
+- src/musica/native_mixer_automation.py;
+- routing material/plan contracts;
+- RTIO realtime execution/callback/transport plans;
+- Project Engine material-delta gates;
+- accepted Blueprint material schema pattern;
+- deterministic evidence/self-hash helpers;
+- durable MRAM/RTIO/REC validation records.
 
-Prefer extension of existing typed service/session projections rather than parallel state.
+Determine the narrowest additive plugin material that preserves existing legacy/no-plugin Blueprint behavior byte-for-byte where possible.
 
-### 2. Freeze a typed recording/monitoring Browser projection
+### 2. Freeze plugin descriptor identity v0
+
+Define a versioned descriptor with stable identity such as:
+
+- stable plugin_id;
+- format kind, initially explicit simulated/reference only;
+- vendor;
+- plugin name;
+- semantic/version identity;
+- processor capability ID/version;
+- supported input/output channel layout;
+- supported sample-rate policy;
+- parameter descriptors;
+- declared latency capability;
+- deterministic processor identity.
+
+Do not identify plugins by display name alone.
+
+### 3. Freeze accepted plugin instance/state representation
+
+Define stable plugin instance identity:
+
+- instance_id;
+- exact owner kind and owner ID;
+- exact insertion slot/order;
+- descriptor/plugin ID;
+- enabled/bypass state;
+- canonical parameter values/state;
+- optional explicit state-version identity.
+
+Initial owner scope should be the smallest useful exact set, preferably audio track and/or routing node insertion.
+
+Avoid wildcard/name/index-only addressing.
+
+### 4. Preserve accepted mutation authority boundary
+
+PLUG-R0 should **not** yet allow accepted non-empty plugin mutation through generic commit.
+
+Required R0 invariant:
+
+~~~text
+legacy/empty plugin material
+→ accepted Project compatibility
+
+non-empty plugin material
+→ structural validation + deterministic derived execution proof
+→ accepted Project mutation remains fail-closed
+~~~
+
+A later PLUG-R1 should add source-bound Preview→Accept authority.
+
+### 5. Freeze deterministic simulated processor v0
+
+Prefer one explicit deterministic reference processor that exercises both parameter state and latency semantics.
+
+Recommended v0:
+
+- stereo PCM processing;
+- exact source sample-rate match;
+- deterministic gain parameter;
+- optional fixed-frame delay;
+- exact declared latency in frames;
+- no resampling;
+- no hidden channel conversion;
+- no stochastic/noise DSP;
+- deterministic forced processing error injection.
+
+The processor implementation must be separately identifiable/versioned.
+
+### 6. Define derived plugin processing plan
 
 Bind exact:
 
-- session/project identity;
-- accepted revision ID;
-- Blueprint/audio/routing/automation hashes;
-- input backend/config identity;
-- capture-plan/report SHA;
-- capture clean/dirty/finalizable status;
-- monitor enabled state;
-- monitor-plan/report SHA;
-- exact capture/monitor counters;
-- prospective destination track/clip IDs where applicable;
-- explicit authority flags showing runtime/Browser state is non-canonical.
+- accepted project ID/revision;
+- Blueprint SHA;
+- audio material SHA;
+- routing material SHA;
+- automation material SHA;
+- plugin material SHA;
+- descriptor/instance/state identity;
+- insertion owner/slot/order;
+- sample rate/channels/format;
+- parameter values;
+- bypass state;
+- declared latency frames;
+- processor implementation ID/version;
+- deterministic plan SHA.
 
-Do not infer IDs from display labels or array positions.
+The plan remains derived/non-canonical.
 
-### 3. Inspection-first capture and monitoring surface
+### 7. Define exact processing order
 
-Expose truthful derived values for:
+Freeze the initial insertion point relative to existing mixer/routing semantics.
 
-- input sample rate/channels/block size/capture frames;
-- capture cursor and frames captured;
-- ERROR/SHORT_FILL/LATE/dropout-equivalent counts;
-- monitor enabled state;
-- monitor frames/blocks written;
-- monitor-side output xrun count;
-- source/report self-hashes;
-- clean vs dirty capture status.
+For example:
 
-No Browser interaction may directly mutate accepted creative state.
+~~~text
+clip/source
+→ track plugin chain
+→ track gain/pan/mute/solo
+→ routing output + sends
+→ node plugin chain
+→ node gain/pan/mute
+→ master
+→ clipping
+~~~
 
-### 4. Bounded Browser capture/monitor runtime actions
+or another explicitly justified ordering.
 
-If runtime actions are exposed, delegate only to the existing REC-R0/R2 runtime semantics.
+Do not leave ordering implicit.
 
-Preferred bounded actions:
+### 8. Deterministic controlled-change proof
 
-- start one deterministic capture scenario;
-- enable/disable bounded monitoring;
-- stop/finalize runtime capture;
-- discard/reset transient capture/monitor state.
+At minimum prove:
 
-Runtime actions must preserve accepted Project HEAD and asset/audio material.
+1. baseline no-plugin path remains identical to existing routed output;
+2. deterministic plugin instance plan A;
+3. deterministic output A;
+4. controlled gain/state change → plan/output B;
+5. bypass state produces explicitly documented output;
+6. fixed declared latency is exact in plan/runtime;
+7. independent rerun reproduces exact plan/output hashes.
 
-### 5. Reuse REC-R1 finalize authority unchanged
+Prefer numerical checks in addition to hash differences.
 
-A clean completed capture may produce a typed Browser recording-finalize proposal.
-
-Required invariant:
-
-```text
-clean capture + accepted revision
-→ Browser typed finalize proposal
-→ existing build_recording_finalize_preview()
-→ PREVIEW / HEAD and asset store unchanged
-→ explicit Browser Accept
-→ existing accept_recording_finalize_preview()
-→ exactly one accepted recording revision
-```
-
-Do not create a second Browser recording Accept implementation.
-
-### 6. Dirty capture truthfulness
-
-A capture with ERROR/SHORT_FILL/LATE/dropout-equivalent failure must remain visibly non-finalizable under the unchanged REC-R1 rules.
-
-The UI must not imply that monitored/dirty runtime bytes are accepted media.
-
-### 7. Stale and unknown-handle fail-closed matrix
+### 9. Fail-closed matrix
 
 Reject at minimum:
 
-- stale session ID;
-- stale accepted revision;
-- stale capture/monitor plan/report binding;
-- stale recording Preview after HEAD advance;
-- unknown destination track ID;
-- duplicate/unknown clip identity;
-- direct asset/audio mutation request;
-- runtime action against an invalid lifecycle state.
+- unknown plugin/descriptor ID;
+- duplicate instance ID;
+- invalid owner/slot;
+- unsupported owner kind;
+- unsupported channels;
+- sample-rate mismatch;
+- unsupported parameter ID;
+- out-of-range parameter;
+- invalid bypass/state;
+- malformed/non-canonical instance ordering;
+- plugin material hash mismatch;
+- forced processor error;
+- missing/corrupt source asset;
+- invalid routing graph;
+- generic accepted-plugin mutation bypass.
 
-### 8. Audition/accepted-state truthfulness
+### 10. Reopen exactness
 
-After explicit recording Accept:
+Export/import or reopen must reproduce:
 
-- accepted Browser projection must show the exact new asset/track/clip identity;
-- any routed/native audition must use accepted project state;
-- transient capture/monitor sink bytes must never masquerade as accepted project media.
+- exact plugin descriptor/instance/state identity;
+- exact plugin material SHA;
+- exact derived processing plan SHA;
+- exact deterministic processed output SHA.
 
-### 9. Fresh restart/reopen lifecycle
-
-Use a genuinely fresh service/process boundary.
-
-Prove:
-
-```text
-accepted recording revision
-→ stop Studio/service
-→ start fresh Studio/service
-→ reopen project
-→ same accepted revision
-→ same immutable recording asset
-→ same track/clip identity
-→ same accepted audio material
-→ same deterministic downstream plan/WAV where applicable
-→ transient capture/monitor runtime absent/reset
-```
-
-Runtime reset is expected; accepted creative state persistence is required.
-
-### 10. Real Chromium evidence
-
-At minimum:
-
-1. open source project;
-2. inspect exact recording/monitoring projection;
-3. run a deterministic clean monitored capture;
-4. inspect clean status and exact metrics;
-5. build recording Preview;
-6. verify HEAD unchanged;
-7. explicitly Accept;
-8. verify accepted recording identity;
-9. exercise a dirty capture and verify finalize blocked;
-10. discard/reset without accepted mutation;
-11. restart service/process;
-12. reopen and verify accepted recording persists while runtime resets;
-13. verify no unexpected console/page/request errors.
+Runtime processor objects remain reconstructable derived state, not persisted creative authority.
 
 ### 11. Dedicated evidence and permanent gate
 
-Add a dedicated REC-R3 permanent workflow without weakening the existing **31** gates.
+Add a dedicated PLUG-R0 workflow without weakening the existing **32** permanent gates.
 
-Expected total after R3: **32** permanent workflows.
+Expected total: **33** permanent workflows.
 
-Evidence should combine deterministic API/runtime evidence with real-browser screenshots/interactions and fresh restart/reopen proof.
+Evidence should include:
 
-### 12. Parent Issue #142 bounded closure evaluation
+- descriptor/state material;
+- processing plan;
+- baseline and processed output;
+- controlled-change/bypass output;
+- forced-error proof;
+- source/contract hash inventory;
+- project/reopen proof;
+- exact manifest/self-hash verification.
 
-After R3 validates, evaluate every required capability in Issue #142 requirement-by-requirement.
+### 12. Promotion
 
-Do not close the parent merely because R3 merged. Open the smallest missing rung if a material v0 requirement remains unproved.
+PLUG-R0 promotion requires:
 
-### 13. Promotion
+- implementation/evidence complete;
+- dedicated PLUG-R0 gate green;
+- all 33 permanent workflows green on exact evidence-bearing head;
+- independent artifact digest/manifest/hash inspection;
+- durable PLUG-R0 validation record;
+- all 33 workflows green again on the validation successor;
+- expected-head squash merge;
+- Issue #156 completed;
+- separate state-only closure to PLUG-R1.
 
-Implementation/evidence → dedicated REC-R3 gate → all workflows green on exact evidence head → independent artifact inspection → durable REC-R3 validation → successor exact-head full rerun → expected-head squash merge → Issue #152 completed → separate state-only parent #142 closure evaluation.
+## PLUG-R0 non-goals / 비목표
 
-## REC-R3 non-goals / 비목표
+Do not implement or claim in R0:
 
-No host-native microphone/line input, host-native speaker monitoring, measured host-native latency, hardware/zero-latency monitoring, take/comp, punch-in/out, effects/plugin monitoring, VST3/AU/CLAP hosting, PDC, resampling, sidechains, mastering or generalized commercial recording readiness.
+- real VST3/AU/CLAP binary loading;
+- host plugin scanning/installation;
+- arbitrary plugin UI/editor embedding;
+- third-party state chunks;
+- untrusted plugin sandboxing;
+- generalized plugin parameter automation;
+- sidechain/bus negotiation;
+- arbitrary-graph latency compensation;
+- sample-rate conversion;
+- commercial third-party compatibility.
 
-## Maximum intended REC-R3 outcome
+## Maximum intended PLUG-R0 outcome
 
-> **MUSICA can truthfully inspect bounded capture/monitoring runtime in Studio/Browser, finalize a clean capture through the existing REC-R1 Preview→explicit Accept authority, and recover the accepted recording exactly after fresh restart/reopen while transient Browser/runtime state remains derived and non-canonical.**
+> **MUSICA can describe stable bounded plugin instances and state, lower them into an exact deterministic simulated processing plan with explicit latency and capability constraints, and reproduce derived output exactly while accepted plugin mutation remains closed and runtime/output state remains non-canonical.**
 
-This remains a target claim until REC-R3 is implemented, evidenced, merged and state-closed.
+This remains a target claim until PLUG-R0 is implemented, evidenced, merged and state-closed.
 
 **Repository evidence remains authoritative over conversation/model memory.**

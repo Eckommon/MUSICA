@@ -139,6 +139,48 @@ def validate_plugin_material(
         raise ContractError("plugin insertion slot must be unique per owner")
 
 
+def validate_plugin_processing_plan(plan: dict[str, Any]) -> None:
+    """Validate derived plan schema, canonical ordering, latency total and self-hash."""
+
+    validate_contract(plan, "plugin-processing-plan-v0.schema.json")
+    base = dict(plan)
+    claimed = str(base.pop("plugin_processing_plan_sha256"))
+    actual = _sha256(canonical_json_bytes(base))
+    if claimed != actual:
+        raise ContractError("plugin processing plan SHA-256 mismatch")
+
+    instances = plan["instances"]
+    expected = sorted(
+        instances,
+        key=lambda item: (
+            str(item["owner_node_id"]),
+            int(item["slot"]),
+            str(item["instance_id"]),
+        ),
+    )
+    if instances != expected:
+        raise ContractError("plugin processing plan instances are not canonical")
+    instance_ids = [str(item["instance_id"]) for item in instances]
+    if len(instance_ids) != len(set(instance_ids)):
+        raise ContractError("plugin processing plan instance_id must be unique")
+    slots = [(str(item["owner_node_id"]), int(item["slot"])) for item in instances]
+    if len(slots) != len(set(slots)):
+        raise ContractError("plugin processing plan slot must be unique per owner")
+
+    expected_latency = sum(
+        int(item["effective_latency_frames"]) for item in instances
+    )
+    if int(plan["total_effective_latency_frames"]) != expected_latency:
+        raise ContractError("plugin processing plan latency total mismatch")
+
+    for item in instances:
+        expected_effective = 0 if bool(item["bypass"]) else int(item["delay_frames"])
+        if int(item["effective_latency_frames"]) != expected_effective:
+            raise ContractError(
+                f"plugin processing plan effective latency mismatch: {item['instance_id']}"
+            )
+
+
 def _decode_stereo_pcm16_wav(data: bytes, *, sample_rate_hz: int) -> list[tuple[float, float]]:
     try:
         stream = io.BytesIO(data)
@@ -257,7 +299,7 @@ def build_plugin_processing_plan(
     }
     plan = dict(plan_base)
     plan["plugin_processing_plan_sha256"] = _sha256(canonical_json_bytes(plan_base))
-    validate_contract(plan, "plugin-processing-plan-v0.schema.json")
+    validate_plugin_processing_plan(plan)
     return plan
 
 

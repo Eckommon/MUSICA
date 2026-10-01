@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import os
@@ -12,7 +13,7 @@ from typing import Any
 
 from .audio_assets import import_audio_asset
 from .audio_edit import accept_audio_edit_preview, build_audio_edit_preview
-from .contracts import ContractError
+from .contracts import ContractError, validate_contract
 from .creative import compose_blueprint
 from .evidence import canonical_json_bytes
 from .mram_r1_evidence import (
@@ -236,6 +237,18 @@ def generate_plug_r0_evidence(output_dir: str | Path) -> dict[str, Any]:
         except ContractError:
             forced_error_blocked = True
 
+        accepted_plugin_mutation_blocked = False
+        forbidden_blueprint = copy.deepcopy(accepted)
+        forbidden_blueprint["materials"]["plugins"] = copy.deepcopy(material_a)
+        try:
+            validate_contract(
+                forbidden_blueprint,
+                "music-blueprint-v0.schema.json",
+                allow_nonempty_routing=True,
+            )
+        except ContractError:
+            accepted_plugin_mutation_blocked = True
+
         archive = project.export_to(out / "project.musica.zip")
         reopened = MusicaProject.import_from(archive, temp / "reopened.musica")
         reopened_plan = build_plugin_processing_plan(
@@ -265,6 +278,7 @@ def generate_plug_r0_evidence(output_dir: str | Path) -> dict[str, Any]:
             "plugin_runtime_is_canonical": False,
             "processed_audio_is_canonical": False,
             "accepted_plugin_mutation_authority_open": False,
+            "accepted_plugin_mutation_blocked_by_blueprint_contract": accepted_plugin_mutation_blocked,
             "material_a_sha256": plugin_material_sha256(material_a),
             "material_b_sha256": plugin_material_sha256(material_b),
             "plan_repeat_exact": plan_a1 == plan_a2,

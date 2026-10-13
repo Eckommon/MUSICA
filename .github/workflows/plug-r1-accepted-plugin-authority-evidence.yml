@@ -1,0 +1,44 @@
+name: PLUG-R1 Accepted Plugin Authority Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plug-r1-accepted-plugin-authority-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA / MUSICA 설치
+        run: python -m pip install -e '.[dev]'
+      - name: Run PLUG-R1 regressions / PLUG-R1 회귀 테스트
+        run: >-
+          pytest -q
+          tests/test_plug_r1_accepted_plugin_authority.py
+          tests/test_plug_r0_simulated_processor.py
+          tests/test_mram_r1_routing_authority_mixer.py
+          tests/test_mram_r2_native_mixer_automation.py
+      - name: Generate PLUG-R1 evidence A / PLUG-R1 근거 A 생성
+        env:
+          MUSICA_PLUG_R1_EVIDENCE_OUT: artifacts/plug-r1-accepted-plugin-authority-a
+        run: python -m musica.plug_r1_evidence
+      - name: Generate PLUG-R1 evidence B / PLUG-R1 근거 B 생성
+        env:
+          MUSICA_PLUG_R1_EVIDENCE_OUT: artifacts/plug-r1-accepted-plugin-authority-b
+        run: python -m musica.plug_r1_evidence
+      - name: Prove byte-reproducible PLUG-R1 evidence / PLUG-R1 근거 byte 재현성 증명
+        run: diff -qr artifacts/plug-r1-accepted-plugin-authority-a artifacts/plug-r1-accepted-plugin-authority-b
+      - name: Upload PLUG-R1 evidence / PLUG-R1 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-plug-r1-accepted-plugin-authority-evidence
+          path: artifacts/plug-r1-accepted-plugin-authority-a
+          if-no-files-found: error

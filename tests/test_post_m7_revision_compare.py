@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 import threading
@@ -296,3 +297,48 @@ def test_browser_bundle_contains_compare_surface_without_creative_ranking_contro
         server.shutdown()
         server.server_close()
         thread.join(timeout=5)
+
+def test_parallel_compare_and_media_requests_reuse_stable_fallback(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Concurrent Browser audio/Compare reads must not delete the same fallback."""
+    service, root = _open_unbound_root(tmp_path)
+    child = _accept_bound_child(service)
+    surface = StudioRevisionCompareSurface(service)
+    project = service._get_session("compare-session").project
+    head_before = project.head_revision_id()
+    render_calls: list[str] = []
+    original_render = service._render_to_cache
+
+    def tracked_render(session, blueprint, cache_key):
+        if cache_key.startswith("compare-"):
+            render_calls.append(cache_key)
+        return original_render(session, blueprint, cache_key)
+
+    monkeypatch.setattr(service, "_render_to_cache", tracked_render)
+    start = threading.Barrier(8)
+
+    def concurrent_read(index: int):
+        start.wait(timeout=30)
+        if index % 2:
+            return surface.compare_view(
+                "compare-session", revision_a=root, revision_b=child
+            )
+        return surface.media_bytes(
+            "compare-session", revision_id=root, kind="audio"
+        )
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        outputs = list(pool.map(concurrent_read, range(8)))
+
+    assert len(render_calls) == 1
+    expected_sha = outputs[1]["revision_a"]["media"]["wav"]["sha256"]
+    for output in outputs:
+        if isinstance(output, bytes):
+            assert output[:4] == b"RIFF"
+            assert _sha(output) == expected_sha
+        else:
+            assert output["revision_a"]["media"]["wav"]["sha256"] == expected_sha
+            assert output["head_unchanged"] is True
+    assert project.head_revision_id() == head_before == child
+

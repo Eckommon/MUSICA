@@ -31,6 +31,13 @@ from .routing_contracts import (
 ENGINE_ID = "musica-simulated-plugin-processor-v0"
 PROCESSOR_ID = "musica-simulated-gain-delay-v0"
 
+EMPTY_ACCEPTED_PLUGIN_MATERIAL: dict[str, Any] = {
+    "material_version": "0",
+    "classification": "accepted_plugin_material",
+    "descriptors": [],
+    "instances": [],
+}
+
 _CANONICAL_PARAMETERS = [
     {
         "parameter_id": "gain_db",
@@ -53,9 +60,41 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def empty_accepted_plugin_material() -> dict[str, Any]:
+    return {
+        "material_version": "0",
+        "classification": "accepted_plugin_material",
+        "descriptors": [],
+        "instances": [],
+    }
+
+
+def accepted_plugin_material_from_blueprint(
+    blueprint: dict[str, Any],
+) -> dict[str, Any]:
+    value = blueprint.get("materials", {}).get("plugins")
+    if value is None:
+        return empty_accepted_plugin_material()
+    if not isinstance(value, dict):
+        raise ContractError("Blueprint materials.plugins must be an object")
+    material = dict(value)
+    validate_contract(material, "accepted-plugin-material-v0.schema.json")
+    return material
+
+
 def plugin_material_sha256(material: dict[str, Any]) -> str:
-    validate_contract(material, "plugin-material-v0.schema.json")
+    classification = material.get("classification")
+    schema = (
+        "accepted-plugin-material-v0.schema.json"
+        if classification == "accepted_plugin_material"
+        else "plugin-material-v0.schema.json"
+    )
+    validate_contract(material, schema)
     return _sha256(canonical_json_bytes(material))
+
+
+def accepted_plugin_material_sha256(blueprint: dict[str, Any]) -> str:
+    return plugin_material_sha256(accepted_plugin_material_from_blueprint(blueprint))
 
 
 def _routing_master_id(blueprint: dict[str, Any]) -> str:
@@ -81,8 +120,13 @@ def validate_plugin_material(
 ) -> None:
     """Validate one detached plugin proposal against an exact accepted routed source."""
 
-    validate_contract(material, "plugin-material-v0.schema.json")
-    master_id = _routing_master_id(blueprint)
+    classification = material.get("classification")
+    schema = (
+        "accepted-plugin-material-v0.schema.json"
+        if classification == "accepted_plugin_material"
+        else "plugin-material-v0.schema.json"
+    )
+    validate_contract(material, schema)
 
     descriptors = material["descriptors"]
     descriptor_ids = [str(item["plugin_id"]) for item in descriptors]
@@ -118,6 +162,8 @@ def validate_plugin_material(
             "plugin instances must use canonical (owner_id, slot, instance_id) order"
         )
 
+    master_id = _routing_master_id(blueprint) if instances else None
+
     slots: list[tuple[str, int]] = []
     for instance in instances:
         instance_id = str(instance["instance_id"])
@@ -130,13 +176,18 @@ def validate_plugin_material(
         owner_id = str(owner["owner_id"])
         if owner_id != master_id:
             raise ContractError(
-                f"PLUG-R0 supports only exact master routing-node owner {master_id!r}, "
+                f"plugin v0 supports only exact master routing-node owner {master_id!r}, "
                 f"got {owner_id!r}"
             )
         slots.append((owner_id, int(instance["slot"])))
 
     if len(slots) != len(set(slots)):
         raise ContractError("plugin insertion slot must be unique per owner")
+
+
+def validate_blueprint_plugins(blueprint: dict[str, Any]) -> None:
+    material = accepted_plugin_material_from_blueprint(blueprint)
+    validate_plugin_material(material, blueprint=blueprint)
 
 
 def validate_plugin_processing_plan(plan: dict[str, Any]) -> None:
@@ -219,7 +270,7 @@ def build_plugin_processing_plan(
     sample_rate_hz: int,
     routed_render: RoutedMixRender | None = None,
 ) -> dict[str, Any]:
-    """Lower detached plugin proposal against one exact accepted routed render."""
+    """Lower one validated detached or accepted plugin material against an exact routed render."""
 
     if not isinstance(sample_rate_hz, int) or not 8000 <= sample_rate_hz <= 192000:
         raise ContractError("PLUG-R0 sample_rate_hz must be an integer between 8000 and 192000")
@@ -355,7 +406,7 @@ def render_simulated_plugins(
     sample_rate_hz: int,
     force_error_instance_ids: set[str] | None = None,
 ) -> PluginRender:
-    """Process exact accepted routed PCM through the deterministic PLUG-R0 chain."""
+    """Process exact accepted routed PCM through the deterministic simulated plugin chain."""
 
     routed = render_routed_mix(
         project,
@@ -421,4 +472,45 @@ def render_simulated_plugins(
         wav_sha256=_sha256(wav_bytes),
         peak_pre_clip=peak_pre_clip,
         clipped_sample_count=clipped_sample_count,
+    )
+
+
+
+def build_accepted_plugin_processing_plan(
+    project: Any,
+    revision_id: str,
+    *,
+    sample_rate_hz: int,
+    routed_render: RoutedMixRender | None = None,
+) -> dict[str, Any]:
+    """Lower the exact accepted Blueprint plugin material into the R0 derived plan."""
+
+    blueprint = project.read_revision(revision_id)
+    material = accepted_plugin_material_from_blueprint(blueprint)
+    return build_plugin_processing_plan(
+        project,
+        revision_id,
+        material,
+        sample_rate_hz=sample_rate_hz,
+        routed_render=routed_render,
+    )
+
+
+def render_accepted_plugins(
+    project: Any,
+    revision_id: str,
+    *,
+    sample_rate_hz: int,
+    force_error_instance_ids: set[str] | None = None,
+) -> PluginRender:
+    """Render the exact accepted plugin material for one accepted revision."""
+
+    blueprint = project.read_revision(revision_id)
+    material = accepted_plugin_material_from_blueprint(blueprint)
+    return render_simulated_plugins(
+        project,
+        revision_id,
+        material,
+        sample_rate_hz=sample_rate_hz,
+        force_error_instance_ids=force_error_instance_ids,
     )

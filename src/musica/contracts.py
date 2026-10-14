@@ -305,6 +305,12 @@ def _validate_blueprint_invariants(
 
     validate_blueprint_routing(blueprint, allow_nonempty=allow_nonempty_routing)
 
+    # PLUG-R1 accepts only the versioned accepted plugin material shape. Detached
+    # PLUG-R0 proposals remain non-canonical and fail this Blueprint boundary.
+    from .plugin_reference import validate_blueprint_plugins
+
+    validate_blueprint_plugins(blueprint)
+
 
 def validate_contract(
     instance: dict[str, Any],

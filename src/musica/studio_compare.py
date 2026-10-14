@@ -10,6 +10,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +33,9 @@ class StudioRevisionCompareSurface:
 
     def __init__(self, service: StudioService) -> None:
         self.service = service
+        # Shared by the threaded HTTP handler: a fallback is rendered only once
+        # per session/revision and is never deleted while another request reads it.
+        self._fallback_render_lock = threading.Lock()
 
     def _bound_artifact_provenance(
         self,
@@ -93,11 +97,23 @@ class StudioRevisionCompareSurface:
 
         if bound_wav is None or bound_midi is None:
             token = hashlib.sha256(revision_id.encode("utf-8")).hexdigest()[:16]
-            fallback_midi, fallback_wav = self.service._render_to_cache(
-                session,
-                blueprint,
-                f"compare-{token}",
-            )
+            cache_key = f"compare-{token}"
+            # _render_to_cache() removes an existing directory before writing.
+            # Calling it for every read can invalidate an in-flight HTTP audio
+            # request and race with another compare_view()/media_bytes() call.
+            # Once the immutable revision fallback is complete, reuse its bytes.
+            with self._fallback_render_lock:
+                cache_root = self.service._confined(
+                    self.service._session_cache(session.session_id) / "renders" / cache_key
+                )
+                fallback_midi = cache_root / "preview.mid"
+                fallback_wav = cache_root / "preview.wav"
+                if not (fallback_midi.is_file() and fallback_wav.is_file()):
+                    fallback_midi, fallback_wav = self.service._render_to_cache(
+                        session,
+                        blueprint,
+                        cache_key,
+                    )
 
         wav_path = bound_wav if bound_wav is not None else fallback_wav
         midi_path = bound_midi if bound_midi is not None else fallback_midi

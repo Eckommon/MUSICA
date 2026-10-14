@@ -255,6 +255,7 @@ class MusicaProject:
             allow_audio_material_change=False,
             allow_routing_material_change=False,
             allow_native_automation_change=False,
+            allow_plugin_material_change=False,
         )
 
     def _commit_revision(
@@ -267,14 +268,15 @@ class MusicaProject:
         allow_audio_material_change: bool = False,
         allow_routing_material_change: bool = False,
         allow_native_automation_change: bool = False,
+        allow_plugin_material_change: bool = False,
     ) -> dict[str, Any]:
         """Internal immutable commit boundary.
 
-        Native audio, routing, and native-mixer automation changes are denied
-        independently by default. Trusted Preview/Accept paths may opt in only after
-        exact source/material/project revalidation. A provenance marker alone never
-        grants permission. Legacy project/part automation retains its existing M7
-        authority behavior; this gate is intentionally limited to native mixer lanes.
+        Native audio, routing, native-mixer automation, and accepted plugin material
+        changes are denied independently by default. Trusted Preview/Accept paths may
+        opt in only after exact source/material/project revalidation. A provenance
+        marker alone never grants permission. Legacy project/part automation retains
+        its existing M7 authority behavior.
         """
 
         validate_contract(
@@ -365,6 +367,26 @@ class MusicaProject:
         ):
             raise ContractError(
                 "native mixer automation changes require trusted automation Preview/Accept authority"
+            )
+
+        from .plugin_reference import accepted_plugin_material_from_blueprint
+
+        before_plugins = (
+            accepted_plugin_material_from_blueprint(parent_blueprint)
+            if parent_blueprint is not None
+            else accepted_plugin_material_from_blueprint(blueprint)
+        )
+        if parent_blueprint is None:
+            before_plugins = {
+                "material_version": "0",
+                "classification": "accepted_plugin_material",
+                "descriptors": [],
+                "instances": [],
+            }
+        after_plugins = accepted_plugin_material_from_blueprint(blueprint)
+        if before_plugins != after_plugins and not allow_plugin_material_change:
+            raise ContractError(
+                "accepted plugin material changes require trusted plugin Preview/Accept authority"
             )
 
         if parent_revision_id != blueprint["project"].get("parent_revision_id"):

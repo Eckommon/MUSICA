@@ -40,7 +40,7 @@ CONTRACTS = [
     "tests/test_plug_r2b_k1b_accepted_bus_host.py",
     "tests/test_plug_r2b_k1b_host_execution.py",
     "tests/plug_r2b_k1b_evidence.py",
-    ".github/workflows/plug-r2b-k1b-accepted-host-evidence.yml",
+    ".github/workflows/plug-r2b-k1b-accepted-bus-host-evidence.yml",
 ]
 
 

@@ -462,8 +462,9 @@ class StudioService:
                 for name in session.project.list_branches()
             }
             pending = copy.deepcopy(session.pending.descriptor) if session.pending else None
-            audio = session.pending.wav_path if session.pending else self._artifact_media(session.project, head_revision_id, ".wav")
-            midi = session.pending.midi_path if session.pending else self._artifact_media(session.project, head_revision_id, ".mid")
+            visible_preview = session.pending if (session.pending is not None and session.pending.descriptor.get("kind") != "bus_host_edit") else None
+            audio = visible_preview.wav_path if visible_preview else self._artifact_media(session.project, head_revision_id, ".wav")
+            midi = visible_preview.midi_path if visible_preview else self._artifact_media(session.project, head_revision_id, ".mid")
             view = {
                 "session_version": "0",
                 "session_id": session.session_id,
@@ -844,7 +845,12 @@ class StudioService:
         suffix = ".wav" if kind == "audio" else ".mid" if kind == "midi" else None
         if suffix is None:
             raise StudioServiceError("invalid_request", f"unsupported media kind: {kind}")
-        if session.pending is not None:
+        # An accepted simulated bus-host Preview has its own explicit offline
+        # audition endpoint; never hijack generic Studio media or transport.
+        if (
+            session.pending is not None
+            and session.pending.descriptor.get("kind") != "bus_host_edit"
+        ):
             path = session.pending.wav_path if kind == "audio" else session.pending.midi_path
             return self._confined(path)
         try:

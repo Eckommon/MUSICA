@@ -156,3 +156,19 @@ def test_accepted_host_reopen_bytes_and_plan_are_identical(tmp_path: Path):
     assert a.plan == b.plan
     assert a.wav_bytes == b.wav_bytes
     assert bus_host_material_from_blueprint(reopened.read_revision(rid)) == _two_processors()
+
+
+def test_empty_host_never_silently_skips_existing_r1_master_chain(tmp_path: Path):
+    from musica.plugin_edit import build_plugin_edit_preview, accept_plugin_edit_preview
+    from musica.plugin_reference import render_accepted_plugins
+    from test_plug_r1_accepted_plugin_authority import _candidate as r1_candidate, _add_op as r1_add
+    project, revision = _accepted_two_buses(tmp_path)
+    parent = project.read_revision(revision)
+    candidate = r1_candidate(parent, "K1-B-R1-COMPAT", [r1_add()])
+    preview = build_plugin_edit_preview(project, parent, candidate)
+    assert preview.ready
+    record = accept_plugin_edit_preview(project, preview)
+    rid = record["revision_id"]
+    assert render_accepted_plugins(project, rid, sample_rate_hz=8000).wav_bytes
+    with pytest.raises(ContractError, match="does not silently skip accepted R1"):
+        render_accepted_simulated_bus_host(project, rid, sample_rate_hz=8000)

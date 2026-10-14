@@ -55,6 +55,9 @@ jobs:
           assert proof["accept_advanced_exactly_once_per_action"] is True
           assert proof["stale_hash_preview_blocked"] is True
           assert proof["discard_did_not_advance_head"] is True
+          assert proof["browser_bypass_accept_preserved_creative_delay"] is True
+          assert proof["bypass_frame_9_pcm"] == [8192,8192]
+          assert proof["bypass_frame_14_pcm"] == [24576,24576]
           assert proof["restart_reopen_exact_head"] is True
           assert not proof["browser_page_errors"]
           assert not proof["browser_console_errors"]

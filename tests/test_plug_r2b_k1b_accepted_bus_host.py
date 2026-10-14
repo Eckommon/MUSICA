@@ -8,7 +8,7 @@ import pytest
 
 from musica.bus_host_material import (
     accepted_bus_host_sha256, bus_host_material_from_blueprint,
-    empty_bus_host_material,
+    empty_bus_host_material, validate_bus_host_material,
 )
 from musica.bus_host_edit import (
     accept_bus_host_edit_preview,
@@ -177,3 +177,12 @@ def test_reject_invalid_simulated_bus_plugin_proposal(tmp_path: Path, case: str)
     )
     assert not preview.ready
     assert project.head_revision_id("main") == revision
+
+
+def test_non_neutral_master_cannot_accept_bus_processor_state(tmp_path: Path):
+    project, revision = _accepted_two_buses(tmp_path)
+    accepted = project.read_revision(revision)
+    forged = copy.deepcopy(accepted)
+    forged["materials"]["routing"]["nodes"][-1]["mixer"]["gain_db"] = -3.0
+    with pytest.raises(ContractError, match="neutral unmuted master"):
+        validate_bus_host_material(_material([_instance()]), blueprint=forged)

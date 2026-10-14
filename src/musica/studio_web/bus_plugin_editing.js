@@ -5,6 +5,7 @@
   const upstreamFetch = window.fetch.bind(window);
   const state = {
     sessionId: null,
+    observedRevisionId: null,
     editor: null,
     accepted: null,
     preview: null,
@@ -332,9 +333,14 @@
         const datum = payload?.data;
         const session = datum?.session;
         if (!session?.session_id) return;
-        const changed = state.sessionId !== session.session_id;
+        const changed = state.sessionId !== session.session_id
+          || state.observedRevisionId !== session.head_revision_id;
         state.sessionId = session.session_id;
-        if (changed || session.head_revision_id) queueMicrotask(() => refresh(true));
+        state.observedRevisionId = session.head_revision_id;
+        // Multiple overlays observe the same Studio session response. Refresh
+        // only on a distinct accepted revision/session, not on every request;
+        // otherwise redundant bus-host rendering can starve recording/RTIO UI.
+        if (changed) queueMicrotask(() => refresh(true));
       }).catch(() => {});
     } catch (_) {}
   }

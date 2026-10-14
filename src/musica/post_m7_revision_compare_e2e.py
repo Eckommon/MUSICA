@@ -97,8 +97,14 @@ def _attach_observers(
     # Chromium's generic "Failed to load resource" message omits its URL.
     def on_bad_response(response) -> None:
         if response.status >= 400:
+            # Error payloads are diagnostic only; a bad HTTP status remains a hard
+            # failure even when the server provides a readable JSON explanation.
+            try:
+                detail = response.text()[:1200]
+            except Exception as exc:
+                detail = f"<body-unavailable:{type(exc).__name__}>"
             request_failures.append(
-                f"HTTP {response.status} {response.request.method} {response.url}"
+                f"HTTP {response.status} {response.request.method} {response.url} body={detail}"
             )
 
     page.on("response", on_bad_response)

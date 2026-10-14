@@ -25,7 +25,7 @@ Exactly two accepted tracks must route to distinct named bus nodes -> one neutra
 
 For nonempty supported states, the reference processes each post-bus, pre-master stereo PCM16 path through a simulated causal processor and computes `C_i=max(L_A,L_B)-L_i` using accepted simulated algorithmic processing latency (bypass => `L_i=0`). Creative path delay is preserved independently. Fixed output duration and tail truncation are intentional. Intermediate float64 -> PCM16 quantization occurs before mixing and differs from legacy float64 master behavior; it is not hidden.
 
-For **empty** accepted bus processor state, the host bypasses K1-A quantization and returns the **exact legacy routed WAV bytes**. Unsupported topology, stale source, unsupported rate/channel, unknown owner or injected active processor failure aborts derived rendering. There is no silent fallback after errors.
+For **empty** accepted bus processor state *with no active R1 master chain*, the host bypasses K1-A quantization and returns the **exact legacy routed WAV bytes**. If a legacy R1 master chain is active, this new entrypoint **fails closed instead of silently omitting the accepted master effects**; callers must use the existing validated `render_accepted_plugins` entrypoint. Unsupported topology, stale source, unsupported rate/channel, unknown owner or injected active processor failure aborts derived rendering. There is no silent fallback after errors.
 
 ## Test and promotion gates
 

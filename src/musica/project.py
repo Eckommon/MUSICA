@@ -256,6 +256,7 @@ class MusicaProject:
             allow_routing_material_change=False,
             allow_native_automation_change=False,
             allow_plugin_material_change=False,
+            allow_bus_plugin_material_change=False,
         )
 
     def _commit_revision(
@@ -269,6 +270,7 @@ class MusicaProject:
         allow_routing_material_change: bool = False,
         allow_native_automation_change: bool = False,
         allow_plugin_material_change: bool = False,
+        allow_bus_plugin_material_change: bool = False,
     ) -> dict[str, Any]:
         """Internal immutable commit boundary.
 
@@ -387,6 +389,30 @@ class MusicaProject:
         if before_plugins != after_plugins and not allow_plugin_material_change:
             raise ContractError(
                 "accepted plugin material changes require trusted plugin Preview/Accept authority"
+            )
+
+        # K1-B bus inserts are independent from legacy R1 master plugins.
+        # Generic commits cannot add/change bus-host material even though a
+        # Blueprint schema allows the optional extension.
+        from .bus_host_material import (
+            bus_host_material_from_blueprint,
+            empty_bus_host_material,
+            validate_bus_host_material,
+        )
+
+        before_bus_plugins = (
+            bus_host_material_from_blueprint(parent_blueprint)
+            if parent_blueprint is not None
+            else empty_bus_host_material()
+        )
+        after_bus_plugins = bus_host_material_from_blueprint(blueprint)
+        validate_bus_host_material(after_bus_plugins, blueprint=blueprint)
+        if (
+            before_bus_plugins != after_bus_plugins
+            and not allow_bus_plugin_material_change
+        ):
+            raise ContractError(
+                "accepted bus-host material changes require trusted bus-host Preview/Accept authority"
             )
 
         if parent_revision_id != blueprint["project"].get("parent_revision_id"):

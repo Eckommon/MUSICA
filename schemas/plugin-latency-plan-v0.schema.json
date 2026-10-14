@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/plugin-latency-plan-v0.schema.json",
+  "title": "MUSICA PLUG-R2 Derived Serial Latency Ledger v0",
+  "description": "Derived offline/reference-only accepted plugin signal-delay accounting; intentionally no PDC claim or creative authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plan_version",
+    "engine_id",
+    "classification",
+    "source",
+    "sample_rate_hz",
+    "channels",
+    "sample_format",
+    "stage",
+    "policy",
+    "instances",
+    "serial_effective_signal_delay_frames",
+    "compensation_applied_frames",
+    "plugin_latency_plan_sha256"
+  ],
+  "properties": {
+    "plan_version": {
+      "const": "0"
+    },
+    "engine_id": {
+      "const": "musica-plugin-latency-ledger-v0"
+    },
+    "classification": {
+      "const": "derived_noncanonical"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_id",
+        "revision_id",
+        "blueprint_sha256",
+        "audio_material_sha256",
+        "routing_material_sha256",
+        "automation_material_sha256",
+        "routed_mix_plan_sha256",
+        "routed_wav_sha256",
+        "plugin_material_sha256",
+        "plugin_processing_plan_sha256"
+      ],
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blueprint_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "audio_material_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "routing_material_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "automation_material_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "routed_mix_plan_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "routed_wav_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "plugin_material_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "plugin_processing_plan_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "sample_rate_hz": {
+      "type": "integer",
+      "minimum": 8000,
+      "maximum": 192000
+    },
+    "channels": {
+      "const": 2
+    },
+    "sample_format": {
+      "const": "float64_internal_pcm16_io"
+    },
+    "stage": {
+      "const": "post_routed_master_pcm16_reference_stage"
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "topology",
+        "delay_semantics",
+        "algorithmic_latency",
+        "compensation",
+        "runtime_scope"
+      ],
+      "properties": {
+        "topology": {
+          "const": "serial_master_only"
+        },
+        "delay_semantics": {
+          "const": "accepted_state_signal_delay_frames"
+        },
+        "algorithmic_latency": {
+          "const": "UNMEASURED_NOT_INFERRED"
+        },
+        "compensation": {
+          "const": "NONE_SERIAL_ONLY"
+        },
+        "runtime_scope": {
+          "const": "OFFLINE_REFERENCE_ONLY"
+        }
+      }
+    },
+    "instances": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "instance_id",
+          "plugin_id",
+          "owner_kind",
+          "owner_id",
+          "slot",
+          "bypass",
+          "declared_signal_delay_frames",
+          "effective_signal_delay_frames"
+        ],
+        "properties": {
+          "instance_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "plugin_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "owner_kind": {
+            "const": "routing_node"
+          },
+          "owner_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "slot": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "bypass": {
+            "type": "boolean"
+          },
+          "declared_signal_delay_frames": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4096
+          },
+          "effective_signal_delay_frames": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4096
+          }
+        }
+      }
+    },
+    "serial_effective_signal_delay_frames": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1048576
+    },
+    "compensation_applied_frames": {
+      "const": 0
+    },
+    "plugin_latency_plan_sha256": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

@@ -224,6 +224,8 @@ def render_two_path_alignment(
             + path["creative_delay_frames"]
             + (path["compensation_frames"] if compensate else 0)
         )
+        if offset >= count:
+            raise ContractError("two-path entire branch exceeds fixed output duration")
         for source_index, (left, right) in enumerate(frames):
             destination = source_index + offset
             if destination >= count:

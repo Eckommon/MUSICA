@@ -106,6 +106,25 @@ def test_browser_real_bus_plugin_editor_authority(tmp_path: Path) -> None:
             expect(page.locator("#plugBrowserPending")).to_be_hidden()
             assert project.head_revision_id("main") == second
 
+            # Explicitly ACCEPT an independent intentional creative delay while
+            # bypassing the simulated algorithmic processing latency. The
+            # browser must never silently collapse these two user controls.
+            page.locator("#plugBrowserBus").select_option("BUS-001")
+            page.locator("#plugBrowserCreative").fill("5")
+            page.locator("#plugBrowserBypass").check()
+            page.locator("#plugBrowserPropose").click()
+            expect(page.locator("#plugBrowserPending")).to_be_visible()
+            assert project.head_revision_id("main") == second
+            page.locator("#plugBrowserAccept").click()
+            expect(page.locator("#plugBrowserPending")).to_be_hidden()
+            bypassed = project.head_revision_id("main")
+            assert bypassed != second
+            accepted_bypass = render_accepted_simulated_bus_host(
+                project, bypassed, sample_rate_hz=8000
+            )
+            assert _pcm(accepted_bypass.wav_bytes)[9] == (8192, 8192)
+            assert _pcm(accepted_bypass.wav_bytes)[14] == (24576, 24576)
+
             # The browser obtains a source from the server; a forged/stale copy
             # never installs a Preview and never advances canonical authority.
             blocked = page.evaluate(
@@ -132,7 +151,7 @@ def test_browser_real_bus_plugin_editor_authority(tmp_path: Path) -> None:
                 }"""
             )
             assert blocked["installed"] is False
-            assert project.head_revision_id("main") == second
+            assert project.head_revision_id("main") == bypassed
 
             page.locator("#plugBrowserBus").select_option("BUS-002")
             page.locator("#plugBrowserRemove").click()
@@ -140,7 +159,7 @@ def test_browser_real_bus_plugin_editor_authority(tmp_path: Path) -> None:
             page.locator("#plugBrowserAccept").click()
             expect(page.locator("#plugBrowserPending")).to_be_hidden()
             final = project.head_revision_id("main")
-            assert final != second
+            assert final != bypassed
             material = bus_host_material_from_blueprint(project.read_revision(final))
             assert [v["owner_bus_id"] for v in material["instances"]] == ["BUS-001"]
 
@@ -161,7 +180,10 @@ def test_browser_real_bus_plugin_editor_authority(tmp_path: Path) -> None:
             "class": "REAL_CHROMIUM_STUDIO_BUS_PROCESSOR_PREVIEW_ACCEPT",
             "real_chromium": True,
             "project_initial_revision_id": initial,
-            "accepted_revision_ids": [first, second, final],
+            "accepted_revision_ids": [first, second, bypassed, final],
+            "browser_bypass_accept_preserved_creative_delay": True,
+            "bypass_frame_9_pcm": [8192, 8192],
+            "bypass_frame_14_pcm": [24576, 24576],
             "preview_did_not_advance_head": True,
             "accept_advanced_exactly_once_per_action": True,
             "two_bus_compensated_sample_at_frame_9": [24576, 24576],

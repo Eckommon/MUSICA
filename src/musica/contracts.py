@@ -311,6 +311,12 @@ def _validate_blueprint_invariants(
 
     validate_blueprint_plugins(blueprint)
 
+    # K1-B bus-host material is independently versioned and source-restricted;
+    # this does not relax R1 master-only accepted plugin authority.
+    from .bus_host_material import validate_blueprint_bus_host
+
+    validate_blueprint_bus_host(blueprint)
+
 
 def validate_contract(
     instance: dict[str, Any],

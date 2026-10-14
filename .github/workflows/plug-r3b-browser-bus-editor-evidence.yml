@@ -28,6 +28,8 @@ jobs:
           tests/test_plug_r2b_k2_studio_bus_plugins.py
           tests/test_plug_r2b_k1b_accepted_bus_host.py
           tests/test_plug_r2b_k1b_host_execution.py
+      - name: Guard existing real Chromium Recording/monitoring startup
+        run: pytest -q e2e/test_rec_r3_browser.py
       - name: Real Chromium edit/bypass/discard/reopen and numeric source evidence A
         env:
           MUSICA_PLUG_R3B_E2E_OUT: artifacts/r3b-a

@@ -23,6 +23,7 @@ from .studio_notes import StudioNoteSurface
 from .studio_routing import StudioRoutingSurface
 from .studio_realtime import StudioRealtimeSurface
 from .studio_recording import StudioRecordingSurface
+from .studio_bus_plugins import StudioBusHostSurface
 
 MAX_JSON_BODY_BYTES = 1_048_576
 DEFAULT_HOST = "127.0.0.1"
@@ -122,6 +123,7 @@ def make_handler(application: StudioApplication):
     routing_surface = StudioRoutingSurface(application.service)
     realtime_surface = StudioRealtimeSurface(application.service)
     recording_surface = StudioRecordingSurface(application.service)
+    bus_host_surface = StudioBusHostSurface(application.service)
 
     class StudioRequestHandler(BaseHTTPRequestHandler):
         server_version = "MUSICAStudio/0.6"
@@ -265,6 +267,32 @@ def make_handler(application: StudioApplication):
                         revision_b=parts[5],
                     )
                     self._send_json(HTTPStatus.OK, application._response("revision_compare", data))
+                    return
+
+                # K2 opt-in accepted-source bus processor inspection and WAV.
+                # These endpoints do not replace generic Studio/realtime media.
+                if (
+                    method == "GET"
+                    and len(parts) == 4
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3] == "bus-plugins"
+                ):
+                    data = bus_host_surface.bus_plugins_view(parts[2])
+                    self._send_json(
+                        HTTPStatus.OK,
+                        application._response("accepted_bus_plugins_view", data),
+                    )
+                    return
+
+                if (
+                    method == "GET"
+                    and len(parts) == 6
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3:5] == ["bus-plugins", "media"]
+                    and parts[5] == "accepted.wav"
+                ):
+                    data = bus_host_surface.accepted_offline_wav(parts[2])
+                    self._send_bytes(HTTPStatus.OK, "audio/wav", data)
                     return
 
                 if (

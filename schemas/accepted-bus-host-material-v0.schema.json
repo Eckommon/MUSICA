@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/accepted-bus-host-material-v0.schema.json",
+  "title": "MUSICA PLUG-R2B K1-B Accepted Simulated Bus Host State v0",
+  "description": "Separate from legacy master-only R1 plugin material. Trusted Preview/Accept is required; synthetic latency is explicit reference processor metadata, never native plugin-reported latency.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "material_version",
+    "classification",
+    "instances"
+  ],
+  "properties": {
+    "material_version": {
+      "const": "0"
+    },
+    "classification": {
+      "const": "accepted_simulated_bus_host_material"
+    },
+    "instances": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "instance_id",
+          "owner_kind",
+          "owner_bus_id",
+          "slot",
+          "processor_id",
+          "processor_version",
+          "latency_provenance",
+          "algorithmic_latency_frames",
+          "creative_delay_frames",
+          "bypass"
+        ],
+        "properties": {
+          "instance_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "owner_kind": {
+            "const": "routing_node"
+          },
+          "owner_bus_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "slot": {
+            "const": 0
+          },
+          "processor_id": {
+            "const": "musica-simulated-bus-latency-v0"
+          },
+          "processor_version": {
+            "const": "0"
+          },
+          "latency_provenance": {
+            "const": "accepted_explicit_simulated_reference"
+          },
+          "algorithmic_latency_frames": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4096
+          },
+          "creative_delay_frames": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4096
+          },
+          "bypass": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

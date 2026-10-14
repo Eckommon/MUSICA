@@ -27,8 +27,8 @@ Selected rung sequence:
 
 ~~~text
 PLUG-R0 plugin contracts + deterministic simulated processor        VALIDATED
-→ PLUG-R1 trusted plugin state Preview→Accept + accepted execution   CURRENT
-→ PLUG-R2 latency compensation + bypass/failure containment
+→ PLUG-R1 trusted plugin state Preview→Accept + accepted execution   VALIDATED
+→ PLUG-R2 latency compensation + bypass/failure containment         CURRENT
 → PLUG-R3 Studio/Browser plugin inspection + restart/reopen
 → bounded format adapter rung(s) only after host contract validation
 → parent #155 bounded closure evaluation
@@ -159,52 +159,78 @@ R0 does **not** claim persistence of plugin material as accepted project state. 
 
 > **MUSICA can describe stable bounded plugin instances and state as a detached non-canonical proposal, lower them against an exact accepted routed source into a provenance-bearing deterministic simulated processing plan with explicit latency and capability constraints, and reproduce derived processed output exactly while accepted plugin mutation remains closed and runtime/output state remains non-canonical.**
 
+## PLUG-R1 — validated accepted plugin state and deterministic execution
+
+Issue #159 — **COMPLETED**; implementation PR #161 — **MERGED**.
+
+Canonical implementation merge/main:
+
+> **d509406c49f423c5a53825a66aff0b4f0b922ecb**
+
+Durable validation:
+
+- `evidence/PLUG_R1_VALIDATION.md`
+- implementation/evidence exact head:
+  `2130960e572b0e22b2618450add8a803b34d331d` — **34/34 SUCCESS**
+- final validation-successor head including Browser Compare concurrency repair:
+  `276187c8bffda4fb72616043945ae4c2c31423d1` — **34/34 SUCCESS**
+- dedicated workflow: **PLUG-R1 Accepted Plugin Authority Evidence**
+- original independently inspected run/artifact: `38428999804` / `11828934691`
+- validated original artifact ZIP SHA-256:
+  `90a6032126eb3fc9b7eeeb8ce71e504d90f428fc5ddf77ec1b7d1c2624312170`
+- original artifact payloads **16/16** exact, source inventory **11/11**, archive content-addressed objects **19/19**, plugin plan self-hashes **4/4**.
+- final successor Browser Compare regression on the same exact head: **SUCCESS**; concurrent fallback-media requests reuse stable render state without modifying accepted HEAD.
+
+### Validated R1 authority
+
+~~~text
+exact accepted project/revision/Blueprint/audio/routing/automation/plugin hashes
+→ source-bound plugin edit candidate (ADD/REMOVE/SET_STATE/SET_BYPASS)
+→ Preview / accepted HEAD unchanged
+→ explicit Accept with persisted-source revalidation
+→ protected plugin-authorized Project commit
+→ immutable accepted plugin material
+→ deterministic R0-derived plan and processed WAV
+→ export/import/reopen reproduces accepted material, plan and WAV
+~~~
+
+Accepted plugin material is classified `accepted_plugin_material`; legacy projects and absent/empty plugin material remain valid. The initial scope is the R0 reference plugin (`simulated_reference_v0`, `musica-simulated-gain-delay-v0`) on the exact accepted master node only.
+
+Numerical proof: the controlled `gain_db` state change `-6 → -12 dB` yields approximately **0.501** peak-amplitude ratio, and active instances provide exactly **4 latency frames**. Both accepted bypass and last-instance removal return **byte-exact** routed baseline WAV with zero effective plugin latency. Generic commits, stale/forged previews, runtime plans and processor failures do not gain accepted-authority write access.
+
+### Maximum validated PLUG-R1 claim
+
+> **MUSICA can accept and persist bounded simulated plugin instances/state only through source-bound Preview→Accept authority, deterministically execute the exact accepted plugin state over its accepted routed source, and reproduce accepted plugin identity plus derived plan/output after reopen while generic commit, stale/forged source, processor runtime and processed-output paths remain non-authoritative.**
+
 ## Exact current rung / 현재 정확한 단계
 
-The current rung is:
+> **Issue #162 — PLUG-R2: bounded latency planning, compensation and bypass/failure containment v0 — OPEN.**
 
-> **Issue #159 — PLUG-R1: Trusted Plugin State Preview→Accept & Accepted Offline Execution v0**
-
-R1 must promote the proven R0 plugin representation into accepted project authority without opening generic commit or runtime write-back paths.
+PLUG-R2 must first separate algorithmic processing latency, audible creative delay and presentation/reference alignment. R1's master-only serial plugin chain proves latency **accounting**, not nontrivial multi-path delay **compensation**. Do not promote an audible compensation claim without an independently checked, numerically aligned nontrivial reference-path or bounded multi-path proof.
 
 Required direction:
 
 ~~~text
-legacy/no-plugin accepted project
-→ optional accepted plugin material
-→ source-bound plugin edit candidate
-→ Preview / accepted HEAD unchanged
-→ explicit Accept
-→ protected Project Engine plugin commit
-→ accepted plugin revision
-→ deterministic R0 processing plan/output
-→ export/import/reopen exactness
+accepted plugin/routing source and stable instance/slot identities
+→ exact source-bound, self-hashed derived latency plan
+→ explicit causal/bypass/error policy
+→ minimal supported alignment topology
+→ numerical frame-alignment proof (if compensation claimed)
+→ accepted-state/HEAD invariants and reopen exactness
 ~~~
-
-Initial accepted scope must stay identical to R0: simulated reference gain+delay processor on the exact accepted master routing node only.
 
 ## Current important non-claims
 
 Until separately validated, do not claim:
 
-- real VST3/AU/CLAP binary hosting;
-- plugin scanning/installation;
-- third-party state chunks;
-- arbitrary plugin UI embedding;
-- production-grade untrusted-binary sandboxing;
-- generalized plugin automation;
-- arbitrary sidechains/bus negotiation;
-- arbitrary-graph latency compensation;
-- implicit sample-rate conversion;
-- commercial third-party plugin compatibility;
-- mastering-grade processing;
-- generalized commercial release readiness;
-- cloud/multi-user creative authority.
+- real VST3/AU/CLAP binary hosting, scanning/installation or third-party state chunks;
+- arbitrary plugin UI embedding or production-grade untrusted-binary sandboxing;
+- generalized plugin automation, arbitrary sidechains/bus negotiation or arbitrary-graph PDC;
+- sample-rate conversion, commercial third-party plugin compatibility or mastering-grade processing;
+- generalized commercial release readiness, cloud or multi-user creative authority.
 
 ## Exact next phase / 다음 단계
 
-> **Implement Issue #159 from canonical main `d978d6fd8faa6885de2e492874ce38e992b58ef2`: add a backward-compatible accepted plugin-material shape, freeze deterministic empty-material/source hashing, implement source-bound typed plugin edit Preview→Accept with a protected Project Engine plugin delta gate, preserve the exact R0 master-only gain+delay semantics, and prove accepted plugin insertion/state/bypass/remove plus deterministic offline output and reopen exactness before moving to latency compensation.**
+> **Start Issue #162 from canonical main `d509406c49f423c5a53825a66aff0b4f0b922ecb`: freeze the precise latency taxonomy and minimal compensatable topology, implement bounded deterministic derived latency planning with explicit bypass/failure semantics, and prove actual frame alignment before claiming compensation. Maintain all 34 existing permanent workflows and add the 35th PLUG-R2 evidence gate.**
 
-See `memory/NEXT_ACTION.md` for the exact execution order.
-
-**Repository evidence remains authoritative over conversation/model memory.**
+See `memory/NEXT_ACTION.md` for execution order. Repository evidence remains authoritative over conversation/model memory.

@@ -18,7 +18,7 @@ from .bus_host_material import (
 )
 from .contracts import ContractError, validate_contract
 from .evidence import canonical_json_bytes
-from .plugin_reference import accepted_plugin_material_sha256
+from .plugin_reference import accepted_plugin_material_sha256, accepted_plugin_material_from_blueprint
 from .plugin_host_bridge import render_accepted_bus_detached_alignment
 from .routed_mixer import render_routed_mix
 from .routing_contracts import routing_material_from_blueprint, routing_material_sha256
@@ -93,6 +93,11 @@ def render_accepted_simulated_bus_host(
     input_sha = None
     kernel = None
     if not material["instances"]:
+        if accepted_plugin_material_from_blueprint(blueprint)["instances"]:
+            raise ContractError(
+                "K1-B entrypoint does not silently skip accepted R1 master plugins; "
+                "use the validated render_accepted_plugins entrypoint instead"
+            )
         # Byte-exact legacy routing: NO independent bus quantization, delay,
         # resampling or change to existing native mix path.
         baseline = render_routed_mix(

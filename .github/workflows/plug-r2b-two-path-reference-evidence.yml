@@ -1,0 +1,81 @@
+name: PLUG-R2B Detached Two-Path Causal Alignment Reference Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plug-r2b-two-path-reference-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA
+        run: python -m pip install -e '.[dev]'
+      - name: Test R2B causal alignment plus R2A authority/baselines
+        run: >-
+          pytest -q
+          tests/test_plug_r2b_two_path_alignment_reference.py
+          tests/test_plug_r2_latency.py
+          tests/test_plug_r1_accepted_plugin_authority.py
+          tests/test_plug_r0_simulated_processor.py
+      - name: Generate K0 evidence A
+        env:
+          MUSICA_PLUG_R2B_EVIDENCE_OUT: artifacts/plug-r2b-two-path-reference-a
+        run: python -m musica.plug_r2b_evidence
+      - name: Generate K0 evidence B
+        env:
+          MUSICA_PLUG_R2B_EVIDENCE_OUT: artifacts/plug-r2b-two-path-reference-b
+        run: python -m musica.plug_r2b_evidence
+      - name: Verify byte-exact dual evidence
+        run: diff -qr artifacts/plug-r2b-two-path-reference-a artifacts/plug-r2b-two-path-reference-b
+      - name: Verify proof and manifest integrity
+        run: |
+          python - <<'PY'
+          import hashlib
+          import io
+          import json
+          import struct
+          import wave
+          from pathlib import Path
+          root=Path("artifacts/plug-r2b-two-path-reference-a")
+          manifest=json.loads((root/"manifest.json").read_bytes())
+          assert manifest["classification"] == "PLUG_R2B_DETACHED_REFERENCE_NO_HOST_PDC_CLAIM"
+          for item in manifest["artifacts"]:
+              raw=(root/item["path"]).read_bytes()
+              assert len(raw)==item["bytes"]
+              assert hashlib.sha256(raw).hexdigest()==item["sha256"]
+          for item in manifest["contract_inventory"]:
+              raw=Path(item["path"]).read_bytes()
+              assert len(raw)==item["bytes"]
+              assert hashlib.sha256(raw).hexdigest()==item["sha256"]
+          proof=json.loads((root/"proof.json").read_bytes())
+          assert proof["host_pdc_integrated"] is False
+          assert proof["accepted_blueprint_mutation_authorized"] is False
+          assert proof["uncompensated_left_impulse_frame"]==7
+          assert proof["uncompensated_right_impulse_frame"]==13
+          assert proof["compensated_left_impulse_frame"]==proof["compensated_right_impulse_frame"]==13
+          def indices(name):
+              with wave.open(io.BytesIO((root/name).read_bytes())) as wav:
+                  assert wav.getframerate()==8000 and wav.getnchannels()==2 and wav.getsampwidth()==2
+                  samples=list(struct.iter_unpack("<hh",wav.readframes(wav.getnframes())))
+              return ([i for i,s in enumerate(samples) if s[0]],[i for i,s in enumerate(samples) if s[1]])
+          assert indices("noncompensated.wav") == ([7],[13])
+          assert indices("compensated.wav") == ([13],[13])
+          assert indices("creative-delay-preserved.wav") == ([18],[13])
+          assert indices("bypass-compensated.wav") == ([13],[13])
+          print("PLUG-R2B causal reference numerical + manifest PASS (not accepted DAW PDC)")
+          PY
+      - name: Upload PLUG-R2B K0 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-plug-r2b-detached-two-path-reference-evidence
+          path: artifacts/plug-r2b-two-path-reference-a
+          if-no-files-found: error

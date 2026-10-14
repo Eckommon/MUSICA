@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/plugin-two-path-alignment-reference-v0.schema.json",
+  "title": "MUSICA PLUG-R2-B Detached Two-Path Alignment Reference Plan v0",
+  "description": "Deterministic offline two-path signal processor proof using simulated algorithmic latency distinct from creative delay. Derived test/reference only, not accepted source or routed host.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plan_version",
+    "engine_id",
+    "classification",
+    "sample_rate_hz",
+    "channels",
+    "sample_format",
+    "duration_frames",
+    "policy",
+    "reference_algorithmic_latency_frames",
+    "paths",
+    "plugin_two_path_alignment_plan_sha256"
+  ],
+  "properties": {
+    "plan_version": {
+      "const": "0"
+    },
+    "engine_id": {
+      "const": "musica-two-path-pdc-reference-v0"
+    },
+    "classification": {
+      "const": "detached_derived_reference_only"
+    },
+    "sample_rate_hz": {
+      "type": "integer",
+      "minimum": 8000,
+      "maximum": 192000
+    },
+    "channels": {
+      "const": 2
+    },
+    "sample_format": {
+      "const": "pcm16_stereo_little_endian"
+    },
+    "duration_frames": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "topology",
+        "algorithmic_latency_provenance",
+        "creative_delay_policy",
+        "alignment",
+        "time",
+        "host_authority"
+      ],
+      "properties": {
+        "topology": {
+          "const": "two_independent_stereo_paths_to_one_output"
+        },
+        "algorithmic_latency_provenance": {
+          "const": "simulated_explicit_reference_only"
+        },
+        "creative_delay_policy": {
+          "const": "preserved_not_compensated"
+        },
+        "alignment": {
+          "const": "delay_faster_path_to_max_algorithmic_latency"
+        },
+        "time": {
+          "const": "causal_fixed_length_truncate_tail_no_lookahead"
+        },
+        "host_authority": {
+          "const": "none_detached_not_accepted"
+        }
+      }
+    },
+    "reference_algorithmic_latency_frames": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4096
+    },
+    "paths": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path_id",
+          "input_wav_sha256",
+          "declared_algorithmic_latency_frames",
+          "creative_delay_frames",
+          "bypass",
+          "effective_algorithmic_latency_frames",
+          "compensation_frames"
+        ],
+        "properties": {
+          "path_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "input_wav_sha256": {
+            "$ref": "#/$defs/sha256"
+          },
+          "declared_algorithmic_latency_frames": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4096
+          },
+          "creative_delay_frames": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4096
+          },
+          "bypass": {
+            "type": "boolean"
+          },
+          "effective_algorithmic_latency_frames": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4096
+          },
+          "compensation_frames": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4096
+          }
+        }
+      }
+    },
+    "plugin_two_path_alignment_plan_sha256": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/bus-host-edit-candidate-v0.schema.json",
+  "title": "MUSICA K1-B source-bound accepted bus processor material proposal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "candidate_version",
+    "candidate_id",
+    "authority_target",
+    "source",
+    "proposed_material",
+    "actor",
+    "reason",
+    "preview_only"
+  ],
+  "properties": {
+    "candidate_version": {
+      "const": "0"
+    },
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authority_target": {
+      "const": "blueprint_bus_plugin_material"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_id",
+        "revision_id",
+        "blueprint_sha256",
+        "audio_material_sha256",
+        "routing_material_sha256",
+        "automation_material_sha256",
+        "legacy_plugin_material_sha256",
+        "bus_host_material_sha256"
+      ],
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blueprint_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "audio_material_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "routing_material_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "automation_material_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "legacy_plugin_material_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "bus_host_material_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "proposed_material": {
+      "type": "object"
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "actor_id"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "user",
+            "ai",
+            "system"
+          ]
+        },
+        "actor_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "preview_only": {
+      "const": true
+    }
+  }
+}

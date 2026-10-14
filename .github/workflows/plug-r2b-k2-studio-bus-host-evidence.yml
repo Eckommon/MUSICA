@@ -1,0 +1,82 @@
+name: PLUG-R2B K2 Studio Accepted Bus Host Inspection & Offline Audition Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plug-r2b-k2-studio-bus-host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA
+        run: python -m pip install -e '.[dev]'
+      - name: Test K2 Studio and inherited K1-B, K1-A, R1
+        run: >-
+          pytest -q
+          tests/test_plug_r2b_k2_studio_bus_plugins.py
+          tests/test_plug_r2b_k1b_accepted_bus_host.py
+          tests/test_plug_r2b_k1b_host_execution.py
+          tests/test_plug_r2b_k1_accepted_bridge.py
+          tests/test_plug_r2b_two_path_alignment_reference.py
+          tests/test_plug_r1_accepted_plugin_authority.py
+      - name: Generate accepted Studio evidence A
+        env:
+          MUSICA_K2_EVIDENCE_OUT: artifacts/k2-a
+        run: python tests/plug_r2b_k2_evidence.py
+      - name: Generate accepted Studio evidence B
+        env:
+          MUSICA_K2_EVIDENCE_OUT: artifacts/k2-b
+        run: python tests/plug_r2b_k2_evidence.py
+      - name: Verify deterministic evidence replay
+        run: diff -qr artifacts/k2-a artifacts/k2-b
+      - name: Independent evidence, source and PCM oracle
+        run: |
+          python - <<'PY'
+          import json, hashlib, io, wave, struct
+          from pathlib import Path
+          root=Path("artifacts/k2-a")
+          m=json.loads((root/"manifest.json").read_bytes())
+          assert m["classification"]=="K2_ACCEPTED_STUDIO_INSPECTION_OFFLINE_ONLY"
+          for key in ("artifacts","contracts"):
+              for item in m[key]:
+                  f=root/item["path"] if key=="artifacts" else Path(item["path"])
+                  raw=f.read_bytes()
+                  assert len(raw)==item["bytes"]
+                  assert hashlib.sha256(raw).hexdigest()==item["sha256"]
+          p=json.loads((root/"proof.json").read_bytes())
+          assert p["default_studio_media_overridden"] is False
+          assert p["browser_user_interaction_or_realtime_pdc_proven"] is False
+          assert p["project_head_unchanged_by_view_and_audition"] is True
+          view=json.loads((root/"view.json").read_bytes())
+          assert view["capabilities"]["realtime_pdc"] is False
+          assert view["capabilities"]["native_vst3_clap_au_host"] is False
+          assert view["offline_audition"]["available"] is True
+          def frames(name):
+              raw=(root/name).read_bytes()
+              with wave.open(io.BytesIO(raw)) as w:
+                  assert w.getframerate()==8000 and w.getnchannels()==2 and w.getsampwidth()==2
+                  return list(struct.iter_unpack("<hh",w.readframes(w.getnframes())))
+          compensated=frames("accepted-opt-in.wav")
+          legacy=frames("legacy.wav")
+          assert len(compensated)==96000
+          assert compensated[:9]==[(0,0)]*9
+          assert compensated[9]==(24576,24576)
+          assert legacy[3]==(24576,24576)
+          assert hashlib.sha256((root/"accepted-opt-in.wav").read_bytes()).hexdigest()==view["offline_audition"]["wav_sha256"]
+          print("K2 exact accepted Studio opt-in WAV proof PASS")
+          PY
+      - name: Upload K2 bounded Studio evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-plug-r2b-k2-studio-accepted-offline-inspection
+          path: artifacts/k2-a
+          if-no-files-found: error

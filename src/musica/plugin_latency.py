@@ -151,14 +151,12 @@ def build_accepted_plugin_latency_plan(
     revision_id: str,
     *,
     sample_rate_hz: int,
-    routed_render: Any | None = None,
 ) -> dict[str, Any]:
-    """Build only from exact persisted accepted R1 plugin/routing authority."""
+    """Re-render persisted accepted routing; never trust caller-supplied PCM."""
     processing = build_accepted_plugin_processing_plan(
         project,
         revision_id,
         sample_rate_hz=sample_rate_hz,
-        routed_render=routed_render,
     )
     return _latency_projection_from_processing_plan(processing)
 
@@ -169,14 +167,12 @@ def validate_accepted_plugin_latency_plan(
     plan: dict[str, Any],
     *,
     sample_rate_hz: int,
-    routed_render: Any | None = None,
 ) -> None:
     """Reject even rehashed stale or forged plans by rebuilding accepted source."""
     expected = build_accepted_plugin_latency_plan(
         project,
         revision_id,
         sample_rate_hz=sample_rate_hz,
-        routed_render=routed_render,
     )
     validate_plugin_latency_plan(plan)
     if plan != expected:

@@ -686,6 +686,49 @@ class StudioService:
                     resolved,
                     branch=branch,
                 )
+            elif pending.descriptor.get("kind") == "bus_host_edit":
+                from .audio_edit import blueprint_sha256 as bus_blueprint_sha256
+                from .bus_host_edit import (
+                    accept_bus_host_edit_preview,
+                    build_bus_host_edit_preview,
+                )
+
+                source_candidate = pending.detail.get("source_candidate")
+                if not isinstance(source_candidate, dict):
+                    raise StudioServiceError(
+                        "integrity_error", "pending bus-host Preview lost trusted source candidate"
+                    )
+                parent = session.project.read_revision(current_head)
+                resolved = build_bus_host_edit_preview(
+                    session.project, parent, source_candidate, branch=branch
+                )
+                if not resolved.ready or resolved.blueprint is None:
+                    raise StudioServiceError(
+                        "conflict", "pending bus-host Preview no longer passes trusted authority"
+                    )
+                if (
+                    bus_blueprint_sha256(resolved.blueprint)
+                    != bus_blueprint_sha256(pending.candidate)
+                    or resolved.candidate_blueprint_sha256
+                    != pending.detail.get("candidate_blueprint_sha256")
+                    or resolved.proposed_material_sha256
+                    != pending.detail.get("proposed_material_sha256")
+                ):
+                    raise StudioServiceError(
+                        "integrity_error", "recomputed bus-host Preview differs from pending state"
+                    )
+                import hashlib as _hashlib
+
+                if (
+                    _hashlib.sha256(pending.wav_path.read_bytes()).hexdigest()
+                    != pending.detail["offline_preview"]["wav_sha256"]
+                ):
+                    raise StudioServiceError(
+                        "integrity_error", "pending bus-host audition WAV was modified"
+                    )
+                record = accept_bus_host_edit_preview(
+                    session.project, resolved, branch=branch
+                )
             else:
                 record = session.project.commit_revision(
                     pending.candidate,
@@ -696,7 +739,10 @@ class StudioService:
             artifact_paths = [
                 path for path in (pending.midi_path, pending.wav_path) if path.is_file()
             ]
-            manifest = session.project.bind_artifacts(
+            # K3 bus plugin audio is an explicitly opt-in derived WAV. Binding
+            # it into generic Studio media would silently override existing
+            # R1/MRAM playback semantics; do not do so.
+            manifest = None if pending.descriptor.get("kind") == "bus_host_edit" else session.project.bind_artifacts(
                 pending.candidate["project"]["revision_id"],
                 artifact_paths,
             )

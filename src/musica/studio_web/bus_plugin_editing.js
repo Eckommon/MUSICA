@@ -223,10 +223,15 @@
     const index = ++state.requestId;
     try {
       const base = rootPath();
-      const [editor, accepted] = await Promise.all([
-        request(base + "/bus-plugins/editor"),
-        request(base + "/bus-plugins"),
-      ]);
+      // Do not eagerly render an offline accepted WAV for unrelated Studio
+      // projects. It can be expensive and contend with Recording/RTIO startup.
+      // First query the cheap exact-source/topology eligibility projection;
+      // render accepted WAV only for the supported bounded two-bus editor.
+      const editor = await request(base + "/bus-plugins/editor");
+      if (index !== state.requestId) return;
+      const accepted = editor.eligible_for_bounded_preview
+        ? await request(base + "/bus-plugins")
+        : {offline_audition: {available: false}};
       if (index !== state.requestId) return;
       state.editor = editor;
       state.accepted = accepted;

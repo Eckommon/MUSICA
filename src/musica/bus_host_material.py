@@ -56,6 +56,18 @@ def validate_bus_host_material(
     if accepted_plugin_material_from_blueprint(blueprint)["instances"]:
         raise ContractError("K1-B simulated bus host excludes active R1 master plugin chains")
     topology = exact_two_bus_host_topology(blueprint)
+    # A non-neutral accepted master would be rejected by the K1-A PCM bridge;
+    # refuse to Accept such a host instance instead of persisting an
+    # unrenderable plugin state.
+    from .routing_contracts import routing_material_from_blueprint
+    routing = routing_material_from_blueprint(blueprint)
+    assert routing is not None
+    master = next(
+        node for node in routing["nodes"]
+        if str(node["node_id"]) == topology["master_node_id"]
+    )
+    if master["mixer"] != {"gain_db": 0.0, "pan": 0.0, "mute": False}:
+        raise ContractError("K1-B bus host requires exact neutral unmuted master")
     expected_buses = {p["bus_node_id"] for p in topology["paths"]}
     ids = [str(i["instance_id"]) for i in instances]
     buses = [str(i["owner_bus_id"]) for i in instances]

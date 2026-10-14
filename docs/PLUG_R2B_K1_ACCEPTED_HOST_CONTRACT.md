@@ -54,3 +54,15 @@ The `algorithmic_latency_frames` in K1 must remain clearly labeled **simulated/r
 ## Promotion discipline
 
 This gate documents unresolved host authority design, **not** an accepted DAW PDC capability. Implement schema + protected Preview→Accept first; prove it on separate branch/PR as appropriate; only then couple the accepted two-bus mixer execution to the numerical K0 kernel. Keep #166/#162/#155 OPEN until product-level evidence exists. Do not claim real third-party plugin ABI, realtime hosting, arbitrary graph PDC or commercial DAW readiness.
+
+## Current intermediate execution — K1 source bridge (not plugin authority)
+
+The first K1 implementation is intentionally **read-only and not product-host PDC**:
+
+- `plugin_host_topology.exact_two_bus_host_topology` checks two accepted track IDs -> two distinct `bus` nodes -> neutral master, with no sends, detours or extra nodes.
+- `plugin_host_bridge.build_accepted_bus_reference_inputs` resolves actual immutable accepted audio asset bytes and canonical native track/bus gain/pan/automation through existing MRAM primitives, reusing the accepted source's deterministic routed plan.
+- The bridge quantizes each **post-bus, pre-master float64 output to PCM16** independently before invoking the detached K0 PCM16 reference kernel. This is an explicit reference quantization boundary, **not** interchangeable with the existing float64-first final master mix. Legacy routing audio remains unchanged.
+- It rejects non-neutral/muted master, master automation, accepted R1 master plugins, unsupported routing, sample-rate mismatch, duration overflow, owner-ID spoofing and unknown detached configuration fields.
+- Synthetic per-bus algorithmic latency, intentional creative delay and bypass are supplied as explicit **detached experiment parameters**, not as accepted/authorized plugin processor state. K0 applies causal offsets to those accepted-audio-derived WAV paths without any Project writes.
+- The permanent **37th** workflow must prove source-bound evidence A/B byte equality, actual accepted two-bus PCM values, nontrivial compensation offsets, creative delay preservation, bypass offset recalculation, fail-closed error, HEAD non-mutation and reopen identity.
+- A green K1-source-bridge verdict will **not** close Issue #166/#162. Product-host PDC still requires an independent versioned and protected **accepted non-master plugin instance/latency material** and physically integrated signal processing over that accepted authority. The transient K0 parameters cannot be silently promoted as if they were approved by the user.

@@ -70,7 +70,7 @@ def test_studio_reports_only_accepted_host_and_does_not_mutate(tmp_path: Path):
 def test_unsupported_project_is_inspectable_but_not_falsely_audible(tmp_path: Path):
     service = StudioService(tmp_path)
     created = service.create_project_session(
-        project_slug="ordinary", user_text="A simple gentle melody",
+        project_slug="ordinary", user_text="A warm ambient gentle melody",
         session_id="studio-ordinary", provider_mode="fixture",
     )
     sid = "studio-ordinary"

@@ -215,3 +215,15 @@ def test_forced_failure_is_atomic_and_bypass_skips_inactive_processor():
     assert result.wav_bytes
     assert result.report()["accepted_state_mutation_authorized"] is False
     assert result.report()["host_pdc_integrated"] is False
+
+
+def test_entirely_truncated_branch_must_fail_closed():
+    inputs = {
+        "PATH-A": _wav(channel="left", frames=12),
+        "PATH-B": _wav(channel="right", frames=12),
+    }
+    configs = _fixture()[1]
+    configs[1]["algorithmic_latency_frames"] = 15
+    plan = _plan(inputs, configs)
+    with pytest.raises(ContractError, match="entire branch"):
+        render_two_path_alignment(plan, input_wav_by_path=inputs)

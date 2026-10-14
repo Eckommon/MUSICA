@@ -190,7 +190,7 @@
         "automation": {"type": "object", "additionalProperties": true},
         "routing": {"type": "object", "additionalProperties": true},
         "plugins": {"type": "object", "additionalProperties": true},
-        "bus_plugins": {"$ref": "accepted-bus-host-material-v0.schema.json"},
+        "bus_plugins": {"type": "object", "additionalProperties": true},
         "automation_locks": {"type": "array", "items": {"type": "object", "additionalProperties": true}}
       }
     },

@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eckommon.github.io/MUSICA/schemas/bus-host-processing-plan-v0.schema.json",
+  "title": "MUSICA K1-B derived accepted simulated bus host processing plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plan_version",
+    "engine_id",
+    "classification",
+    "source",
+    "sample_rate_hz",
+    "mode",
+    "kernel_plan_sha256",
+    "algorithmic_latency_provenance",
+    "creative_delay_policy",
+    "bus_host_processing_plan_sha256"
+  ],
+  "properties": {
+    "plan_version": {
+      "const": "0"
+    },
+    "engine_id": {
+      "const": "musica-accepted-simulated-bus-host-offline-v0"
+    },
+    "classification": {
+      "const": "derived_noncanonical"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_id",
+        "revision_id",
+        "blueprint_sha256",
+        "audio_material_sha256",
+        "routing_material_sha256",
+        "automation_material_sha256",
+        "legacy_plugin_material_sha256",
+        "bus_host_material_sha256",
+        "accepted_bus_audio_provenance_sha256"
+      ],
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blueprint_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "audio_material_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "routing_material_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "automation_material_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "legacy_plugin_material_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "bus_host_material_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "accepted_bus_audio_provenance_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "sample_rate_hz": {
+      "type": "integer",
+      "minimum": 8000,
+      "maximum": 192000
+    },
+    "mode": {
+      "enum": [
+        "legacy_routed_byte_exact_no_bus_processors",
+        "accepted_two_bus_simulated_reference_pdc"
+      ]
+    },
+    "kernel_plan_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "algorithmic_latency_provenance": {
+      "const": "accepted_explicit_simulated_reference_not_native_plugin"
+    },
+    "creative_delay_policy": {
+      "const": "accepted_path_delay_preserved_independent_of_algorithmic_bypass"
+    },
+    "bus_host_processing_plan_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

@@ -87,6 +87,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + b"\n"
             + _static_bytes("routing_editing.js")
             + b"\n"
+            + _static_bytes("bus_plugin_editing.js")
+            + b"\n"
             + _static_bytes("realtime_runtime.js")
             + b"\n"
             + _static_bytes("recording_monitoring.js")
@@ -106,6 +108,8 @@ def _browser_asset_bytes(name: str) -> bytes:
             + _static_bytes("revision_compare.css")
             + b"\n"
             + _static_bytes("routing_editing.css")
+            + b"\n"
+            + _static_bytes("bus_plugin_editing.css")
             + b"\n"
             + _static_bytes("realtime_runtime.css")
             + b"\n"

@@ -1,0 +1,81 @@
+name: PLUG-R3B Real Browser Studio Bus Plugin Editor Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plug-r3b-browser-bus-editor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA and real-browser testing
+        run: python -m pip install -e '.[dev,e2e]'
+      - name: Install Playwright Chromium (no apt repository mutation)
+        run: python -m playwright install chromium
+      - name: Run inherited trusted Studio and Browser regression
+        run: >-
+          pytest -q
+          tests/test_plug_r3_studio_bus_edit.py
+          tests/test_plug_r2b_k2_studio_bus_plugins.py
+          tests/test_plug_r2b_k1b_accepted_bus_host.py
+          tests/test_plug_r2b_k1b_host_execution.py
+      - name: Real Chromium edit/bypass/discard/reopen and numeric source evidence A
+        env:
+          MUSICA_PLUG_R3B_E2E_OUT: artifacts/r3b-a
+        run: pytest -q e2e/test_plug_r3b_browser.py
+      - name: Real Chromium independent repeat B
+        env:
+          MUSICA_PLUG_R3B_E2E_OUT: artifacts/r3b-b
+        run: pytest -q e2e/test_plug_r3b_browser.py
+      - name: Byte identical real-browser evidence replay
+        run: diff -qr artifacts/r3b-a artifacts/r3b-b
+      - name: Independently verify manifest integrity and actual WAV PCM
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,io,json,struct,wave
+          root=Path("artifacts/r3b-a")
+          manifest=json.loads((root/"manifest.json").read_bytes())
+          for row in manifest["artifacts"]:
+              raw=(root/row["path"]).read_bytes()
+              assert len(raw)==row["size_bytes"]
+              assert hashlib.sha256(raw).hexdigest()==row["sha256"]
+          proof=json.loads((root/"proof.json").read_bytes())
+          assert proof["real_chromium"] is True
+          assert proof["preview_did_not_advance_head"] is True
+          assert proof["accept_advanced_exactly_once_per_action"] is True
+          assert proof["stale_hash_preview_blocked"] is True
+          assert proof["discard_did_not_advance_head"] is True
+          assert proof["browser_bypass_accept_preserved_creative_delay"] is True
+          assert proof["bypass_frame_9_pcm"] == [8192,8192]
+          assert proof["bypass_frame_14_pcm"] == [24576,24576]
+          assert proof["restart_reopen_exact_head"] is True
+          assert not proof["browser_page_errors"]
+          assert not proof["browser_console_errors"]
+          assert proof["native_third_party_plugins_proven"] is False
+          assert proof["realtime_pdc_proven"] is False
+          raw=(root/"accepted-two-bus.wav").read_bytes()
+          assert hashlib.sha256(raw).hexdigest()==proof["accepted_offline_wav_sha256"]
+          with wave.open(io.BytesIO(raw),"rb") as reader:
+              assert reader.getframerate()==8000 and reader.getsampwidth()==2
+              assert reader.getnchannels()==2 and reader.getnframes()==96000
+              pcm=list(struct.iter_unpack("<hh",reader.readframes(reader.getnframes())))
+          assert all(pair==(0,0) for pair in pcm[:9])
+          assert pcm[9]==(24576,24576)
+          print("PLUG-R3B real Chromium accepted/Preview authority + PCM PASS")
+          PY
+      - name: Upload independently replayed real-browser evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-plug-r3b-real-browser-bus-plugin-evidence
+          path: artifacts/r3b-a
+          if-no-files-found: error

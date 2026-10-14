@@ -52,6 +52,9 @@ def validate_bus_host_material(
     instances = material["instances"]
     if not instances:
         return
+    from .plugin_reference import accepted_plugin_material_from_blueprint
+    if accepted_plugin_material_from_blueprint(blueprint)["instances"]:
+        raise ContractError("K1-B simulated bus host excludes active R1 master plugin chains")
     topology = exact_two_bus_host_topology(blueprint)
     expected_buses = {p["bus_node_id"] for p in topology["paths"]}
     ids = [str(i["instance_id"]) for i in instances]

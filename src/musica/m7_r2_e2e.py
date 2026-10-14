@@ -143,8 +143,28 @@ def _screenshot(page, path: Path) -> Path:
 
 
 def _attach_page_observers(page, console_errors: list[str], page_errors: list[str], request_failures: list[str]) -> None:
-    page.on("console", lambda message: console_errors.append(message.text) if message.type == "error" else None)
+    # Keep the historical strict zero-console-error/zero-page-error proof.
+    # Include the endpoint in diagnostics so a future browser media error is
+    # actionable without treating any 4xx/5xx response as expected.
+    page.on(
+        "console",
+        lambda message: console_errors.append(
+            f"{message.text} [location={message.location}]"
+        ) if message.type == "error" else None,
+    )
     page.on("pageerror", lambda error: page_errors.append(str(error)))
+
+    def on_response(response) -> None:
+        if response.status >= 400:
+            try:
+                detail = response.text()[:800]
+            except Exception as exc:
+                detail = f"<unavailable:{type(exc).__name__}>"
+            request_failures.append(
+                f"HTTP {response.status} {response.request.method} {response.url} body={detail}"
+            )
+
+    page.on("response", on_response)
     page.on(
         "requestfailed",
         lambda request: request_failures.append(f"{request.method} {request.url}: {request.failure}"),

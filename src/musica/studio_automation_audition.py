@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -41,6 +42,9 @@ class StudioAutomationAuditionSurface:
 
     def __init__(self, service: StudioService) -> None:
         self.service = service
+        # The Studio HTTP handler is threaded; revision fallbacks must remain
+        # available while concurrent read-only audition requests inspect them.
+        self._fallback_render_lock = threading.Lock()
 
     def _accepted_mapping(
         self,
@@ -167,13 +171,24 @@ class StudioAutomationAuditionSurface:
         fallback_midi: Path | None = None
 
         if bound_wav is None or bound_midi is None:
-            accepted = session.project.read_revision(revision_id)
             token = hashlib.sha256(revision_id.encode("utf-8")).hexdigest()[:16]
-            fallback_midi, fallback_wav = self.service._render_to_cache(
-                session,
-                accepted,
-                f"r6-inspect-{token}",
-            )
+            cache_key = f"r6-inspect-{token}"
+            # _render_to_cache() first removes an existing cache directory.
+            # Never delete a completed fallback underneath simultaneous browser
+            # refreshes/HTTP readers; the accepted revision is immutable.
+            with self._fallback_render_lock:
+                cache_root = self.service._confined(
+                    self.service._session_cache(session.session_id) / "renders" / cache_key
+                )
+                fallback_midi = cache_root / "preview.mid"
+                fallback_wav = cache_root / "preview.wav"
+                if not (fallback_midi.is_file() and fallback_wav.is_file()):
+                    accepted = session.project.read_revision(revision_id)
+                    fallback_midi, fallback_wav = self.service._render_to_cache(
+                        session,
+                        accepted,
+                        cache_key,
+                    )
 
         wav_path = bound_wav if bound_wav is not None else fallback_wav
         midi_path = bound_midi if bound_midi is not None else fallback_midi

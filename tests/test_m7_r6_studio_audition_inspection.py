@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 import threading
@@ -278,3 +279,40 @@ def test_http_exposes_new_audition_endpoint_without_reinterpreting_automation_v0
         server.shutdown()
         server.server_close()
         thread.join(timeout=5)
+
+def test_parallel_audition_reads_reuse_exact_fallback_and_preserve_head(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Concurrent audition readers cannot delete each other's fallback media."""
+    service, _automation, audition = open_session(
+        tmp_path, automation_blueprint()
+    )
+    project = service._get_session("r6-session").project
+    before = project.head_revision_id()
+    renders: list[str] = []
+    original = service._render_to_cache
+
+    def count_render(session, blueprint, cache_key):
+        if cache_key.startswith("r6-inspect-"):
+            renders.append(cache_key)
+        return original(session, blueprint, cache_key)
+
+    monkeypatch.setattr(service, "_render_to_cache", count_render)
+    barrier = threading.Barrier(8)
+
+    def read(_index: int) -> dict:
+        barrier.wait(timeout=30)
+        return audition.audition_view("r6-session")
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        snapshots = list(pool.map(read, range(8)))
+
+    assert len(renders) == 1
+    baseline = snapshots[0]["accepted_media"]
+    assert baseline["wav"]["source"] == "fallback_render"
+    assert baseline["midi"]["source"] == "fallback_render"
+    assert all(view["accepted_media"] == baseline for view in snapshots)
+    assert all(view["authority"]["canonical"] is False for view in snapshots)
+    assert project.head_revision_id() == before
+    assert project.verify_integrity()["status"] == "PASS"
+

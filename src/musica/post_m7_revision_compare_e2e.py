@@ -84,8 +84,24 @@ def _attach_observers(
     request_failures: list[str],
     expected_media_aborts: list[str],
 ) -> None:
-    page.on("console", lambda message: console_errors.append(message.text) if message.type == "error" else None)
+    def on_console(message) -> None:
+        if message.type == "error":
+            console_errors.append(
+                f"{message.text} [location={message.location}]"
+            )
+
+    page.on("console", on_console)
     page.on("pageerror", lambda error: page_errors.append(str(error)))
+
+    # Preserve strict no-error proof while reporting the actual failed endpoint.
+    # Chromium's generic "Failed to load resource" message omits its URL.
+    def on_bad_response(response) -> None:
+        if response.status >= 400:
+            request_failures.append(
+                f"HTTP {response.status} {response.request.method} {response.url}"
+            )
+
+    page.on("response", on_bad_response)
 
     def on_request_failed(request) -> None:
         failure = str(request.failure or "")

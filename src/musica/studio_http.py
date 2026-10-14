@@ -24,6 +24,7 @@ from .studio_routing import StudioRoutingSurface
 from .studio_realtime import StudioRealtimeSurface
 from .studio_recording import StudioRecordingSurface
 from .studio_bus_plugins import StudioBusHostSurface
+from .studio_bus_plugin_edit import StudioBusHostEditSurface
 
 MAX_JSON_BODY_BYTES = 1_048_576
 DEFAULT_HOST = "127.0.0.1"
@@ -124,6 +125,7 @@ def make_handler(application: StudioApplication):
     realtime_surface = StudioRealtimeSurface(application.service)
     recording_surface = StudioRecordingSurface(application.service)
     bus_host_surface = StudioBusHostSurface(application.service)
+    bus_host_edit_surface = StudioBusHostEditSurface(application.service)
 
     class StudioRequestHandler(BaseHTTPRequestHandler):
         server_version = "MUSICAStudio/0.6"
@@ -267,6 +269,54 @@ def make_handler(application: StudioApplication):
                         revision_b=parts[5],
                     )
                     self._send_json(HTTPStatus.OK, application._response("revision_compare", data))
+                    return
+
+                # PLUG-R3: exact accepted candidate source and explicit noncanonical
+                # bus-processor Preview; existing generic accept/discard authority
+                # handles the pending slot and source/HEAD validation.
+                if (
+                    method == "GET"
+                    and len(parts) == 5
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3:5] == ["bus-plugins", "editor"]
+                ):
+                    data = bus_host_edit_surface.editor_view(parts[2])
+                    self._send_json(
+                        HTTPStatus.OK,
+                        application._response("bus_host_editor_view", data),
+                    )
+                    return
+
+                if (
+                    method == "GET"
+                    and len(parts) == 6
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3:5] == ["bus-plugins", "media"]
+                    and parts[5] == "preview.wav"
+                ):
+                    data = bus_host_edit_surface.preview_wav(parts[2])
+                    self._send_bytes(HTTPStatus.OK, "audio/wav", data)
+                    return
+
+                if (
+                    method == "POST"
+                    and len(parts) == 5
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3:5] == ["preview", "bus-plugins"]
+                ):
+                    body = self._read_json()
+                    candidate = body.get("candidate")
+                    if not isinstance(candidate, dict):
+                        raise StudioServiceError(
+                            "invalid_request", "bus-host Preview requires a source-bound candidate object"
+                        )
+                    data = bus_host_edit_surface.preview_edit(
+                        parts[2], candidate=candidate
+                    )
+                    self._send_json(
+                        HTTPStatus.OK,
+                        application._response("preview_bus_host_edit", data),
+                    )
                     return
 
                 # K2 opt-in accepted-source bus processor inspection and WAV.

@@ -1,65 +1,47 @@
-# Next Action / 다음 작업
+# MUSICA Next Action / 다음 작업
 
-## Exact resume point / 정확한 재개점
+**Resume from evidence-backed main:** `5ca2836639c348eaa7efb65fc2c03eb452ea9867`, after expected-head PR #176 PLUG-R3B squash merge. **PLUG-R2 (#162) and Browser PLUG-R3B (#174) are CLOSED**. Both corrected implementation `7ed8c8e40235716edf16349c6e360ace2bc5a333` and durable-validation successor `f572a9466fad7989d6c2feb76e32a158d6031c06` achieved **41/41 SUCCESS**. If main has advanced, establish new SHA before editing.
 
-**PLUG-R2 — BOUNDED LATENCY PLANNING, COMPENSATION AND BYPASS/FAILURE CONTAINMENT v0**
+## Product priority / 최우선 원칙
 
-- Issue #162 — **OPEN**
-- Parent #155 — Plugin Hosting & Latency Compensation Foundation v0 — **OPEN**
-- PLUG-R1 Issue #159 — **COMPLETED**
-- PLUG-R1 implementation PR #161 — **MERGED**
-- canonical main after PLUG-R1: `d509406c49f423c5a53825a66aff0b4f0b922ecb`
-- R1 evidence head: `2130960e572b0e22b2618450add8a803b34d331d` — **34/34 SUCCESS**
-- validation successor: `276187c8bffda4fb72616043945ae4c2c31423d1` — **34/34 SUCCESS**
-- durable validation: `evidence/PLUG_R1_VALIDATION.md`
-- independent original artifact ID: `11828934691`
-- original artifact SHA-256:
-  `90a6032126eb3fc9b7eeeb8ce71e504d90f428fc5ddf77ec1b7d1c2624312170`
-- permanent workflows today: **34**, expected after R2: **35**.
+**Bring MUSICA from isolated, reproducible technical capabilities to a usable end-to-end music-production workflow.** It must eventually be a general-purpose, commercially usable DAW without surrendering its AI-native trusted creative authority. A 41/41 CI result validates only the exercised contracts and cases, not musical quality, physical hardware, genuine third-party plugin execution or commercial readiness.
 
-## Inherited invariants
+## P0 — repository hygiene and bounded foundation disposition
 
-PLUG-R1 accepts only a stable, bounded simulated reference plugin chain on the accepted master node through source-bound Preview→explicit Accept. Plugin execution plan and processed audio are derived only. Generic commits cannot mutate accepted plugin state. Bypass/empty results are byte-exact to routed baseline; an injected processor failure never changes accepted HEAD or plugin material. MRAM accepted routing, RTIO derived realtime runtime and REC accepted recording remain authoritative in their own validated scopes.
+1. Promote this state-only documentation refresh separately from the Browser code PR. Align `README.md`, `memory/CURRENT_STATE.md`, `memory/NEXT_ACTION.md` and relevant scope notes with exact merged PR/issue/CI state. Record current canonical SHA and 41 permanent workflows. Run full CI on the documentation PR exact head before merge.
+2. Evaluate **#155** against all **17 bounded v0 requirements** using R0/R1/R2/K1B/K2/R3A/R3B durable evidence. Require a written matrix with met / bounded / not-proven statuses. Synthetic error handling is NOT actual hostile-plugin process sandboxing. Close #155 only if its expressly limited simulated-v0 definition is completely evidenced; otherwise retain OPEN with exact missing criteria. In either case #177 real plugin binary proof remains separate.
+3. Preserve all existing 41 CI workflows and never merge red/incomplete heads.
 
-## Critical R2 design gate: latency is not automatically compensation
+## P1 — first actual integrated production slice: #178
 
-The R1 simulated `delay_frames` contributes a real effective serial processing delay. A single post-master serial chain has no parallel dry branch requiring path equalization. Consequently, measuring this latency is **not** proof of multi-path PDC.
+Use one testable song project, **not** a fake claim of professional DAW completeness. Evaluate:
+- Natural-language Blueprint intent and an accepted editable Music/MIDI/automation base.
+- Immutable imported supported WAV assets, stable audio tracks/clips and accepted arrangement/mixer state.
+- Supported routing and native mixer automation, with source hashes binding every revision.
+- Supported simulated bus plugin insertion/bypass + causal offline PDC in its exact two-bus topology; if an existing R1 master chain is active, explicitly refuse K1-B combination unless separately implemented.
+- One first-party local Browser workflow where available: A/B audition, Preview vs accepted visible, explicit Accept/Discard and reopen. Do not claim Browser operation where only tests/API exist.
+- Final WAV (+ MIDI where supported) with exact declared sample rate/channels/bit depth, loudness/clipping report, total duration and deterministic output hashes, archive export/import, same accepted revision and derived WAV/plan after reopen.
+- Matrix of unsupported requirements (especially physical input, real plugins, arbitrary signal graph, 48kHz if unproven), with clear operator errors and no silent fallback.
 
-Before writing code, settle and document:
+**R0 execution order**: (1) inventory current source/test fixtures and select minimally supported project topology; (2) versioned `PROD_E2E_R0` scenario contract/report with failure reasons; (3) deterministic executable demo and real audio artifact; (4) independent numeric/time/peak/identity assertions; (5) Browser acceptance evidence, if executable; (6) 42nd permanent workflow; (7) twice-generated deterministic evidence with manifest; (8) 42/42 full CI; (9) independent artifact verification; (10) durable validation; (11) successor 42/42; (12) guarded expected-head merge. A generic 3-min/48kHz/8-track/real microphone demonstration is a **future target** unless directly proven.
 
-1. Which frames represent algorithmic processing latency versus a deliberate creative signal delay?
-2. For each supported topology, which path/clock is the reference, and is the proposed correction causal?
-3. Is a bound-reference presentation/alignment policy enough for v0, or must owner/topology scope extend to the smallest provable two-path signal flow?
-4. Which states make compensation impossible or unsupported and must fail closed?
+## P2 — two parallel production-enabling streams after trustworthy slice
 
-Do not claim nontrivial compensation unless numerical audio output demonstrates it. Never erase intentional creative delay or look ahead to nonexistent live input.
+**#177 Real plugin ABI adapter**: verify current CLAP/VST3 SDK & license from official sources, target one format on one OS, explicit descriptor/ID/capabilities and process isolation design, then actually process accepted audio through a licensed, identified plugin binary with latency/error/reopen numerical evidence. No simulation-as-native substitution.
 
-## Dependency-safe implementation order
+**Physical device/runtime**: on an authorized real Windows interface, capture and measure 44.1/48kHz latency, callback load, dropouts, channel negotiation, restart and long-session failure. A simulated backend cannot prove real hardware readiness.
 
-1. **Inspect source contracts.** Read `plugin_reference.py`, `plugin_edit.py`, `routed_mixer.py`, `project.py`, accepted routing and plugin schemas plus R1 durable proof.
-2. **Decide bounded topology.** Freeze exactly which serial/path forms can be aligned. Document ledger-only cases separately from actual compensation.
-3. **Schema + provenance.** Specify a versioned derived plan with stable instance/slot IDs, accepted Blueprint/audio/routing/automation/plugin hashes, exact sample rate/channel, explicit latency components, compensation offsets and recomputable plan self-hash.
-4. **Deterministic planner.** Reject unknown owners/instances, duplicate slots, malformed or unsupported latency, overflow, incompatible routing and ambiguous paths.
-5. **Causal execution.** Realize only documented supported offline/reference alignment, retaining deterministic sample counts and frame identities. No hidden resampling/channel conversion.
-6. **Bypass/remove and failure.** Bypassed/removed instances provide no residual plugin latency or stale buffers. Processor failure reports a hard derived error; no implicit fallback or accepted Project mutation.
-7. **Authority.** Preserve exact-source R1 Preview→Accept, generic plugin delta gate and HEAD non-mutation from derived runtime/output.
-8. **Regression matrix.** Baseline, active chain, distinct latency, controlled state change, bypass/remove, forced error, invalid plan/tampering, reopen and the first nontrivial aligned reference-path case if PDC is claimed.
-9. **Independent numeric evidence.** Verify exact PCM frames and latency offsets against a separately calculated reference, not hashes alone.
-10. **Permanent workflow.** Add `PLUG-R2` evidence workflow as 35th gate with deterministic dual-run payload comparison, independent manifest and audio inspection.
-11. **Promotion.** Exact implementation/evidence head **35/35 SUCCESS** → independent artifact verification → durable `evidence/PLUG_R2_VALIDATION.md` → exact successor **35/35 SUCCESS** → expected-head squash merge → Issue #162 completed → separate state-only closure to PLUG-R3.
+## P3 — commercial release gate
 
-## R2 prohibited shortcuts
+Deeper waveform/non-destructive fades, crossfades, comping, time-stretch/pitch, real generation-provider evaluation, integrated instrument sound quality, multi-session performance, project migration/crash recovery, installer/signing/update, dependency licensing, accessibility/usability testing and packaging. Grade outcomes by `bounded technical success`, `real user workflow success`, and `commercial release ready`, never collapse them into one checklist.
 
-- No unproven generic arbitrary-graph PDC claim from single serial delay metadata.
-- No silent auto-bypass or accepted-state mutation after errors.
-- No real VST3/CLAP/AU host or sandbox claim.
-- No false portability, resampling or third-party compatibility claim.
-- No relaxation of existing 34 workflows to obtain a green status.
+## Absolute safeguards / 절대 금지
 
-## Maximum intended R2 outcome
+- Browser, runtime, AI and plugin binary data do not reverse-author accepted Blueprint/Project.
+- Never auto-Accept a generated or captured alternative; only typed, source-bound explicit acceptance.
+- Never call bounded simulated two-bus PDC 'real VST3/CLAP/AU realtime PDC'.
+- Never claim a missing audio-device, instrument or plugin format was tested without exercising it.
+- No weakening or skipping inherited CI to accelerate feature promotion.
+- GitHub exact head, workflow, artifact and durable evidence outrank previous conversation context.
 
-> **MUSICA derives exact bounded latency and causal compensation decisions from accepted plugin/routing authority, applies and numerically proves alignment only for supported topologies, maintains explicit bypass and fail-closed processing semantics, and preserves byte-exact accepted-source/reopen identity without allowing runtime or processed audio to reverse-author creative state.**
-
-This remains a target, not a validated R2 claim, until evidence and promotion complete.
-
-**Repository evidence remains authoritative over conversation/model memory.**
+**Active next implementation issue:** [#178 — PROD-E2E-R0](https://github.com/Eckommon/MUSICA/issues/178). **Actual third-party host experiment:** [#177 — PLUG-R4](https://github.com/Eckommon/MUSICA/issues/177). **Parent scope audit:** [#155](https://github.com/Eckommon/MUSICA/issues/155).

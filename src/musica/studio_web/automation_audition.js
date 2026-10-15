@@ -151,7 +151,19 @@
     try {
       const input = args[0];
       const url = typeof input === "string" ? input : input && input.url ? input.url : "";
-      if (!url.includes("/automation/audition")) queueRefresh();
+      const method = String(
+        (args[1] && args[1].method) || (input && input.method) || "GET"
+      ).toUpperCase();
+      // Inspecting *every* successful GET (including unrelated Studio
+      // overlays) caused repeated fallback renders and races with Preview
+      // Accept/Discard. Only a completed local mutation may invalidate this
+      // noncanonical inspection. Explicit automation refresh is separately
+      // handled by the host.refresh wrapper below.
+      if (
+        method !== "GET"
+        && /^\\/v0\\/sessions\\/[^/]+\\/(preview|automation)(\\/|$)/.test(url)
+        && response.ok
+      ) queueRefresh();
     } catch (_error) {
       // This inspection overlay is non-authoritative and must not break Studio requests.
     }

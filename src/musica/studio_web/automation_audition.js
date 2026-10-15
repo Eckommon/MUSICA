@@ -10,6 +10,7 @@
   let requestSerial = 0;
   let refreshQueued = false;
   let refreshInFlight = false;
+  let lastEditorReadyKey = null;
 
   const el = (id) => document.getElementById(id);
   const shortHash = (value) => (typeof value === "string" && value.length >= 12 ? `${value.slice(0, 12)}…` : "—");
@@ -174,7 +175,12 @@
   // A typed readiness event signals that accepted automation state was
   // actually installed, without depending on global unrelated GET traffic.
   window.addEventListener("musica:automation-view-ready", (event) => {
-    if (event.detail && event.detail.sessionId === state.sessionId) queueRefresh();
+    const detail = event.detail;
+    if (!detail || detail.sessionId !== state.sessionId) return;
+    const key = String(detail.sessionId) + ":" + String(detail.revisionId);
+    if (key === lastEditorReadyKey) return;
+    lastEditorReadyKey = key;
+    queueRefresh();
   });
 
   const priorRefresh = host.refresh;

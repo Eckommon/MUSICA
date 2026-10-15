@@ -161,7 +161,8 @@
       // handled by the host.refresh wrapper below.
       if (
         method !== "GET"
-        && /^\\/v0\\/sessions\\/[^/]+\\/(preview|automation)(\\/|$)/.test(url)
+        && url.includes("/v0/sessions/")
+        && (url.includes("/preview/") || url.includes("/automation/"))
         && response.ok
       ) queueRefresh();
     } catch (_error) {

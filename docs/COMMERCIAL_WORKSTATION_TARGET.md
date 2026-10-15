@@ -2,6 +2,8 @@
 
 **Status / 상태:** LONG-TERM PRODUCT TARGET — GOVERNING, NOT A COMPLETION CLAIM
 
+**2026-10-15 progress note / 현재 이행 상태:** the initial chosen expansion #95 and subsequent routing #115, simulated RTIO #129, simulated REC #142, and bounded simulated plugin Browser #174 are validated and merged. **These are prior achieved steps, not active future work.** A commercial workstation is still NOT completed. Current truthful product integration target is [#178](https://github.com/Eckommon/MUSICA/issues/178); actual authorized third-party plugin ABI proof is separately [#177](https://github.com/Eckommon/MUSICA/issues/177). Preserve historical rationale below as a time-stamped predecessor decision.
+
 ## 1. Long-term objective / 장기 목표
 
 MUSICA has two inseparable product ambitions:

@@ -159,12 +159,21 @@
       // Accept/Discard. Only a completed local mutation may invalidate this
       // noncanonical inspection. Explicit automation refresh is separately
       // handled by the host.refresh wrapper below.
-      if (
-        method !== "GET"
-        && url.includes("/v0/sessions/")
-        && (url.includes("/preview/") || url.includes("/automation/"))
-        && response.ok
-      ) queueRefresh();
+      const pathOnly = url.split("?")[0];
+      const isAutomationView = method === "GET"
+        && pathOnly.includes("/v0/sessions/")
+        && pathOnly.endsWith("/automation");
+      const isRelatedMutation = method !== "GET"
+        && pathOnly.includes("/v0/sessions/")
+        && (pathOnly.includes("/preview/") || pathOnly.includes("/automation/"));
+      if (response.ok && isAutomationView) {
+        // The automation GET response must first be consumed by its editor,
+        // updating host.state.view, before the truthful audition inspector
+        // can derive its exact accepted/Preview projection.
+        window.setTimeout(queueRefresh, 0);
+      } else if (response.ok && isRelatedMutation) {
+        queueRefresh();
+      }
     } catch (_error) {
       // This inspection overlay is non-authoritative and must not break Studio requests.
     }

@@ -416,6 +416,13 @@
     if (!automation.sessionId || !automation.root) return;
     try {
       automation.view = await automationFetch(`/v0/sessions/${encodeURIComponent(automation.sessionId)}/automation`);
+      // The M7-R6 audition inspector must react only after this exact
+      // accepted-source view is installed. The editing layer captures fetch
+      // before later overlays; observing GETs from those overlays is not a
+      // reliable bootstrap event and can generate concurrent render storms.
+      window.dispatchEvent(new CustomEvent("musica:automation-view-ready", {
+        detail: { sessionId: automation.sessionId, revisionId: automation.view.revision_id },
+      }));
       if (automation.selectedKey && !findPoint(displayLanes(), automation.selectedKey)) automation.selectedKey = null;
       render();
       if (!quiet) status("Automation view refreshed.", "success");

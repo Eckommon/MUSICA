@@ -341,3 +341,27 @@ def generate_first_song(out: Path) -> dict:
         }
         (out / "manifest.json").write_bytes(canonical_json_bytes(inventory))
         return proof
+
+def main(argv: list[str] | None = None) -> int:
+    import argparse
+    parser = argparse.ArgumentParser(
+        description="Generate a bounded audible MUSICA first-song offline integration demo"
+    )
+    parser.add_argument("--out", type=Path, required=True,
+                        help="New or empty output directory (never overwritten)")
+    args = parser.parse_args(argv)
+    proof = generate_first_song(args.out)
+    print(json.dumps({
+        "classification": proof["classification"],
+        "final_song": str(args.out / "final-song.wav"),
+        "sha256": proof["final_song_wav_sha256"],
+        "frames": proof["frames"],
+        "sample_rate_hz": proof["sample_rate_hz"],
+        "real_plugin_host": False,
+        "physical_recording": False,
+    }, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

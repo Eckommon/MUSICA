@@ -1,0 +1,71 @@
+name: PROD-E2E R0 First Musical Song Vertical Slice Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prod-e2e-r0:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA
+        run: python -m pip install -e '.[dev]'
+      - name: Check actual musical, accepted authority, reopen and inherited routing/plugin regressions
+        run: >-
+          pytest -q
+          tests/test_prod_e2e_r0.py
+          tests/test_plug_r2b_k1b_host_execution.py
+          tests/test_plug_r3_studio_bus_edit.py
+          tests/test_mram_r2_native_mixer_automation.py
+      - name: Generate first actual audible song A
+        run: python -m musica.prod_e2e_r0 --out artifacts/song-a
+      - name: Generate first actual audible song B
+        run: python -m musica.prod_e2e_r0 --out artifacts/song-b
+      - name: Verify deterministic full musical product trees
+        run: diff -qr artifacts/song-a artifacts/song-b
+      - name: Independent musical content/authority/hashes and real PCM oracle
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import io,hashlib,json,struct,wave
+          root=Path("artifacts/song-a")
+          manifest=json.loads((root/"manifest.json").read_bytes())
+          assert manifest["classification"]=="PROD_E2E_R0_OFFLINE_TWO_TRACK_MUSICAL_SLICE"
+          for item in manifest["artifacts"]:
+              raw=(root/item["path"]).read_bytes()
+              assert len(raw)==item["bytes"]
+              assert hashlib.sha256(raw).hexdigest()==item["sha256"]
+          proof=json.loads((root/"proof.json").read_bytes())
+          assert proof["fresh_archive_reopen_exact_plan_and_wav"]
+          assert proof["accepted_head_unchanged_by_offline_render"]
+          assert proof["commercial_release_ready"] is False
+          assert proof["actual_third_party_plugin_host_proven"] is False
+          assert proof["physical_device_recording_proven"] is False
+          assert len(proof["asset_ids"])==2 and len(set(proof["asset_ids"]))==2
+          b=(root/"final-song.wav").read_bytes()
+          assert hashlib.sha256(b).hexdigest()==proof["final_song_wav_sha256"]
+          assert (root/"pre-plugin.wav").read_bytes()!=b
+          with wave.open(io.BytesIO(b),"rb") as w:
+              assert (w.getnframes(),w.getframerate(),w.getnchannels(),w.getsampwidth())==(96000,8000,2,2)
+              pcm=list(struct.iter_unpack("<hh",w.readframes(w.getnframes())))
+          assert pcm[:9]==[(0,0)]*9
+          assert max(max(abs(a),abs(b)) for a,b in pcm)<32767
+          assert sum(1 for a,b in pcm if abs(a)>200 or abs(b)>200)>12000
+          assert proof["clipped_pcm_samples"]==0
+          print("PROD-E2E R0 actual musical WAV + Project trusted accepted/reopen PASS")
+          PY
+      - name: Upload real first-song WAV and accepted Project bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r0-first-audible-song
+          path: artifacts/song-a
+          if-no-files-found: error

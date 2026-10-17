@@ -10,6 +10,7 @@
   let requestSerial = 0;
   let refreshQueued = false;
   let refreshInFlight = false;
+  let lastEditorReadyKey = null;
 
   const el = (id) => document.getElementById(id);
   const shortHash = (value) => (typeof value === "string" && value.length >= 12 ? `${value.slice(0, 12)}…` : "—");
@@ -151,12 +152,44 @@
     try {
       const input = args[0];
       const url = typeof input === "string" ? input : input && input.url ? input.url : "";
-      if (!url.includes("/automation/audition")) queueRefresh();
+      const method = String(
+        (args[1] && args[1].method) || (input && input.method) || "GET"
+      ).toUpperCase();
+      // Inspecting *every* successful GET (including unrelated Studio
+      // overlays) caused repeated fallback renders and races with Preview
+      // Accept/Discard. Only a completed local mutation may invalidate this
+      // noncanonical inspection. Explicit automation refresh is separately
+      // handled by the host.refresh wrapper below.
+      const pathOnly = url.split("?")[0];
+      const isRelatedMutation = method !== "GET"
+        && pathOnly.includes("/v0/sessions/")
+        && (pathOnly.includes("/preview/") || pathOnly.includes("/automation/"));
+      if (response.ok && isRelatedMutation) queueRefresh();
     } catch (_error) {
       // This inspection overlay is non-authoritative and must not break Studio requests.
     }
     return response;
   };
+
+  // The editor obtains its GET using an earlier captured fetch reference.
+  // A typed readiness event signals that accepted automation state was
+  // actually installed, without depending on global unrelated GET traffic.
+  window.addEventListener("musica:automation-view-ready", (event) => {
+    const detail = event.detail;
+    if (!detail || detail.sessionId !== state.sessionId) return;
+    const key = String(detail.sessionId) + ":" + String(detail.revisionId);
+    if (key === lastEditorReadyKey) return;
+    lastEditorReadyKey = key;
+    queueRefresh();
+  });
+
+  // Preview installation does not advance the accepted revision, so the
+  // revision-keyed editor readiness event cannot signal this transition.
+  // Reinspect after the trusted Preview endpoint has completed, not on
+  // unrelated Studio GET requests.
+  window.addEventListener("musica:automation-preview-installed", (event) => {
+    if (event.detail?.sessionId === state.sessionId) queueRefresh();
+  });
 
   const priorRefresh = host.refresh;
   host.refresh = async (...args) => {

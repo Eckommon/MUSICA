@@ -362,6 +362,11 @@
         status(conflicts.map(conflictText).join(" | ") || "Automation edit blocked by trusted authority.", "error");
       } else {
         status("Automation Preview ready. Accepted revision is unchanged. Native mixer lanes retain routed audition authority; Browser state remains non-canonical.", "success");
+        // Accepted revision ID is intentionally unchanged during Preview;
+        // inform the read-only M7-R6 inspector about this exact transition.
+        window.dispatchEvent(new CustomEvent("musica:automation-preview-installed", {
+          detail: { sessionId: automation.sessionId },
+        }));
         const refresh = el("refreshButton");
         if (refresh) refresh.click();
       }

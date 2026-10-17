@@ -113,7 +113,7 @@
             <legend>Add track / 트랙 추가</legend>
             <label>Track ID<input id="r3NewTrackId" value="AT-UI-NEW"></label>
             <label>Name<input id="r3NewTrackName" value="Audio Track"></label>
-            <label>Order<input id="r3NewTrackOrder" type="number" min="0" step="1" value="9"></label>
+            <label>Order<input id="r3NewTrackOrder" type="number" min="0" step="1" value="0"></label>
             <button id="r3AddTrack" class="secondary" type="button">Preview add track</button>
           </fieldset>
           <fieldset>
@@ -425,6 +425,9 @@
     el("r3Accept").hidden = !preview;
     el("r3Discard").hidden = !preview;
     const tracks = preview ? preview.tracks : view.tracks;
+    // Newly created projects have zero tracks. A default order of 9 makes
+    // the first user-created track fail the canonical contiguous-order check.
+    if (!preview) el("r3NewTrackOrder").value = String((tracks || []).length);
     renderTracks(tracks || []);
     const audition = preview ? preview.audition : view.accepted_audition;
     el("r3AuditionLabel").textContent = preview ? "Preview-derived native mix · NOT ACCEPTED" : "Accepted-revision derived native mix";

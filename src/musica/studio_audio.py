@@ -12,6 +12,7 @@ import shutil
 from typing import Any
 
 from .audio_assets import read_audio_asset
+from .audio_assets import import_audio_asset_bytes
 from .audio_contracts import audio_material_from_blueprint, validate_project_blueprint_audio
 from .audio_edit import (
     AudioEditPreview,
@@ -145,6 +146,40 @@ class StudioAudioSurface:
                 "error": str(exc),
             }
 
+    def import_wav_resource(self, session_id: str, data: bytes) -> dict[str, Any]:
+        """Import validated same-origin WAV bytes, never an accepted creative edit.
+
+        Import is a project resource operation. The user must separately create a
+        source-bound ADD_TRACK/ADD_CLIP Preview and click trusted audio Accept.
+        """
+        session = self.service._get_session(session_id)
+        if session.pending is not None:
+            raise StudioServiceError(
+                "conflict",
+                "Discard or Accept the pending Preview before importing WAV assets",
+            )
+        try:
+            project = session.project
+            project.verify_integrity()
+            branch = project.current_branch()
+            head = project.head_revision_id(branch)
+            descriptor = import_audio_asset_bytes(project, data)
+            if project.head_revision_id(branch) != head:
+                raise StudioServiceError(
+                    "integrity_error", "WAV import changed the accepted Project revision"
+                )
+            project.verify_integrity()
+            return {
+                "resource_version": "0",
+                "classification": "IMMUTABLE_AUDIO_ASSET_NOT_ACCEPTED_CLIP",
+                "asset": descriptor,
+                "accepted_revision_id": head,
+                "accepted_revision_unchanged": True,
+                "requires_separate_clip_preview_and_explicit_accept": True,
+            }
+        except Exception as exc:
+            raise self.service._wrap_core_error(exc) from exc
+
     def audio_view(self, session_id: str) -> dict[str, Any]:
         session = self.service._get_session(session_id)
         try:
@@ -260,11 +295,19 @@ class StudioAudioSurface:
                     "audio_view": self.audio_view(session_id),
                 }
 
-            rendered = self._render_blueprint(
-                session_id,
-                session.project,
-                resolved.blueprint,
-                source_kind="preview",
+            # An empty new track is a valid editable arrangement even though
+            # there is no audio to audition until a clip has been placed.
+            # Only skip the render for a genuinely clip-free candidate, never
+            # disguise a failing render for a candidate that contains clips.
+            has_clips = any(track["clips"] for track in _material(resolved.blueprint)["tracks"])
+            rendered = (
+                self._render_blueprint(
+                    session_id,
+                    session.project,
+                    resolved.blueprint,
+                    source_kind="preview",
+                )
+                if has_clips else None
             )
             parent_revision_id = session.project.head_revision_id()
             if resolved.source_revision_id != parent_revision_id:
@@ -284,7 +327,8 @@ class StudioAudioSurface:
                 shutil.rmtree(cache_root)
             cache_root.mkdir(parents=True, exist_ok=True)
             wav_path = cache_root / "preview.wav"
-            wav_path.write_bytes(rendered.wav_bytes)
+            if rendered is not None:
+                wav_path.write_bytes(rendered.wav_bytes)
             midi_path = cache_root / "preview.mid"
 
             descriptor = {
@@ -297,7 +341,7 @@ class StudioAudioSurface:
                 ),
                 "branch": session.project.current_branch(),
                 "diff_count": len(resolved.material_diff),
-                "audio_available": True,
+                "audio_available": rendered is not None,
                 "midi_available": False,
             }
             validate_contract(descriptor, "studio-preview-v0.schema.json")
@@ -319,7 +363,10 @@ class StudioAudioSurface:
                         "candidate_kind": candidate_kind,
                         "candidate": copy.deepcopy(candidate),
                         "authority": authority,
-                        "audition": rendered.report(),
+                        "audition": rendered.report() if rendered is not None else {
+                            "available": False,
+                            "reason": "No accepted or proposed audio clips yet",
+                        },
                     }
                 },
             )

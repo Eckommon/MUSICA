@@ -83,6 +83,17 @@
       </div>
       <p class="muted small">Accepted Blueprint revision is authority. Browser controls and WAV playback are derived. Every edit remains PREVIEW until native-audio Accept revalidates R1/R2 authority.</p>
       <div id="r3AudioStatus" class="r3-audio-status" role="status" aria-live="polite" hidden></div>
+      <div id="r3AudioImport" class="r3-create-grid" hidden>
+        <fieldset>
+          <legend>Import WAV / WAV 가져오기</legend>
+          <label>Local PCM WAV / 로컬 PCM WAV
+            <input id="r3WavFile" type="file" accept=".wav,audio/wav">
+          </label>
+          <button id="r3ImportWav" class="secondary" type="button">Import as asset only / 오디오 자산 가져오기</button>
+          <p class="muted small">Resource only. No track/clip and no accepted revision change; add a track/clip with a separate Preview and Accept.</p>
+          <p id="r3ImportedAsset" class="mono muted small" role="status" aria-live="polite"></p>
+        </fieldset>
+      </div>
       <div id="r3AudioUnavailable" class="r3-audio-unavailable">Open a project with accepted native-audio material.</div>
       <div id="r3AudioWorkspace" hidden>
         <div class="r3-audio-toolbar">
@@ -102,7 +113,7 @@
             <legend>Add track / 트랙 추가</legend>
             <label>Track ID<input id="r3NewTrackId" value="AT-UI-NEW"></label>
             <label>Name<input id="r3NewTrackName" value="Audio Track"></label>
-            <label>Order<input id="r3NewTrackOrder" type="number" min="0" step="1" value="9"></label>
+            <label>Order<input id="r3NewTrackOrder" type="number" min="0" step="1" value="0"></label>
             <button id="r3AddTrack" class="secondary" type="button">Preview add track</button>
           </fieldset>
           <fieldset>
@@ -122,10 +133,52 @@
       </div>`;
     if (anchor) anchor.insertAdjacentElement("afterend", card);
     else panel.appendChild(card);
+    el("r3ImportWav").addEventListener("click", importWav);
     el("r3AddTrack").addEventListener("click", previewAddTrack);
     el("r3AddClip").addEventListener("click", previewAddClip);
     el("r3Accept").addEventListener("click", acceptPreview);
     el("r3Discard").addEventListener("click", discardPreview);
+  }
+
+  async function importWav() {
+    if (!nativeAudio.sessionId) return status("Create or open a Studio project first.", "error");
+    if (nativeAudio.view && nativeAudio.view.preview)
+      return status("Accept or Discard pending native-audio Preview before importing.", "error");
+    const picker = el("r3WavFile");
+    const file = picker && picker.files && picker.files[0];
+    if (!file) return status("Select a PCM WAV file to import.", "error");
+    if (file.size < 44 || file.size > 16 * 1024 * 1024)
+      return status("WAV file must be between 44 bytes and 16 MiB.", "error");
+    const button = el("r3ImportWav");
+    button.disabled = true;
+    try {
+      const response = await originalFetch(
+        `/v0/sessions/${encodeURIComponent(nativeAudio.sessionId)}/audio/import-wav`,
+        {method: "POST", headers: {Accept: "application/json", "Content-Type": "audio/wav"}, body: file}
+      );
+      const payload = await response.json();
+      if (!response.ok || !payload || !payload.ok) {
+        throw new Error(payload && payload.error ? payload.error.message : `HTTP ${response.status}`);
+      }
+      const value = payload.data;
+      if (!value.accepted_revision_unchanged || !value.requires_separate_clip_preview_and_explicit_accept)
+        throw new Error("Server did not confirm noncanonical resource-only import.");
+      const descriptor = value.asset;
+      if (!descriptor || !descriptor.asset_id || !descriptor.format)
+        throw new Error("Invalid audio asset descriptor from Studio.");
+      el("r3NewAssetId").value = descriptor.asset_id;
+      el("r3NewSourceIn").value = "0";
+      el("r3NewSourceOut").value = String(descriptor.format.duration_seconds);
+      el("r3ImportedAsset").textContent =
+        `${file.name} · ${descriptor.asset_id} · ${descriptor.format.sample_rate_hz} Hz · ` +
+        `${descriptor.format.channels} ch · ${descriptor.format.duration_seconds} s · NOT A CLIP`;
+      await refreshAudioView(true);
+      status("WAV imported as immutable resource. Next Preview add track / clip, then explicitly Accept.", "success");
+    } catch (error) {
+      status(error.message || String(error), "error");
+    } finally {
+      button.disabled = false;
+    }
   }
 
   function sourceBinding() {
@@ -356,6 +409,7 @@
   function render() {
     injectSurface();
     const view = nativeAudio.view;
+    el("r3AudioImport").hidden = !nativeAudio.sessionId;
     if (!view) {
       el("r3AudioAuthorityBadge").textContent = "NO PROJECT";
       el("r3AudioWorkspace").hidden = true;
@@ -371,6 +425,9 @@
     el("r3Accept").hidden = !preview;
     el("r3Discard").hidden = !preview;
     const tracks = preview ? preview.tracks : view.tracks;
+    // Newly created projects have zero tracks. A default order of 9 makes
+    // the first user-created track fail the canonical contiguous-order check.
+    if (!preview) el("r3NewTrackOrder").value = String((tracks || []).length);
     renderTracks(tracks || []);
     const audition = preview ? preview.audition : view.accepted_audition;
     el("r3AuditionLabel").textContent = preview ? "Preview-derived native mix · NOT ACCEPTED" : "Accepted-revision derived native mix";

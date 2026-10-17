@@ -183,6 +183,14 @@
     queueRefresh();
   });
 
+  // Preview installation does not advance the accepted revision, so the
+  // revision-keyed editor readiness event cannot signal this transition.
+  // Reinspect after the trusted Preview endpoint has completed, not on
+  // unrelated Studio GET requests.
+  window.addEventListener("musica:automation-preview-installed", (event) => {
+    if (event.detail?.sessionId === state.sessionId) queueRefresh();
+  });
+
   const priorRefresh = host.refresh;
   host.refresh = async (...args) => {
     const result = await priorRefresh(...args);

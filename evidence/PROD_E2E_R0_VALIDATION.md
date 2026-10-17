@@ -33,3 +33,16 @@ The demonstration establishes a real, narrowly bounded audible musical output an
 This durable validation file creates a new PR head. **Only after that exact successor head independently passes 42/42** may PR #180 be marked ready and guarded expected-head squash merged. No test waivers, no missing workflows, no implicit Project authority upgrades. Keep #178 OPEN for follow-up longer/song/browser/hardware/quality product readiness work.
 
 The exact repository commit and GitHub Actions artifact are the source of truth.
+
+
+## Corrected implementation successor qualification — 2026-10-17 / 최신 검증
+
+The original `c8a95603...` numerical/ZIP proof above remains accurate. PR #180's subsequent M7 Browser refresh fixes did **not** waive inherited tests. Its latest corrected implementation head `556d4c0d52bf0c0dfa020e9865842470bafedcb7` completed **42/42 GitHub Actions workflows, SUCCESS** and **45/45 individual check runs, SUCCESS** (MUSICA CI includes three separately reported jobs).
+
+**Cross-workflow regression:** M7-R2 Browser automation run `39023040837`, M7-R6 truthful audition run `39023040928`, and PLUG-R3B Browser bus-plugin run `39023040773` all succeeded. The Preview-installed notification only invalidates the read-only audition inspection after a successful actual Preview install; unrelated GETs no longer trigger recurrent fallback renders.
+
+**Latest actual artifact, independently downloaded and inspected:** PROD-E2E-R0 workflow run `39023040828`, artifact ID `12096914867`, ZIP size 800,983 bytes, downloaded archive SHA-256 `ae4316b372673d71c67a84e85c10b0cee6abb3738c137d1a1d74f58873116948` (matches GitHub's reported SHA-256 digest). The `manifest.json` inside independently verified **6/6** exact uncompressed member sizes and SHA-256 digests. Independently decoded final WAV: **8,000 Hz**, **2 channels**, **16-bit**, **96,000 frames / 12 s**, **9390** peak absolute scalar value, **191,882** nonzero scalar samples, **0** samples at |PCM| >= 32767. Actual WAV SHA-256 remains `f3a199c452c214d2a4bf4c7e321ff8d06e1bbeed0bc0b96fcbf0b96babaa8bff`. Independent archive bytes confirm the same artifacts as the prior green head.
+
+**Critical limitation clarification / 중요:** The demo script's `_accept(...)` routine calls trusted explicit Accept handlers programmatically; this is **not** proof of real end-user Browser interaction or human approval. It validates the authority implementation, not the UX. Future end-user Browser WAV import, Preview and human-triggered Accept are tracked in issue [#181](https://github.com/Eckommon/MUSICA/issues/181). Parent #178 remains OPEN; no claims of external plugin ABI, physical recording, native 48kHz device path or release readiness.
+
+**Promotion gate:** This document and scope-note refresh create one or more successor commits. Only the exact final successor head's independent 42/42 workflow pass permits guarded expected-head squash merge. Record the final promoted SHA and merge result in subsequent canonical state alignment.

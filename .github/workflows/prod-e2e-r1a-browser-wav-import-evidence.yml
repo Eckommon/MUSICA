@@ -1,0 +1,32 @@
+name: PROD-E2E R1A Browser WAV Import Authority Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prod-e2e-r1a:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install MUSICA development dependencies / 개발 의존성
+        run: python -m pip install -e '.[dev]'
+      - name: Check Browser JavaScript syntax / Browser JS 문법 확인
+        run: node --check src/musica/studio_web/native_audio.js
+      - name: Test resource boundary, HTTP, trusted Preview and inherited audio / 오디오 계약·권한 테스트
+        run: >-
+          pytest -q
+          tests/test_prod_e2e_r1a_browser_import.py
+          tests/test_atcm_r3_studio_audio.py
+          tests/test_atcm_r1_audio_authority.py
+          tests/test_atcm_r0_audio_assets.py
+      - name: Verify package compiles / 패키지 문법 검사
+        run: python -m compileall -q src/musica/studio_audio.py src/musica/studio_http_r3.py

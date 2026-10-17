@@ -12,6 +12,7 @@ import shutil
 from typing import Any
 
 from .audio_assets import read_audio_asset
+from .audio_assets import import_audio_asset_bytes
 from .audio_contracts import audio_material_from_blueprint, validate_project_blueprint_audio
 from .audio_edit import (
     AudioEditPreview,
@@ -144,6 +145,40 @@ class StudioAudioSurface:
                 "rendered_audio_is_canonical": False,
                 "error": str(exc),
             }
+
+    def import_wav_resource(self, session_id: str, data: bytes) -> dict[str, Any]:
+        """Import validated same-origin WAV bytes, never an accepted creative edit.
+
+        Import is a project resource operation. The user must separately create a
+        source-bound ADD_TRACK/ADD_CLIP Preview and click trusted audio Accept.
+        """
+        session = self.service._get_session(session_id)
+        if session.pending is not None:
+            raise StudioServiceError(
+                "conflict",
+                "Discard or Accept the pending Preview before importing WAV assets",
+            )
+        try:
+            project = session.project
+            project.verify_integrity()
+            branch = project.current_branch()
+            head = project.head_revision_id(branch)
+            descriptor = import_audio_asset_bytes(project, data)
+            if project.head_revision_id(branch) != head:
+                raise StudioServiceError(
+                    "integrity_error", "WAV import changed the accepted Project revision"
+                )
+            project.verify_integrity()
+            return {
+                "resource_version": "0",
+                "classification": "IMMUTABLE_AUDIO_ASSET_NOT_ACCEPTED_CLIP",
+                "asset": descriptor,
+                "accepted_revision_id": head,
+                "accepted_revision_unchanged": True,
+                "requires_separate_clip_preview_and_explicit_accept": True,
+            }
+        except Exception as exc:
+            raise self.service._wrap_core_error(exc) from exc
 
     def audio_view(self, session_id: str) -> dict[str, Any]:
         session = self.service._get_session(session_id)

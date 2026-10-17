@@ -18,7 +18,7 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Install MUSICA development dependencies / 개발 의존성
-        run: python -m pip install -e '.[dev]'
+        run: python -m pip install -e '.[dev,e2e]'
       - name: Check Browser JavaScript syntax / Browser JS 문법 확인
         run: node --check src/musica/studio_web/native_audio.js
       - name: Test resource boundary, HTTP, trusted Preview and inherited audio / 오디오 계약·권한 테스트
@@ -30,3 +30,15 @@ jobs:
           tests/test_atcm_r0_audio_assets.py
       - name: Verify package compiles / 패키지 문법 검사
         run: python -m compileall -q src/musica/studio_audio.py src/musica/studio_http_r3.py
+      - name: Install actual Chromium / 실제 Chromium 설치
+        run: python -m playwright install --with-deps chromium
+      - name: Execute real-browser import and explicit accept / 실제 Browser 조작 검증
+        run: python -m musica.prod_e2e_r1a_browser --out artifacts/prod-r1a-browser
+      - name: Upload browser evidence / Browser 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r1a-user-operated-wav
+          path: |
+            artifacts/prod-r1a-browser/proof.json
+            artifacts/prod-r1a-browser/*.png
+          if-no-files-found: error

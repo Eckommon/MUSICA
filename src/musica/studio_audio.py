@@ -295,11 +295,19 @@ class StudioAudioSurface:
                     "audio_view": self.audio_view(session_id),
                 }
 
-            rendered = self._render_blueprint(
-                session_id,
-                session.project,
-                resolved.blueprint,
-                source_kind="preview",
+            # An empty new track is a valid editable arrangement even though
+            # there is no audio to audition until a clip has been placed.
+            # Only skip the render for a genuinely clip-free candidate, never
+            # disguise a failing render for a candidate that contains clips.
+            has_clips = any(track["clips"] for track in _material(resolved.blueprint)["tracks"])
+            rendered = (
+                self._render_blueprint(
+                    session_id,
+                    session.project,
+                    resolved.blueprint,
+                    source_kind="preview",
+                )
+                if has_clips else None
             )
             parent_revision_id = session.project.head_revision_id()
             if resolved.source_revision_id != parent_revision_id:
@@ -319,7 +327,8 @@ class StudioAudioSurface:
                 shutil.rmtree(cache_root)
             cache_root.mkdir(parents=True, exist_ok=True)
             wav_path = cache_root / "preview.wav"
-            wav_path.write_bytes(rendered.wav_bytes)
+            if rendered is not None:
+                wav_path.write_bytes(rendered.wav_bytes)
             midi_path = cache_root / "preview.mid"
 
             descriptor = {
@@ -332,7 +341,7 @@ class StudioAudioSurface:
                 ),
                 "branch": session.project.current_branch(),
                 "diff_count": len(resolved.material_diff),
-                "audio_available": True,
+                "audio_available": rendered is not None,
                 "midi_available": False,
             }
             validate_contract(descriptor, "studio-preview-v0.schema.json")
@@ -354,7 +363,10 @@ class StudioAudioSurface:
                         "candidate_kind": candidate_kind,
                         "candidate": copy.deepcopy(candidate),
                         "authority": authority,
-                        "audition": rendered.report(),
+                        "audition": rendered.report() if rendered is not None else {
+                            "available": False,
+                            "reason": "No accepted or proposed audio clips yet",
+                        },
                     }
                 },
             )

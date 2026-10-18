@@ -122,7 +122,7 @@ def run_suite(destination: str | Path) -> dict:
             assert hashlib.sha256(delivered).hexdigest() == wav_sha
             assert delivered[:4] == b"RIFF" and delivered[8:12] == b"WAVE"
             with wave.open(io.BytesIO(delivered), "rb") as handle:
-                assert handle.getnchannels() == 1
+                assert handle.getnchannels() == 2  # native mixer always emits stereo PCM16
                 assert handle.getframerate() == 8000
                 assert handle.getnframes() > 0
                 assert any(b != 0 for b in handle.readframes(handle.getnframes()))

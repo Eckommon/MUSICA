@@ -35,7 +35,7 @@ def test_production_guide_is_served_only_from_first_party_browser_assets(tmp_pat
         # Native audio remains served and the R1B guide cannot commit a project.
         assert "MUSICA_NATIVE_AUDIO" in script
         guide_source = script.split("// PROD-E2E-R1B-G0:")[1]
-        assert "audio/accept" not in guide_source
+        assert '"/audio/accept"' not in guide_source  # accept endpoint, not accepted.wav media
         assert "preview/accept" not in guide_source
     finally:
         server.shutdown()

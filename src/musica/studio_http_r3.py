@@ -22,6 +22,10 @@ from .studio_http import (
 )
 
 
+# A bounded direct binary transfer; never accept a client filesystem path.
+MAX_WAV_IMPORT_BYTES = 16 * 1024 * 1024
+
+
 def make_handler(application: StudioApplication):
     base_handler = make_base_handler(application)
     audio_surface = StudioAudioSurface(application.service)
@@ -54,6 +58,50 @@ def make_handler(application: StudioApplication):
             clean_path = urlsplit(self.path).path
             parts = [part for part in clean_path.strip("/").split("/") if part]
             try:
+                if (
+                    method == "POST"
+                    and len(parts) == 5
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3:] == ["audio", "import-wav"]
+                ):
+                    # Reject unknown sessions and concurrent Previews before reading
+                    # any untrusted binary bytes; no creative revision is accepted.
+                    application.service._get_session(parts[2])
+                    if self.headers.get("Transfer-Encoding"):
+                        raise StudioServiceError(
+                            "invalid_request", "chunked WAV import is unsupported"
+                        )
+                    content_type = self.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
+                    if content_type != "audio/wav":
+                        raise StudioServiceError(
+                            "invalid_request", "WAV upload Content-Type must be audio/wav"
+                        )
+                    raw_length = self.headers.get("Content-Length")
+                    if raw_length is None:
+                        raise StudioServiceError(
+                            "invalid_request", "WAV import requires Content-Length"
+                        )
+                    try:
+                        size = int(raw_length)
+                    except ValueError as exc:
+                        raise StudioServiceError(
+                            "invalid_request", "invalid WAV Content-Length"
+                        ) from exc
+                    if size < 44 or size > MAX_WAV_IMPORT_BYTES:
+                        raise StudioServiceError(
+                            "invalid_request", "WAV upload must be between 44 bytes and 16 MiB"
+                        )
+                    raw_wav = self.rfile.read(size)
+                    if len(raw_wav) != size:
+                        raise StudioServiceError(
+                            "invalid_request", "WAV upload body was truncated"
+                        )
+                    data = audio_surface.import_wav_resource(parts[2], raw_wav)
+                    self._send_json(
+                        HTTPStatus.OK, application._response("import_native_wav_resource", data)
+                    )
+                    return
+
                 if (
                     method == "GET"
                     and len(parts) == 4

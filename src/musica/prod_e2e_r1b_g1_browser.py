@@ -82,7 +82,17 @@ def suite(destination: str | Path) -> dict:
                 assert session.project.head_revision_id() == prior
 
             def accept_preview(before: str, label: str):
-                expect(page.locator("#r3AudioAuthorityBadge")).to_have_text("PREVIEW · NOT ACCEPTED")
+                try:
+                    expect(page.locator("#r3AudioAuthorityBadge")).to_have_text("PREVIEW · NOT ACCEPTED")
+                except AssertionError as exc:
+                    diagnostic = page.evaluate("""() => ({
+                        status: document.getElementById("r3AudioStatus")?.textContent,
+                        statusClass: document.getElementById("r3AudioStatus")?.className,
+                        authority: window.MUSICA_NATIVE_AUDIO?.state?.lastAuthorityResult,
+                        candidate: window.MUSICA_NATIVE_AUDIO?.state?.lastSubmittedCandidate
+                    })""")
+                    raise AssertionError(label + " failed to install Preview: " +
+                                         json.dumps(diagnostic, ensure_ascii=False)) from exc
                 assert session.project.head_revision_id() == before, label + " Preview mutated HEAD"
                 expect(page.locator("#r1bDownloadWav")).to_be_disabled()
                 page.locator("#r3Accept").click()
@@ -168,7 +178,10 @@ def suite(destination: str | Path) -> dict:
             browser = None
     finally:
         if browser is not None:
-            browser.close()
+            try:
+                browser.close()
+            except Exception:
+                pass  # Preserve primary failure after Playwright context exit.
         _stop(server, thread)
 
     reopened_service, reopened_server, reopened_thread, reopened_url = _server(workspace)

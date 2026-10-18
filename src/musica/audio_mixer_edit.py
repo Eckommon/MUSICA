@@ -64,8 +64,11 @@ def _blocked(parent: dict[str, Any], candidate: dict[str, Any], conflicts: list[
 
 
 def _revision_id(parent: dict[str, Any], candidate: dict[str, Any]) -> str:
-    digest = hashlib.sha256(canonical_json_bytes(candidate)).hexdigest()[:16]
-    return f"{parent['project']['revision_id']}-mixer-{digest}"
+    # Fixed-size, exact-parent-bound identity. Chaining full revision IDs made
+    # long user edit sessions exceed Studio preview schema ID bounds.
+    binding = {"parent_revision_id": str(parent["project"]["revision_id"]), "candidate": candidate}
+    digest = hashlib.sha256(canonical_json_bytes(binding)).hexdigest()[:32]
+    return "rev-mixer-" + digest
 
 
 def build_audio_mixer_edit_preview(project: Any, parent_blueprint: dict[str, Any], candidate: dict[str, Any], *, branch: str | None = None, revision_id: str | None = None) -> AudioEditPreview:

@@ -1,0 +1,39 @@
+name: PROD-E2E R1B G0 Browser One-Song Guide Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prod-e2e-r1b-g0:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install development and real Chromium / 의존성·Chromium 설치
+        run: |
+          python -m pip install -e '.[dev,e2e]'
+          python -m playwright install --with-deps chromium
+      - name: Browser syntax and bounded guide authority / 문법·권한 검증
+        run: |
+          node --check src/musica/studio_web/production_guide.js
+          pytest -q tests/test_prod_e2e_r1b_guide.py tests/test_prod_e2e_r1a_browser_import.py tests/test_atcm_r3_studio_audio.py
+          python -m compileall -q src/musica/prod_e2e_r1b_browser.py
+      - name: Real Chromium guided import accept download reopen / 실제 UI 통합 검증
+        run: python -m musica.prod_e2e_r1b_browser --out artifacts/prod-r1b-guide
+      - name: Upload verified WAV and screenshots / WAV·시각 증거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r1b-guide-browser
+          path: |
+            artifacts/prod-r1b-guide/*.json
+            artifacts/prod-r1b-guide/*.png
+            artifacts/prod-r1b-guide/*.wav
+          if-no-files-found: error

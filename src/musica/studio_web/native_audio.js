@@ -114,6 +114,7 @@
             <label>Track ID<input id="r3NewTrackId" value="AT-UI-NEW"></label>
             <label>Name<input id="r3NewTrackName" value="Audio Track"></label>
             <label>Order<input id="r3NewTrackOrder" type="number" min="0" step="1" value="0"></label>
+            <button id="r3SuggestTrackId" class="secondary" type="button">Next unused track ID / 새 트랙 ID</button>
             <button id="r3AddTrack" class="secondary" type="button">Preview add track</button>
           </fieldset>
           <fieldset>
@@ -127,6 +128,7 @@
               <label>Source out<input id="r3NewSourceOut" type="number" min="0.001" step="0.001" value="0.1"></label>
               <label>Gain dB<input id="r3NewClipGain" type="number" min="-60" max="12" step="0.1" value="0"></label>
             </div>
+            <button id="r3SuggestClipId" class="secondary" type="button">Next unused clip ID / 새 클립 ID</button>
             <button id="r3AddClip" class="secondary" type="button">Preview add clip</button>
           </fieldset>
         </div>
@@ -135,6 +137,8 @@
     else panel.appendChild(card);
     el("r3ImportWav").addEventListener("click", importWav);
     el("r3AddTrack").addEventListener("click", previewAddTrack);
+    el("r3SuggestTrackId").addEventListener("click", suggestTrackId);
+    el("r3SuggestClipId").addEventListener("click", suggestClipId);
     el("r3AddClip").addEventListener("click", previewAddClip);
     el("r3Accept").addEventListener("click", acceptPreview);
     el("r3Discard").addEventListener("click", discardPreview);
@@ -238,6 +242,36 @@
     return value;
   }
 
+
+  // R1B-G1 ID suggestions read accepted material only; never create a revision.
+  function acceptedTracks() {
+    return nativeAudio.view && Array.isArray(nativeAudio.view.tracks) ? nativeAudio.view.tracks : [];
+  }
+
+  function uniqueId(prefix, used) {
+    for (let index = 1; index <= 9999; index += 1) {
+      const value = prefix + "-" + String(index).padStart(3, "0");
+      if (!used.has(value)) return value;
+    }
+    throw new Error("No unused ID remains for " + prefix);
+  }
+
+  function suggestTrackId() {
+    if (!nativeAudio.view) return status("Open an accepted native-audio project first.", "error");
+    const tracks = acceptedTracks();
+    el("r3NewTrackId").value = uniqueId("AT-UI", new Set(tracks.map((track) => track.track_id)));
+    el("r3NewTrackOrder").value = String(tracks.length);
+    status("Suggested unused track ID. Only Preview and explicit Accept can create a track.");
+  }
+
+  function suggestClipId() {
+    if (!nativeAudio.view) return status("Open an accepted native-audio project first.", "error");
+    const used = new Set(acceptedTracks().flatMap((track) =>
+      (track.clips || []).map((clip) => clip.clip_id)));
+    el("r3NewClipId").value = uniqueId("AC-UI", used);
+    status("Suggested unused clip ID. Accepted Project HEAD remains unchanged.");
+  }
+
   function previewAddTrack() {
     try {
       submit("arrangement", [{
@@ -337,6 +371,7 @@
     const list = el("r3TrackList");
     list.replaceChildren();
     const select = el("r3ClipTrack");
+    const previouslySelectedTrack = select.value;
     select.replaceChildren();
     tracks.forEach((track) => {
       const option = document.createElement("option");
@@ -404,6 +439,9 @@
       card.append(heading, mixer, clips);
       list.appendChild(card);
     });
+    if ([...select.options].some((item) => item.value === previouslySelectedTrack)) {
+      select.value = previouslySelectedTrack;
+    }
   }
 
   function render() {

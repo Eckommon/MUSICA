@@ -130,7 +130,7 @@
     const statusTexts = [
       p.sessionId && p.view ? "ACCEPTED SESSION" : "CREATE / OPEN",
       p.clipCount ? "SOURCE USED BY ACCEPTED CLIP" : "MANUAL ASSET IMPORT",
-      p.clipCount ? "ACCEPTED CLIP" : p.trackCount ? "TRACK ACCEPTED · CLIP NEEDED" : "TRACK / CLIP NEEDED",
+      p.trackCount >= 2 && p.clipCount >= 2 ? String(p.trackCount) + " TRACKS / " + String(p.clipCount) + " CLIPS ACCEPTED" : p.clipCount ? "ACCEPTED CLIP" : p.trackCount ? "TRACK ACCEPTED · CLIP NEEDED" : "TRACK / CLIP NEEDED",
       p.trackCount ? "AVAILABLE · MANUAL EDIT" : "NEEDS TRACK",
       "OPTIONAL · TOPOLOGY-GATED",
       "OPTIONAL · LANE-GATED",

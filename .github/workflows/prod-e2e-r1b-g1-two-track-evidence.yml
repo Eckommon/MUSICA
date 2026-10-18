@@ -1,0 +1,40 @@
+name: PROD-E2E R1B G1 Real Two-Track Mix Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prod-e2e-r1b-g1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install development and Chromium / 의존성 및 실제 브라우저
+        run: |
+          python -m pip install -e '.[dev,e2e]'
+          python -m playwright install --with-deps chromium
+      - name: Validate script, new ID controls, and inherited Browser contracts / 회귀 검증
+        run: |
+          node --check src/musica/studio_web/native_audio.js
+          node --check src/musica/studio_web/production_guide.js
+          python -m compileall -q src/musica/prod_e2e_r1b_g1_browser.py
+          pytest -q tests/test_prod_e2e_r1b_g1_multitrack.py tests/test_prod_e2e_r1b_guide.py tests/test_prod_e2e_r1a_browser_import.py tests/test_atcm_r3_studio_audio.py tests/test_atcm_r2_native_mixer.py
+      - name: Execute real two-track Chromium and independent WAV oracle / 두 트랙 오디오 실증
+        run: python -m musica.prod_e2e_r1b_g1_browser --out artifacts/prod-r1b-g1
+      - name: Upload WAV and screenshots / 실증 WAV 및 스크린샷
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r1b-g1-two-track
+          path: |
+            artifacts/prod-r1b-g1/*.json
+            artifacts/prod-r1b-g1/*.png
+            artifacts/prod-r1b-g1/*.wav
+          if-no-files-found: error

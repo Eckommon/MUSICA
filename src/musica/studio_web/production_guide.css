@@ -1,0 +1,12 @@
+.r1b-guide { margin-bottom: 1.3rem; }
+.r1b-guide-steps { padding: 0; margin: 1rem 0; list-style: none; display: grid; gap: .65rem; }
+.r1b-guide-step { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border: 1px solid var(--line, #52606f); border-radius: .65rem; padding: .8rem; }
+.r1b-guide-step strong { display: block; }
+.r1b-guide-step p { margin: .3rem 0; }
+.r1b-step-state { font: 600 .72rem ui-monospace, monospace; letter-spacing: .02em; }
+.r1b-guide-delivery { border-top: 1px solid var(--line, #52606f); padding-top: 1rem; }
+.r1b-guide-delivery p { overflow-wrap: anywhere; }
+.r1b-guide-status { margin-top: .6rem; font-size: .85rem; }
+.r1b-guide-status.error { color: #ff9292; }
+.r1b-guide-status.success { color: #75d6b3; }
+@media (max-width: 640px) { .r1b-guide-step { align-items: flex-start; flex-direction: column; } }

@@ -35,7 +35,7 @@ def make_handler(application: StudioApplication):
 
         def _send_static(self, clean_path: str) -> bool:
             if clean_path == "/assets/app.js":
-                data = _browser_asset_bytes("app.js") + b"\n" + _static_bytes("native_audio.js")
+                data = _browser_asset_bytes("app.js") + b"\n" + _static_bytes("native_audio.js") + b"\n" + _static_bytes("production_guide.js")
                 self._send_bytes(
                     HTTPStatus.OK,
                     "text/javascript; charset=utf-8",
@@ -44,7 +44,7 @@ def make_handler(application: StudioApplication):
                 )
                 return True
             if clean_path == "/assets/app.css":
-                data = _browser_asset_bytes("app.css") + b"\n" + _static_bytes("native_audio.css")
+                data = _browser_asset_bytes("app.css") + b"\n" + _static_bytes("native_audio.css") + b"\n" + _static_bytes("production_guide.css")
                 self._send_bytes(
                     HTTPStatus.OK,
                     "text/css; charset=utf-8",

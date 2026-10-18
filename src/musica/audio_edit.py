@@ -87,8 +87,11 @@ def _conflict(
 
 
 def _revision_id(parent: dict[str, Any], candidate: dict[str, Any]) -> str:
-    digest = hashlib.sha256(canonical_json_bytes(candidate)).hexdigest()[:16]
-    return f"{parent['project']['revision_id']}-audio-{digest}"
+    # Fixed-size, exact-parent-bound identity. Chaining full revision IDs made
+    # long user edit sessions exceed Studio preview schema ID bounds.
+    binding = {"parent_revision_id": str(parent["project"]["revision_id"]), "candidate": candidate}
+    digest = hashlib.sha256(canonical_json_bytes(binding)).hexdigest()[:32]
+    return "rev-audio-" + digest
 
 
 def _actor_for_blueprint(kind: str) -> str:

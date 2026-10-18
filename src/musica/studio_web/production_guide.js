@@ -124,16 +124,47 @@
     message("Use the existing trusted controls. Review Preview and click the correct explicit Accept yourself.");
   }
 
+
+  // G2A: source-bound, read-only status; UI availability alone is never success.
+  function acceptedRoutingAutomationStatus(p) {
+    const routing = window.MUSICA_ROUTING && window.MUSICA_ROUTING.state;
+    const automation = window.MUSICA_AUTOMATION && window.MUSICA_AUTOMATION.state;
+    const source = p.view && p.view.revision_id;
+    const rv = routing && routing.sessionId === p.sessionId ? routing.view : null;
+    const av = automation && automation.sessionId === p.sessionId ? automation.view : null;
+    const currentRouting = Boolean(rv && source && rv.revision_id === source && !rv.preview);
+    const currentAutomation = Boolean(av && source && av.revision_id === source && !av.preview);
+    const activeGraph = currentRouting && (
+      (Array.isArray(rv.nodes) && rv.nodes.length > 0) ||
+      (Array.isArray(rv.track_outputs) && rv.track_outputs.length > 0) ||
+      (Array.isArray(rv.sends) && rv.sends.length > 0)
+    );
+    const nativeLanes = currentRouting && Array.isArray(rv.native_automation_lanes)
+      ? rv.native_automation_lanes.length : 0;
+    const lanes = currentAutomation && Array.isArray(av.lanes) ? av.lanes.length : 0;
+    return {
+      routing: !rv ? "UNAVAILABLE · NO VERIFIED ROUTING VIEW" :
+        !currentRouting ? "UNKNOWN · REFRESH ACCEPTED ROUTING" :
+        activeGraph ? "ACCEPTED ROUTING · " + rv.track_outputs.length + " TRACK OUTPUT(S)" :
+        "ACCEPTED · NO ROUTING GRAPH",
+      automation: !rv && !av ? "UNAVAILABLE · NO VERIFIED LANES" :
+        (!currentRouting && !currentAutomation) ? "UNKNOWN · REFRESH AUTOMATION" :
+        nativeLanes || lanes ? "ACCEPTED · " + Math.max(nativeLanes, lanes) + " AUTOMATION LANE(S)" :
+        "ACCEPTED · NO AUTOMATION LANES"
+    };
+  }
+
   function render() {
     inject();
     const p = projectState();
+    const advanced = acceptedRoutingAutomationStatus(p);
     const statusTexts = [
       p.sessionId && p.view ? "ACCEPTED SESSION" : "CREATE / OPEN",
       p.clipCount ? "SOURCE USED BY ACCEPTED CLIP" : "MANUAL ASSET IMPORT",
       p.trackCount >= 2 && p.clipCount >= 2 ? String(p.trackCount) + " TRACKS / " + String(p.clipCount) + " CLIPS ACCEPTED" : p.clipCount ? "ACCEPTED CLIP" : p.trackCount ? "TRACK ACCEPTED · CLIP NEEDED" : "TRACK / CLIP NEEDED",
       p.trackCount ? "AVAILABLE · MANUAL EDIT" : "NEEDS TRACK",
-      "OPTIONAL · TOPOLOGY-GATED",
-      "OPTIONAL · LANE-GATED",
+      advanced.routing,
+      advanced.automation,
       p.pending ? "PREVIEW · DELIVERY BLOCKED" : p.audioReady ? "ACCEPTED AUDIO READY" : "NO ACCEPTED MIX"
     ];
     statusTexts.forEach((value, index) => {
@@ -214,6 +245,8 @@
     if (audioCard) new MutationObserver(render).observe(audioCard, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"] });
     const generic = el("authorityBadge");
     if (generic) new MutationObserver(render).observe(generic, { childList: true, characterData: true, subtree: true });
+    window.addEventListener("musica:automation-view-ready", render);
+    window.addEventListener("musica:automation-preview-installed", render);
     window.MUSICA_PRODUCTION_GUIDE = { refresh: render, status: projectState };
   }
 

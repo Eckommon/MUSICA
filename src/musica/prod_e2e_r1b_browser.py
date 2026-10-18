@@ -69,6 +69,7 @@ def run_suite(destination: str | Path) -> dict:
 
             page.locator('button[data-tab="inspect"]').click()
             expect(page.locator("#r1bGuide")).to_be_visible()
+            assert page.evaluate("() => document.querySelector('#panel-inspect').firstElementChild.id") == "r1bGuide", "Guide buried beneath advanced surfaces"
             expect(page.locator("#r1bStepState0")).to_have_text("ACCEPTED SESSION")
             expect(page.locator("#r1bDownloadWav")).to_be_disabled()
             page.locator("#r1bGo1").click()

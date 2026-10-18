@@ -104,7 +104,7 @@
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
     card.append(top, description, stages, delivery, status);
-    panel.insertBefore(card, el("previewDecision"));
+    panel.prepend(card); // Main operator entry must precede all optional advanced panels.
   }
 
   function navigate(tab, targetId) {

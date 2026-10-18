@@ -32,3 +32,29 @@ def test_multitrack_browser_unique_id_suggestions_do_not_accept_or_submit():
     block = script.split("function suggestTrackId() {", 1)[1].split("function previewAddTrack()", 1)[0]
     assert "audio/accept" not in block and "submit(" not in block
     assert "2 TRACKS / " not in script and 'String(p.trackCount) + " TRACKS / "' in guide
+
+
+def test_repeated_audio_and_mixer_revisions_are_parent_bound_and_bounded():
+    from musica.audio_edit import _revision_id as next_arrangement
+    from musica.audio_mixer_edit import _revision_id as next_mixer
+
+    # Simulate a legacy long revision, then 30 consecutive user edits.
+    parent = {"project": {"revision_id": "rev-old-" + ("x" * 320)}}
+    identities = set()
+    for index in range(30):
+        candidate = {
+            "candidate_id": "G1-" + str(index),
+            "source": {"revision_id": parent["project"]["revision_id"]},
+            "operations": [{"operation_id": "G1-OP-" + str(index)}],
+        }
+        revision_id = (next_arrangement if index % 2 == 0 else next_mixer)(parent, candidate)
+        same = (next_arrangement if index % 2 == 0 else next_mixer)(parent, candidate)
+        assert revision_id == same, "identical parent/candidate must replay identically"
+        assert revision_id.startswith("rev-audio-" if index % 2 == 0 else "rev-mixer-")
+        assert len(revision_id) <= 64, "repeated user edits must not grow revision IDs"
+        assert revision_id not in identities
+        identities.add(revision_id)
+        parent = {"project": {"revision_id": revision_id}}
+
+    forged_parent = {"project": {"revision_id": "rev-different"}}
+    assert next_arrangement(forged_parent, candidate) != next_arrangement(parent, candidate)

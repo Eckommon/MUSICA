@@ -77,6 +77,11 @@ def run_suite(destination: str | Path) -> dict:
             expect(page.locator("#mramNodes [data-mram-type=node]")).to_have_count(3)
             routed_head = session.project.head_revision_id()
             assert routed_head != baseline_head
+            page.wait_for_function("""head => {
+              const view = window.MUSICA_ROUTING?.state?.view;
+              return view && !view.preview && view.revision_id === head &&
+                view.nodes?.length === 3 && view.track_outputs?.length === 2;
+            }""", arg=routed_head, timeout=35000)
             view = page.evaluate("() => window.MUSICA_ROUTING.state.view")
             assert [x["track_id"] for x in view["track_outputs"]] == ["AT-UI-001", "AT-UI-002"]
             assert [x["target_node_id"] for x in view["track_outputs"]] == ["BUS-UI-001", "BUS-UI-002"]

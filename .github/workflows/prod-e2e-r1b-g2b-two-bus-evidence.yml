@@ -1,0 +1,37 @@
+name: PROD-E2E R1B G2B Browser Two-Bus Routed PCM Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prod-r1b-g2b:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install tests and real Chromium / 실제 Browser 설치
+        run: |
+          python -m pip install -e '.[dev,e2e]'
+          python -m playwright install --with-deps chromium
+      - name: Validate trusted routing UI and existing regressions / 권한·회귀
+        run: |
+          node --check src/musica/studio_web/routing_editing.js
+          pytest -q tests/test_prod_e2e_r1b_g2b_bootstrap.py tests/test_mram_r3_studio_routing.py tests/test_prod_e2e_r1b_g1_multitrack.py
+      - name: Real Chromium routed stereo two-bus output / 실제 두 버스 출력
+        run: python -m musica.prod_e2e_r1b_g2b_browser --out artifacts/prod-r1b-g2b
+      - name: Capture exact WAV and Browser evidence / WAV·Browser 증거
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r1b-g2b-two-bus
+          path: |
+            artifacts/prod-r1b-g2b/*.json
+            artifacts/prod-r1b-g2b/*.png
+            artifacts/prod-r1b-g2b/*.wav
+          if-no-files-found: error

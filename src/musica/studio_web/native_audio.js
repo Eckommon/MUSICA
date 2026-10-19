@@ -495,6 +495,9 @@
     try {
       nativeAudio.view = await audioFetch(`/v0/sessions/${encodeURIComponent(nativeAudio.sessionId)}/audio`);
       render();
+      window.dispatchEvent(new CustomEvent("musica:native-audio-view-ready", {
+        detail: {sessionId: nativeAudio.sessionId, revisionId: nativeAudio.view.revision_id}
+      }));
       if (!quiet) status("Native-audio state refreshed.", "success");
     } catch (error) {
       nativeAudio.view = null;

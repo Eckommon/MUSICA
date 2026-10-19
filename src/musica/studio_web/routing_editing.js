@@ -96,6 +96,11 @@
           <section><h3>Native gain/pan automation</h3><div id="mramNativeAutomation"></div></section>
         </div>
         <div class="mram-edit-grid">
+          <fieldset id="mramStarterRoutingFieldset">
+            <legend>Two-bus song routing / 2버스 라우팅 생성</legend>
+            <p class="muted small">For exactly two accepted audio tracks with clips and an empty routing graph. A source-bound Preview creates Bus A, Bus B and Master with neutral gain; only the user's explicit Accept changes the project.</p>
+            <button id="mramPreviewStarterTwoBus" class="secondary" type="button">Preview two buses + master / 버스 구성 미리보기</button>
+          </fieldset>
           <fieldset>
             <legend>Track output Preview</legend>
             <label>Track<select id="mramTrackSelect"></select></label>
@@ -121,6 +126,7 @@
     anchor.insertAdjacentElement("afterend", card);
     routing.root = card;
 
+    el("mramPreviewStarterTwoBus").addEventListener("click", previewStarterTwoBus);
     el("mramPreviewTrackOutput").addEventListener("click", previewTrackOutput);
     el("mramPreviewSendGain").addEventListener("click", previewSendGain);
     el("mramPreviewNodeMixer").addEventListener("click", previewNodeMixer);
@@ -209,6 +215,17 @@
     }
 
     workspace.hidden = false;
+    const currentAudio = window.MUSICA_NATIVE_AUDIO && window.MUSICA_NATIVE_AUDIO.state;
+    const currentView = currentAudio && currentAudio.view;
+    const acceptedTracks = currentView && Array.isArray(currentView.tracks) ? currentView.tracks : [];
+    el("mramPreviewStarterTwoBus").disabled = Boolean(
+      routing.view.preview || (routing.view.nodes || []).length ||
+      (routing.view.track_outputs || []).length || (routing.view.sends || []).length ||
+      !currentAudio || currentAudio.sessionId !== routing.sessionId ||
+      !currentView || currentView.revision_id !== routing.view.revision_id ||
+      currentView.preview || acceptedTracks.length !== 2 ||
+      acceptedTracks.some(track => !Array.isArray(track.clips) || !track.clips.length)
+    );
     const preview = routing.view.preview;
     badge.textContent = preview ? "PREVIEW · NOT ACCEPTED" : "ACCEPTED ROUTING";
     badge.className = `status-pill ${preview ? "preview" : "accepted"}`;
@@ -306,6 +323,41 @@
     }
   }
 
+  function previewStarterTwoBus() {
+    const native = window.MUSICA_NATIVE_AUDIO && window.MUSICA_NATIVE_AUDIO.state;
+    const audio = native && native.view;
+    const view = routing.view;
+    if (!routing.sessionId || !view || view.preview ||
+        !native || native.sessionId !== routing.sessionId ||
+        !audio || audio.revision_id !== view.revision_id || audio.preview ||
+        (view.nodes || []).length || (view.track_outputs || []).length || (view.sends || []).length) {
+      return status("Starter routing requires the exact accepted session/revision, no pending Preview and an empty graph.", "error");
+    }
+    const tracks = (audio.tracks || []).slice().sort((a, b) => a.order - b.order);
+    if (tracks.length !== 2 || tracks.some(t => !Array.isArray(t.clips) || !t.clips.length)) {
+      return status("Accept exactly two native tracks and at least one clip per track before routing.", "error");
+    }
+    const mixer = () => ({ gain_db: 0, pan: 0, mute: false });
+    const operations = [
+      {operation_id: "UI-START-BUS-1", op: "ADD_NODE", node: {
+        node_id: "BUS-UI-001", name: "Bus A", order: 0,
+        node_type: "bus", mixer: mixer(), output_node_id: "MASTER-UI-001"}},
+      {operation_id: "UI-START-BUS-2", op: "ADD_NODE", node: {
+        node_id: "BUS-UI-002", name: "Bus B", order: 1,
+        node_type: "bus", mixer: mixer(), output_node_id: "MASTER-UI-001"}},
+      {operation_id: "UI-START-MASTER", op: "ADD_NODE", node: {
+        node_id: "MASTER-UI-001", name: "Master", order: 2,
+        node_type: "master", mixer: mixer(), output_node_id: null}},
+      ...tracks.map((track, index) => ({
+        operation_id: "UI-START-OUTPUT-" + (index + 1), op: "SET_TRACK_OUTPUT",
+        track_id: track.track_id, target_node_id: "BUS-UI-00" + (index + 1)
+      }))
+    ];
+    // No graph is committed here: the existing trusted source-bound Preview
+    // and independent generic user Accept remain the only authority.
+    return sendPreview(operations, "User requested two neutral buses and one master for two accepted WAV tracks.");
+  }
+
   function previewTrackOutput() {
     const trackId = el("mramTrackSelect").value;
     const targetNodeId = el("mramTrackTarget").value;
@@ -358,5 +410,10 @@
   }
 
   injectSurface();
+  // Read-only source projection may finish before/after the routing GET.
+  // Re-evaluate button eligibility only after the native view is installed.
+  window.addEventListener("musica:native-audio-view-ready", (event) => {
+    if (routing.view && event.detail && event.detail.sessionId === routing.sessionId) render();
+  });
   window.MUSICA_ROUTING = { refresh: refreshRoutingView, state: routing };
 })();

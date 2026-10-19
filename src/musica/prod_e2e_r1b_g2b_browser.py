@@ -93,6 +93,15 @@ def run_suite(destination: str | Path) -> dict:
             expect(page.locator("#mramRoutingBadge")).to_have_text("ACCEPTED ROUTING")
             gain_head = session.project.head_revision_id()
             assert gain_head != routed_head
+            # The badge may say ACCEPTED while its read-only routing GET
+            # still refers to the previous accepted revision. Require the
+            # exact new authoritative HEAD AND mixer value before proceeding.
+            page.wait_for_function("""head => {
+              const view = window.MUSICA_ROUTING?.state?.view;
+              const bus = view?.nodes?.find(n => n.node_id === "BUS-UI-001");
+              return view && !view.preview && view.revision_id === head &&
+                bus && bus.mixer.gain_db === -6;
+            }""", arg=gain_head, timeout=35000)
             accepted = page.evaluate("() => window.MUSICA_ROUTING.state.view")
             assert next(n for n in accepted["nodes"] if n["node_id"]=="BUS-UI-001")["mixer"]["gain_db"] == -6.0
             # A trusted routing Accept advances the exact project HEAD. A

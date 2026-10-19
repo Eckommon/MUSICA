@@ -401,6 +401,9 @@
         `/v0/sessions/${encodeURIComponent(routing.sessionId)}/mixer-routing`,
       );
       render();
+      window.dispatchEvent(new CustomEvent("musica:routing-view-ready", {
+        detail: {sessionId: routing.sessionId, revisionId: routing.view.revision_id}
+      }));
       if (!quiet) status("Routing view refreshed.", "success");
     } catch (error) {
       routing.view = null;

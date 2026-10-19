@@ -1,0 +1,38 @@
+name: PROD-E2E R1B G2C Browser First Native Automation Audio Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prod-r1b-g2c:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install tests and Chromium / 테스트 및 Browser
+        run: |
+          python -m pip install -e '.[dev,e2e]'
+          python -m playwright install --with-deps chromium
+      - name: Verify first-lane authority and routing prerequisites / 검증
+        run: |
+          node --check src/musica/studio_web/automation_editing.js
+          node --check src/musica/studio_web/routing_editing.js
+          pytest -q tests/test_prod_e2e_r1b_g2c_first_lane.py tests/test_prod_e2e_r1b_g2b_bootstrap.py tests/test_mram_r3_studio_routing.py
+      - name: Real Chromium manual Preview Accept WAV automation / 실사용 흐름
+        run: python -m musica.prod_e2e_r1b_g2c_browser --out artifacts/prod-r1b-g2c
+      - name: Preserve WAV and Browser evidence / 산출물
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r1b-g2c-first-lane
+          path: |
+            artifacts/prod-r1b-g2c/*.json
+            artifacts/prod-r1b-g2c/*.png
+            artifacts/prod-r1b-g2c/*.wav
+          if-no-files-found: error

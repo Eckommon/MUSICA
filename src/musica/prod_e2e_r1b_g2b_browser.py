@@ -15,7 +15,7 @@ from pathlib import Path
 
 from .evidence import write_canonical_json
 from .prod_e2e_r1a_browser import _record_request_failure, _server, _stop
-from .prod_e2e_r1b_g1_browser import run_suite as seed_g1
+from .prod_e2e_r1b_g1_browser import suite as seed_g1
 
 
 def _pcm(data: bytes) -> tuple[int, int, int, list[int]]:

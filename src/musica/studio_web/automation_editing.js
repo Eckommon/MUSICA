@@ -87,6 +87,18 @@
       </div>
       <p class="muted small m7-authority-copy">Lane geometry is presentation only. Every edit is bound to stable lane_id / point_id and remains PREVIEW until explicit Accept. Audible automation is not validated in M7-R2.</p>
       <div id="m7AutomationStatus" class="m7-automation-status" role="status" aria-live="polite" hidden></div>
+
+      <fieldset id="m7FirstGainLaneFieldset" class="m7-editor">
+        <legend>First native gain automation / 첫 오디오 자동화 레인</legend>
+        <p class="muted small">Create one accepted-track gain envelope only after accepted routing exists. Preview never changes the project until separate Accept.</p>
+        <div class="m7-fields">
+          <label>Accepted track<select id="m7FirstGainTrack"></select></label>
+          <label>Start gain (dB)<input id="m7FirstGainStart" type="number" min="-60" max="12" step="0.5" value="-3"></label>
+          <label>End beat<input id="m7FirstGainEndBeat" type="number" min="0.01" step="0.25" value="1"></label>
+          <label>End gain (dB)<input id="m7FirstGainEnd" type="number" min="-60" max="12" step="0.5" value="-9"></label>
+        </div>
+        <button id="m7PreviewFirstGainLane" class="secondary" type="button">Preview first gain envelope / 자동화 생성 미리보기</button>
+      </fieldset>
       <div id="m7AutomationUnavailable" class="m7-unavailable">Open an automation-capable project to edit canonical automation.</div>
       <div id="m7AutomationWorkspace" hidden>
         <div class="m7-toolbar">
@@ -128,6 +140,7 @@
     el("m7PreviewPointChanges").addEventListener("click", previewSelectedChanges);
     el("m7DeletePoint").addEventListener("click", previewDelete);
     el("m7InsertPoint").addEventListener("click", previewInsert);
+    el("m7PreviewFirstGainLane").addEventListener("click", previewFirstGainLane);
   }
 
   function displayLanes() {
@@ -226,7 +239,82 @@
     return button;
   }
 
+
+  // G2C: strictly read-only eligibility. No first lane can be implicitly committed.
+  function gainLaneEligibility() {
+    const v = automation.view;
+    const native = window.MUSICA_NATIVE_AUDIO && window.MUSICA_NATIVE_AUDIO.state;
+    const routing = window.MUSICA_ROUTING && window.MUSICA_ROUTING.state;
+    const audio = native && native.view;
+    const rv = routing && routing.view;
+    const accepted = audio && Array.isArray(audio.tracks) ? audio.tracks : [];
+    const genericPending = el("authorityBadge") && el("authorityBadge").textContent.trim() === "PREVIEW";
+    const valid = Boolean(
+      v && automation.sessionId && native && routing &&
+      native.sessionId === automation.sessionId &&
+      routing.sessionId === automation.sessionId &&
+      audio && rv && !audio.preview && !rv.preview && !v.preview && !genericPending &&
+      v.revision_id === audio.revision_id && v.revision_id === rv.revision_id &&
+      (rv.nodes || []).length === 3 && (rv.track_outputs || []).length === 2 &&
+      accepted.length === 2 && accepted.every(t => Array.isArray(t.clips) && t.clips.length) &&
+      (v.lanes || []).length === 0
+    );
+    return { valid, tracks: accepted, view: v };
+  }
+
+  function updateFirstGainLane() {
+    const eligibility = gainLaneEligibility();
+    const select = el("m7FirstGainTrack");
+    if (!select) return;
+    const previous = select.value;
+    select.textContent = "";
+    eligibility.tracks.forEach(track => {
+      const option = document.createElement("option");
+      option.value = track.track_id;
+      option.textContent = track.track_id + " · " + track.name;
+      select.appendChild(option);
+    });
+    if ([...select.options].some(option => option.value === previous)) select.value = previous;
+    el("m7PreviewFirstGainLane").disabled = !eligibility.valid;
+    el("m7FirstGainLaneFieldset").dataset.authority = eligibility.valid ? "ready" : "unavailable";
+  }
+
+  function previewFirstGainLane() {
+    const eligibility = gainLaneEligibility();
+    const trackId = el("m7FirstGainTrack").value;
+    const start = Number(el("m7FirstGainStart").value);
+    const end = Number(el("m7FirstGainEnd").value);
+    const beat = Number(el("m7FirstGainEndBeat").value);
+    if (!eligibility.valid || !eligibility.tracks.some(track => track.track_id === trackId))
+      return status("Requires two accepted audio tracks, exact current 2-bus routing and no pending Preview.", "error");
+    if (![start, end, beat].every(Number.isFinite) ||
+        start < -60 || start > 12 || end < -60 || end > 12 ||
+        beat <= 0 || beat > Number(eligibility.view.timing.total_beats)) {
+      return status("Choose finite dB values [-60, 12] and an end beat within accepted fixed-tempo song duration.", "error");
+    }
+    const laneId = "AUTO-UI-GAIN-" + trackId;
+    const lane = {
+      lane_id: laneId,
+      target: {
+        scope: "audio_track", owner_id: trackId, parameter_id: "mixer.gain_db",
+        unit: "decibel", minimum: -60, maximum: 12
+      },
+      section_id: null,
+      points: [
+        {point_id: "AP-UI-START-" + trackId, beat: 0, value: start, interpolation: "linear"},
+        {point_id: "AP-UI-END-" + trackId, beat: beat, value: end, interpolation: "hold"}
+      ]
+    };
+    // Existing trusted authority binds exact accepted audio, routing, automation
+    // SHA/revision and accepts ONLY via the independent explicit Studio Accept.
+    return sendPreview(
+      [{operation_id: "UI-AUTO-FIRST-GAIN", op: "ADD_LANE", lane}],
+      "User-clicked first native gain automation on accepted " + trackId
+    );
+  }
+
   function render() {
+    updateFirstGainLane();
     const view = automation.view;
     const available = Boolean(view && view.automation_editing_available);
     el("m7AutomationWorkspace").hidden = !available;
@@ -238,8 +326,8 @@
       return;
     }
     if (!available) {
-      availability.textContent = "NO CANONICAL AUTOMATION";
-      availability.className = "status-pill neutral";
+      availability.textContent = view.preview ? "PREVIEW FIRST LANE · NOT ACCEPTED" : "NO CANONICAL AUTOMATION";
+      availability.className = view.preview ? "status-pill preview" : "status-pill neutral";
       el("m7AutomationUnavailable").textContent = "This accepted revision has no canonical materials.automation. MUSICA will not reverse-infer lanes from semantics, Music IR, renderer or DAW state.";
       return;
     }
@@ -439,6 +527,12 @@
   }
 
   injectSurface();
+  window.addEventListener("musica:native-audio-view-ready", (event) => {
+    if (event.detail && event.detail.sessionId === automation.sessionId) updateFirstGainLane();
+  });
+  window.addEventListener("musica:routing-view-ready", (event) => {
+    if (event.detail && event.detail.sessionId === automation.sessionId) updateFirstGainLane();
+  });
   window.MUSICA_AUTOMATION = {
     refresh: refreshAutomationView,
     state: automation,

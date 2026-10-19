@@ -410,5 +410,10 @@
   }
 
   injectSurface();
+  // Read-only source projection may finish before/after the routing GET.
+  // Re-evaluate button eligibility only after the native view is installed.
+  window.addEventListener("musica:native-audio-view-ready", (event) => {
+    if (routing.view && event.detail && event.detail.sessionId === routing.sessionId) render();
+  });
   window.MUSICA_ROUTING = { refresh: refreshRoutingView, state: routing };
 })();

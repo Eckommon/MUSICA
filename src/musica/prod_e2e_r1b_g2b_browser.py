@@ -98,7 +98,6 @@ def run_suite(destination: str | Path) -> dict:
             # A trusted routing Accept advances the exact project HEAD. A
             # previously enabled button from the earlier audio-only revision
             # is NOT proof that the accepted-derived WAV is current.
-            page.locator("#refreshButton").click()
             page.wait_for_function("""() => {
               const audio = window.MUSICA_NATIVE_AUDIO?.state?.view;
               const route = window.MUSICA_ROUTING?.state?.view;

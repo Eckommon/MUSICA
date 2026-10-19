@@ -1,0 +1,24 @@
+name: PROD-E2E R1B G2A Source-Bound Routing Automation Status
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prod-r1b-g2a:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install project / 프로젝트 설치
+        run: python -m pip install -e '.[dev]'
+      - name: Validate guide syntax and source authority / 근거 기반 화면 검증
+        run: |
+          node --check src/musica/studio_web/production_guide.js
+          pytest -q tests/test_prod_e2e_r1b_g2a_status.py tests/test_prod_e2e_r1b_guide.py tests/test_prod_e2e_r1b_g1_multitrack.py

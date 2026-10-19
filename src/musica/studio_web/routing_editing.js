@@ -215,6 +215,17 @@
     }
 
     workspace.hidden = false;
+    const currentAudio = window.MUSICA_NATIVE_AUDIO && window.MUSICA_NATIVE_AUDIO.state;
+    const currentView = currentAudio && currentAudio.view;
+    const acceptedTracks = currentView && Array.isArray(currentView.tracks) ? currentView.tracks : [];
+    el("mramPreviewStarterTwoBus").disabled = Boolean(
+      routing.view.preview || (routing.view.nodes || []).length ||
+      (routing.view.track_outputs || []).length || (routing.view.sends || []).length ||
+      !currentAudio || currentAudio.sessionId !== routing.sessionId ||
+      !currentView || currentView.revision_id !== routing.view.revision_id ||
+      currentView.preview || acceptedTracks.length !== 2 ||
+      acceptedTracks.some(track => !Array.isArray(track.clips) || !track.clips.length)
+    );
     const preview = routing.view.preview;
     badge.textContent = preview ? "PREVIEW · NOT ACCEPTED" : "ACCEPTED ROUTING";
     badge.className = `status-pill ${preview ? "preview" : "accepted"}`;

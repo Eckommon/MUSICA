@@ -95,6 +95,17 @@ def run_suite(destination: str | Path) -> dict:
             assert gain_head != routed_head
             accepted = page.evaluate("() => window.MUSICA_ROUTING.state.view")
             assert next(n for n in accepted["nodes"] if n["node_id"]=="BUS-UI-001")["mixer"]["gain_db"] == -6.0
+            # A trusted routing Accept advances the exact project HEAD. A
+            # previously enabled button from the earlier audio-only revision
+            # is NOT proof that the accepted-derived WAV is current.
+            page.locator("#refreshButton").click()
+            page.wait_for_function("""() => {
+              const audio = window.MUSICA_NATIVE_AUDIO?.state?.view;
+              const route = window.MUSICA_ROUTING?.state?.view;
+              return audio && route && !audio.preview && !route.preview &&
+                audio.revision_id === route.revision_id &&
+                audio.accepted_audition?.available;
+            }""", timeout=35000)
             expect(page.locator("#r1bDownloadWav")).to_be_enabled()
             with page.expect_download() as info:
                 page.locator("#r1bDownloadWav").click()

@@ -517,6 +517,12 @@
   window.addEventListener("musica:native-audio-view-ready", (event) => {
     if (automation.view && event.detail?.sessionId === automation.sessionId) render();
   });
+  // Whichever of routed/native/automation accepted projections arrives last
+  // must re-evaluate first-lane eligibility. This is presentation only,
+  // never a creative Preview/Accept action.
+  window.addEventListener("musica:routing-view-ready", (event) => {
+    if (automation.view && event.detail?.sessionId === automation.sessionId) render();
+  });
   window.MUSICA_AUTOMATION = {
     refresh: refreshAutomationView,
     state: automation,

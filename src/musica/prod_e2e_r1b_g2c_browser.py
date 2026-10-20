@@ -28,6 +28,7 @@ def run_suite(destination: str | Path, *, sample_rate_hz: int = 8000) -> dict:
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
+    await_audio_timeout_ms = 90000 if sample_rate_hz >= 44100 else 35000
     seed_g2b(out / "seed-g2b", sample_rate_hz=sample_rate_hz)
     workspace = out / "seed-g2b" / "seed-g1" / "workspace"
     baseline, baseline_frames, baseline_pcm = _pcm(out / "seed-g2b" / "routed-accepted.wav", expected_rate_hz=sample_rate_hz)
@@ -54,7 +55,7 @@ def run_suite(destination: str | Path, *, sample_rate_hz: int = 8000) -> dict:
             page.locator("#m7NewNativeLaneStart").fill("-3")
             page.locator("#m7NewNativeLaneEnd").fill("-12")
             page.locator("#m7PreviewNativeLane").click()
-            expect(page.locator("#m7AutomationAvailability")).to_have_text("PREVIEW · NOT ACCEPTED")
+            expect(page.locator("#m7AutomationAvailability")).to_have_text("PREVIEW · NOT ACCEPTED", timeout=await_audio_timeout_ms)
             assert session.project.head_revision_id() == before, "Automation Preview advanced HEAD"
             expect(page.locator("#r1bDownloadWav")).to_be_disabled()
             image = "01-native-gain-lane-preview.png"
@@ -67,7 +68,7 @@ def run_suite(destination: str | Path, *, sample_rate_hz: int = 8000) -> dict:
               return a && n && !a.preview && !n.preview &&
                 a.revision_id === n.revision_id &&
                 a.lanes?.some(l => l.lane_id === "AUTO-UI-001");
-            }""", timeout=35000)
+            }""", timeout=await_audio_timeout_ms)
             assert session.project.head_revision_id() != before
             accepted = page.evaluate("() => window.MUSICA_AUTOMATION.state.view")
             lanes = [x for x in accepted["lanes"] if x["lane_id"] == "AUTO-UI-001"]

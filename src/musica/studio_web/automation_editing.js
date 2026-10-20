@@ -88,12 +88,6 @@
       <p class="muted small m7-authority-copy">Lane geometry is presentation only. Every edit is bound to stable lane_id / point_id and remains PREVIEW until explicit Accept. Audible automation is not validated in M7-R2.</p>
       <div id="m7AutomationStatus" class="m7-automation-status" role="status" aria-live="polite" hidden></div>
       <div id="m7AutomationUnavailable" class="m7-unavailable">Open an automation-capable project to edit canonical automation.</div>
-      <div id="m7AutomationWorkspace" hidden>
-        <div class="m7-toolbar">
-          <span id="m7AutomationSource" class="mono muted">—</span>
-          <span id="m7AutomationPreviewBadge" class="status-pill accepted">ACCEPTED AUTOMATION</span>
-        </div>
-        <div id="m7AutomationLanes" class="m7-lanes" aria-label="Canonical automation lanes"></div>
         <fieldset id="m7CreateNativeLaneFieldset" class="m7-editor">
           <legend>Native track gain automation / 트랙 게인 자동화 레인</legend>
           <p class="muted small">Select an accepted routed track. Propose a source-bound gain envelope; only explicit Accept commits it.</p>
@@ -103,6 +97,13 @@
           <label>End gain (dB)<input id="m7NewNativeLaneEnd" type="number" value="-12" min="-60" max="12" step="0.5"></label>
           <button id="m7PreviewNativeLane" type="button" class="secondary">Preview gain lane / 게인 레인 미리보기</button>
         </fieldset>
+      <div id="m7AutomationWorkspace" hidden>
+        <div class="m7-toolbar">
+          <span id="m7AutomationSource" class="mono muted">—</span>
+          <span id="m7AutomationPreviewBadge" class="status-pill accepted">ACCEPTED AUTOMATION</span>
+        </div>
+        <div id="m7AutomationLanes" class="m7-lanes" aria-label="Canonical automation lanes"></div>
+
         <div class="m7-editor-grid">
           <fieldset id="m7SelectedFieldset" class="m7-editor" disabled>
             <legend>Selected point / 선택 포인트</legend>

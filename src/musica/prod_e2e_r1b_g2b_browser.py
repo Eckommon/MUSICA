@@ -31,17 +31,17 @@ def _pcm(data: bytes) -> tuple[int, int, int, list[int]]:
     return rate, channels, frames, list(struct.unpack("<" + "h" * (len(raw) // 2), raw))
 
 
-def run_suite(destination: str | Path) -> dict:
+def run_suite(destination: str | Path, *, sample_rate_hz: int = 8000) -> dict:
     from playwright.sync_api import expect, sync_playwright
     out = Path(destination)
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    seed_g1(out / "seed-g1")
+    seed_g1(out / "seed-g1", sample_rate_hz=sample_rate_hz)
     workspace = out / "seed-g1" / "workspace"
     baseline = (out / "seed-g1" / "two-track-accepted.wav").read_bytes()
     rate, channels, frames, original = _pcm(baseline)
-    assert (rate, channels, frames) == (8000, 2, 96000)
+    assert (rate, channels, frames) == (sample_rate_hz, 2, 12 * sample_rate_hz)
     errors, page_errors, failures, images = [], [], [], []
     service, server, thread, url = _server(workspace)
     try:

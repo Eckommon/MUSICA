@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import io
+import json
 import shutil
 import struct
 import wave
@@ -50,7 +51,48 @@ def run_suite(destination: str | Path, *, sample_rate_hz: int = 8000) -> dict:
             page.locator('button[data-tab="inspect"]').click()
             session = next(iter(service._sessions.values()))
             before = session.project.head_revision_id()
-            expect(page.locator("#m7PreviewNativeLane")).to_be_enabled()
+            # Opening a standard-rate routed project may schedule several
+            # expensive accepted WAV projections. Wait for exact view lineage
+            # before asserting the user can click the first native lane.
+            try:
+                page.wait_for_function("""() => {
+                  const a = window.MUSICA_AUTOMATION?.state;
+                  const r = window.MUSICA_ROUTING?.state;
+                  const n = window.MUSICA_NATIVE_AUDIO?.state;
+                  if (!a?.view || !r?.view || !n?.view ||
+                      a.sessionId !== r.sessionId || a.sessionId !== n.sessionId)
+                    return false;
+                  const head = a.view.revision_id;
+                  return head === r.view.revision_id && head === n.view.revision_id &&
+                    !a.view.preview && !r.view.preview && !n.view.preview &&
+                    r.view.nodes?.length > 0 &&
+                    r.view.track_outputs?.some(o => o.track_id === "AT-UI-001") &&
+                    n.view.tracks?.some(t => t.track_id === "AT-UI-001" && t.clips?.length);
+                }""", timeout=await_audio_timeout_ms)
+                expect(page.locator("#m7PreviewNativeLane")).to_be_enabled(timeout=await_audio_timeout_ms)
+            except Exception:
+                snapshot = page.evaluate("""() => {
+                  const a=window.MUSICA_AUTOMATION?.state;
+                  const r=window.MUSICA_ROUTING?.state;
+                  const n=window.MUSICA_NATIVE_AUDIO?.state;
+                  return {
+                    a_session:a?.sessionId, r_session:r?.sessionId, n_session:n?.sessionId,
+                    a_revision:a?.view?.revision_id, r_revision:r?.view?.revision_id,
+                    n_revision:n?.view?.revision_id,
+                    a_preview:!!a?.view?.preview, r_preview:!!r?.view?.preview,
+                    n_preview:!!n?.view?.preview,
+                    node_count:r?.view?.nodes?.length,
+                    track_outputs:r?.view?.track_outputs?.length,
+                    clip_count:n?.view?.tracks?.reduce((x,t)=>x+(t.clips?.length||0),0),
+                    lane_button_disabled:document.querySelector("#m7PreviewNativeLane")?.disabled,
+                    status:document.querySelector("#m7AutomationStatus")?.textContent,
+                  };
+                }""")
+                (out / "pre-lane-readiness-failure.json").write_text(
+                    json.dumps(snapshot, sort_keys=True, indent=2), encoding="utf-8"
+                )
+                page.screenshot(path=str(out / "pre-lane-readiness-failure.png"), full_page=True)
+                raise
             page.locator("#m7NewNativeLaneTrack").select_option("AT-UI-001")
             page.locator("#m7NewNativeLaneStart").fill("-3")
             page.locator("#m7NewNativeLaneEnd").fill("-12")

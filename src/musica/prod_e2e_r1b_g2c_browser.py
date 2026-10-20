@@ -54,7 +54,7 @@ def run_suite(destination: str | Path) -> dict:
             page.locator("#m7NewNativeLaneStart").fill("-3")
             page.locator("#m7NewNativeLaneEnd").fill("-12")
             page.locator("#m7PreviewNativeLane").click()
-            expect(page.locator("#m7AutomationPreviewBadge")).to_have_text("PREVIEW AUTOMATION · NOT ACCEPTED")
+            expect(page.locator("#m7AutomationAvailability")).to_have_text("PREVIEW · NOT ACCEPTED")
             assert session.project.head_revision_id() == before, "Automation Preview advanced HEAD"
             expect(page.locator("#r1bDownloadWav")).to_be_disabled()
             image = "01-native-gain-lane-preview.png"

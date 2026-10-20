@@ -11,6 +11,7 @@ import io
 import json
 import shutil
 import struct
+import time
 import wave
 from pathlib import Path
 
@@ -25,6 +26,7 @@ def run_suite(destination: str | Path, *, sample_rate_hz: int) -> dict:
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
+    start_monotonic = time.perf_counter()
     seed = out / "integrated-g2c"
     g2c = seed_g2c(seed, sample_rate_hz=sample_rate_hz)
 
@@ -93,6 +95,7 @@ def run_suite(destination: str | Path, *, sample_rate_hz: int) -> dict:
         "accepted_wav_sha256": sha,
         "reopened_wav_byte_exact": True,
         "source_resampling_performed": False,
+        "automated_browser_e2e_elapsed_seconds": round(time.perf_counter() - start_monotonic, 3),
         "mixed_rate_import_proven": False,
         "real_audio_device_proven": False,
         "real_plugin_binary_proven": False,

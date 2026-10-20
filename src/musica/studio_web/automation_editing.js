@@ -94,6 +94,15 @@
           <span id="m7AutomationPreviewBadge" class="status-pill accepted">ACCEPTED AUTOMATION</span>
         </div>
         <div id="m7AutomationLanes" class="m7-lanes" aria-label="Canonical automation lanes"></div>
+        <fieldset id="m7CreateNativeLaneFieldset" class="m7-editor">
+          <legend>Native track gain automation / 트랙 게인 자동화 레인</legend>
+          <p class="muted small">Select an accepted routed track. Propose a source-bound gain envelope; only explicit Accept commits it.</p>
+          <label>Track<select id="m7NewNativeLaneTrack"></select></label>
+          <label>Lane ID<input id="m7NewNativeLaneId" value="AUTO-UI-001" maxlength="64"></label>
+          <label>Start gain (dB)<input id="m7NewNativeLaneStart" type="number" value="-3" min="-60" max="12" step="0.5"></label>
+          <label>End gain (dB)<input id="m7NewNativeLaneEnd" type="number" value="-12" min="-60" max="12" step="0.5"></label>
+          <button id="m7PreviewNativeLane" type="button" class="secondary">Preview gain lane / 게인 레인 미리보기</button>
+        </fieldset>
         <div class="m7-editor-grid">
           <fieldset id="m7SelectedFieldset" class="m7-editor" disabled>
             <legend>Selected point / 선택 포인트</legend>
@@ -128,6 +137,7 @@
     el("m7PreviewPointChanges").addEventListener("click", previewSelectedChanges);
     el("m7DeletePoint").addEventListener("click", previewDelete);
     el("m7InsertPoint").addEventListener("click", previewInsert);
+    el("m7PreviewNativeLane").addEventListener("click", previewNativeLane);
   }
 
   function displayLanes() {
@@ -231,6 +241,24 @@
     const available = Boolean(view && view.automation_editing_available);
     el("m7AutomationWorkspace").hidden = !available;
     el("m7AutomationUnavailable").hidden = available;
+    const laneTrack = el("m7NewNativeLaneTrack");
+    const previousTrack = laneTrack.value;
+    laneTrack.textContent = "";
+    const routing = window.MUSICA_ROUTING && window.MUSICA_ROUTING.state;
+    const rv = routing && routing.sessionId === automation.sessionId ? routing.view : null;
+    const native = window.MUSICA_NATIVE_AUDIO && window.MUSICA_NATIVE_AUDIO.state;
+    const av = native && native.sessionId === automation.sessionId ? native.view : null;
+    const eligible = Boolean(view && rv && av && !view.preview && !rv.preview && !av.preview &&
+      rv.revision_id === view.revision_id && av.revision_id === view.revision_id && (rv.nodes || []).length);
+    if (eligible) (rv.track_outputs || []).forEach(output => {
+      if (!(av.tracks || []).some(track => track.track_id === output.track_id && (track.clips || []).length)) return;
+      const option = document.createElement("option");
+      option.value = output.track_id;
+      option.textContent = output.track_id;
+      laneTrack.appendChild(option);
+    });
+    if ([...laneTrack.options].some(option => option.value === previousTrack)) laneTrack.value = previousTrack;
+    el("m7CreateNativeLaneFieldset").disabled = !eligible || !laneTrack.options.length;
     const availability = el("m7AutomationAvailability");
     if (!view) {
       availability.textContent = "NO PROJECT";
@@ -376,6 +404,50 @@
     }
   }
 
+  function previewNativeLane() {
+    const view = automation.view;
+    const routing = window.MUSICA_ROUTING && window.MUSICA_ROUTING.state;
+    const rv = routing && routing.sessionId === automation.sessionId ? routing.view : null;
+    const audio = window.MUSICA_NATIVE_AUDIO && window.MUSICA_NATIVE_AUDIO.state;
+    const av = audio && audio.sessionId === automation.sessionId ? audio.view : null;
+    if (!view || view.preview || !rv || rv.preview || !av || av.preview ||
+        rv.revision_id !== view.revision_id || av.revision_id !== view.revision_id ||
+        !(rv.nodes || []).length) {
+      return status("Requires matching accepted routing, audio and automation revisions with no Preview.", "error");
+    }
+    const trackId = el("m7NewNativeLaneTrack").value;
+    if (!(rv.track_outputs || []).some(out => out.track_id === trackId) ||
+        !(av.tracks || []).some(track => track.track_id === trackId && (track.clips || []).length)) {
+      return status("Select one accepted, routed track containing an accepted clip.", "error");
+    }
+    const laneId = el("m7NewNativeLaneId").value.trim();
+    const start = Number(el("m7NewNativeLaneStart").value);
+    const end = Number(el("m7NewNativeLaneEnd").value);
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(laneId) ||
+        !Number.isFinite(start) || !Number.isFinite(end) ||
+        start < -60 || start > 12 || end < -60 || end > 12) {
+      return status("A valid unique lane ID and bounded -60..12 dB values are required.", "error");
+    }
+    if ((view.lanes || []).some(lane => lane.lane_id === laneId ||
+        (lane.target.scope === "audio_track" && lane.target.owner_id === trackId &&
+        lane.target.parameter_id === "mixer.gain_db"))) {
+      return status("This lane ID or track gain automation target already exists.", "error");
+    }
+    const lastBeat = Math.min(4, view.timing.total_beats);
+    if (!(lastBeat > 0)) return status("Project must have positive song duration.", "error");
+    const lane = {
+      lane_id: laneId, section_id: null,
+      target: {parameter_id: "mixer.gain_db", scope: "audio_track", owner_id: trackId,
+        unit: "decibel", minimum: -60, maximum: 12},
+      points: [
+        {point_id: laneId + "-P0", beat: 0, value: start, interpolation: "linear"},
+        {point_id: laneId + "-P1", beat: lastBeat, value: end, interpolation: "hold"}
+      ]
+    };
+    return sendPreview([{operation_id: "UI-AUTO-NEW-LANE", op: "ADD_LANE", lane}],
+      "User-created accepted-source native mixer gain lane for " + trackId);
+  }
+
   function previewSelectedChanges() {
     const original = selectedAccepted();
     if (!original) return status("Select an accepted automation point first.", "error");
@@ -439,6 +511,9 @@
   }
 
   injectSurface();
+  window.addEventListener("musica:native-audio-view-ready", (event) => {
+    if (automation.view && event.detail?.sessionId === automation.sessionId) render();
+  });
   window.MUSICA_AUTOMATION = {
     refresh: refreshAutomationView,
     state: automation,

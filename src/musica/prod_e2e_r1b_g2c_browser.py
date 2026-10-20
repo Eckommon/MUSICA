@@ -13,24 +13,24 @@ from .prod_e2e_r1a_browser import _server, _stop, _record_request_failure
 from .prod_e2e_r1b_g2b_browser import run_suite as seed_g2b
 
 
-def _pcm(path: Path):
+def _pcm(path: Path, *, expected_rate_hz: int = 8000):
     data = path.read_bytes()
     with wave.open(io.BytesIO(data), "rb") as wav:
-        assert wav.getnchannels() == 2 and wav.getsampwidth() == 2 and wav.getframerate() == 8000
+        assert wav.getnchannels() == 2 and wav.getsampwidth() == 2 and wav.getframerate() == expected_rate_hz
         frames = wav.getnframes()
         samples = struct.unpack("<" + "h" * (frames * 2), wav.readframes(frames))
     return data, frames, samples
 
 
-def run_suite(destination: str | Path) -> dict:
+def run_suite(destination: str | Path, *, sample_rate_hz: int = 8000) -> dict:
     from playwright.sync_api import sync_playwright, expect
     out = Path(destination)
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    seed_g2b(out / "seed-g2b")
+    seed_g2b(out / "seed-g2b", sample_rate_hz=sample_rate_hz)
     workspace = out / "seed-g2b" / "seed-g1" / "workspace"
-    baseline, baseline_frames, baseline_pcm = _pcm(out / "seed-g2b" / "routed-accepted.wav")
+    baseline, baseline_frames, baseline_pcm = _pcm(out / "seed-g2b" / "routed-accepted.wav", expected_rate_hz=sample_rate_hz)
     errors, page_errors, failed_requests, screenshots = [], [], [], []
     service, server, thread, url = _server(workspace)
     try:
@@ -76,7 +76,7 @@ def run_suite(destination: str | Path) -> dict:
             with page.expect_download() as download:
                 page.locator("#r1bDownloadWav").click()
             download.value.save_as(out / "gain-automated.wav")
-            mixed, frames, pcm = _pcm(out / "gain-automated.wav")
+            mixed, frames, pcm = _pcm(out / "gain-automated.wav", expected_rate_hz=sample_rate_hz)
             assert frames == baseline_frames
             assert mixed != baseline, "Accepted lane did not change rendered audio bytes"
             assert any(pcm[i] != baseline_pcm[i] for i in range(0, 32000, 2)), "No left track gain effect"
@@ -123,6 +123,7 @@ def run_suite(destination: str | Path) -> dict:
         "milestone": "PROD-E2E-R1B-G2C",
         "real_chromium_automated_user_operation": True,
         "two_source_routed_bus_seed": True,
+        "sample_rate_hz": sample_rate_hz,
         "new_native_gain_lane_preview_mutated_head": False,
         "explicit_accept": True,
         "source_track": "AT-UI-001",

@@ -1,0 +1,42 @@
+name: PROD-E2E R2A G3A Standard-Resolution Chromium Production
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prod-e2e-r2a-g3a:
+    strategy:
+      fail-fast: false
+      matrix:
+        sample_rate: [44100, 48000]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dev dependencies and real Chromium / 의존성 설치
+        run: |
+          python -m pip install -e '.[dev,e2e]'
+          python -m playwright install --with-deps chromium
+      - name: Validate 8k backward compatibility, 44.1/48k PCM and no implicit resample
+        run: |
+          python -m compileall -q src/musica/prod_e2e_r2a_g3a_browser.py
+          pytest -q tests/test_prod_e2e_r2a_g3a_rates.py tests/test_prod_e2e_r1b_g1_multitrack.py tests/test_prod_e2e_r1b_g2b_bootstrap.py tests/test_prod_e2e_r1b_g2c_lane.py
+      - name: Real Chromium two WAVs + two buses + gain automation at exact rate
+        run: python -m musica.prod_e2e_r2a_g3a_browser --rate ${{ matrix.sample_rate }} --out artifacts/prod-r2a-g3a
+      - name: Upload exact-rate WAV and Browser evidence / 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r2a-g3a-${{ matrix.sample_rate }}
+          path: |
+            artifacts/prod-r2a-g3a/*.json
+            artifacts/prod-r2a-g3a/*.wav
+            artifacts/prod-r2a-g3a/integrated-g2c/*.png
+          if-no-files-found: error

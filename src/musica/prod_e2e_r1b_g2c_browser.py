@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import io
+import json
 import shutil
 import struct
 import wave
@@ -13,24 +14,25 @@ from .prod_e2e_r1a_browser import _server, _stop, _record_request_failure
 from .prod_e2e_r1b_g2b_browser import run_suite as seed_g2b
 
 
-def _pcm(path: Path):
+def _pcm(path: Path, *, expected_rate_hz: int = 8000):
     data = path.read_bytes()
     with wave.open(io.BytesIO(data), "rb") as wav:
-        assert wav.getnchannels() == 2 and wav.getsampwidth() == 2 and wav.getframerate() == 8000
+        assert wav.getnchannels() == 2 and wav.getsampwidth() == 2 and wav.getframerate() == expected_rate_hz
         frames = wav.getnframes()
         samples = struct.unpack("<" + "h" * (frames * 2), wav.readframes(frames))
     return data, frames, samples
 
 
-def run_suite(destination: str | Path) -> dict:
+def run_suite(destination: str | Path, *, sample_rate_hz: int = 8000) -> dict:
     from playwright.sync_api import sync_playwright, expect
     out = Path(destination)
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    seed_g2b(out / "seed-g2b")
+    await_audio_timeout_ms = 90000 if sample_rate_hz >= 44100 else 35000
+    seed_g2b(out / "seed-g2b", sample_rate_hz=sample_rate_hz)
     workspace = out / "seed-g2b" / "seed-g1" / "workspace"
-    baseline, baseline_frames, baseline_pcm = _pcm(out / "seed-g2b" / "routed-accepted.wav")
+    baseline, baseline_frames, baseline_pcm = _pcm(out / "seed-g2b" / "routed-accepted.wav", expected_rate_hz=sample_rate_hz)
     errors, page_errors, failed_requests, screenshots = [], [], [], []
     service, server, thread, url = _server(workspace)
     try:
@@ -49,12 +51,53 @@ def run_suite(destination: str | Path) -> dict:
             page.locator('button[data-tab="inspect"]').click()
             session = next(iter(service._sessions.values()))
             before = session.project.head_revision_id()
-            expect(page.locator("#m7PreviewNativeLane")).to_be_enabled()
+            # Opening a standard-rate routed project may schedule several
+            # expensive accepted WAV projections. Wait for exact view lineage
+            # before asserting the user can click the first native lane.
+            try:
+                page.wait_for_function("""() => {
+                  const a = window.MUSICA_AUTOMATION?.state;
+                  const r = window.MUSICA_ROUTING?.state;
+                  const n = window.MUSICA_NATIVE_AUDIO?.state;
+                  if (!a?.view || !r?.view || !n?.view ||
+                      a.sessionId !== r.sessionId || a.sessionId !== n.sessionId)
+                    return false;
+                  const head = a.view.revision_id;
+                  return head === r.view.revision_id && head === n.view.revision_id &&
+                    !a.view.preview && !r.view.preview && !n.view.preview &&
+                    r.view.nodes?.length > 0 &&
+                    r.view.track_outputs?.some(o => o.track_id === "AT-UI-001") &&
+                    n.view.tracks?.some(t => t.track_id === "AT-UI-001" && t.clips?.length);
+                }""", timeout=await_audio_timeout_ms)
+                expect(page.locator("#m7PreviewNativeLane")).to_be_enabled(timeout=await_audio_timeout_ms)
+            except Exception:
+                snapshot = page.evaluate("""() => {
+                  const a=window.MUSICA_AUTOMATION?.state;
+                  const r=window.MUSICA_ROUTING?.state;
+                  const n=window.MUSICA_NATIVE_AUDIO?.state;
+                  return {
+                    a_session:a?.sessionId, r_session:r?.sessionId, n_session:n?.sessionId,
+                    a_revision:a?.view?.revision_id, r_revision:r?.view?.revision_id,
+                    n_revision:n?.view?.revision_id,
+                    a_preview:!!a?.view?.preview, r_preview:!!r?.view?.preview,
+                    n_preview:!!n?.view?.preview,
+                    node_count:r?.view?.nodes?.length,
+                    track_outputs:r?.view?.track_outputs?.length,
+                    clip_count:n?.view?.tracks?.reduce((x,t)=>x+(t.clips?.length||0),0),
+                    lane_button_disabled:document.querySelector("#m7PreviewNativeLane")?.disabled,
+                    status:document.querySelector("#m7AutomationStatus")?.textContent,
+                  };
+                }""")
+                (out / "pre-lane-readiness-failure.json").write_text(
+                    json.dumps(snapshot, sort_keys=True, indent=2), encoding="utf-8"
+                )
+                page.screenshot(path=str(out / "pre-lane-readiness-failure.png"), full_page=True)
+                raise
             page.locator("#m7NewNativeLaneTrack").select_option("AT-UI-001")
             page.locator("#m7NewNativeLaneStart").fill("-3")
             page.locator("#m7NewNativeLaneEnd").fill("-12")
             page.locator("#m7PreviewNativeLane").click()
-            expect(page.locator("#m7AutomationAvailability")).to_have_text("PREVIEW · NOT ACCEPTED")
+            expect(page.locator("#m7AutomationAvailability")).to_have_text("PREVIEW · NOT ACCEPTED", timeout=await_audio_timeout_ms)
             assert session.project.head_revision_id() == before, "Automation Preview advanced HEAD"
             expect(page.locator("#r1bDownloadWav")).to_be_disabled()
             image = "01-native-gain-lane-preview.png"
@@ -67,7 +110,7 @@ def run_suite(destination: str | Path) -> dict:
               return a && n && !a.preview && !n.preview &&
                 a.revision_id === n.revision_id &&
                 a.lanes?.some(l => l.lane_id === "AUTO-UI-001");
-            }""", timeout=35000)
+            }""", timeout=await_audio_timeout_ms)
             assert session.project.head_revision_id() != before
             accepted = page.evaluate("() => window.MUSICA_AUTOMATION.state.view")
             lanes = [x for x in accepted["lanes"] if x["lane_id"] == "AUTO-UI-001"]
@@ -76,7 +119,7 @@ def run_suite(destination: str | Path) -> dict:
             with page.expect_download() as download:
                 page.locator("#r1bDownloadWav").click()
             download.value.save_as(out / "gain-automated.wav")
-            mixed, frames, pcm = _pcm(out / "gain-automated.wav")
+            mixed, frames, pcm = _pcm(out / "gain-automated.wav", expected_rate_hz=sample_rate_hz)
             assert frames == baseline_frames
             assert mixed != baseline, "Accepted lane did not change rendered audio bytes"
             assert any(pcm[i] != baseline_pcm[i] for i in range(0, 32000, 2)), "No left track gain effect"
@@ -123,6 +166,7 @@ def run_suite(destination: str | Path) -> dict:
         "milestone": "PROD-E2E-R1B-G2C",
         "real_chromium_automated_user_operation": True,
         "two_source_routed_bus_seed": True,
+        "sample_rate_hz": sample_rate_hz,
         "new_native_gain_lane_preview_mutated_head": False,
         "explicit_accept": True,
         "source_track": "AT-UI-001",

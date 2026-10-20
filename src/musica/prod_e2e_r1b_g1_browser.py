@@ -19,18 +19,18 @@ from .evidence import write_canonical_json
 from .prod_e2e_r1a_browser import _record_request_failure, _server, _stop
 
 
-def source_wav(level: int) -> tuple[bytes, list[int]]:
-    samples = [level if index % 4 < 2 else -level for index in range(16000)]
+def source_wav(level: int, sample_rate_hz: int = 8000) -> tuple[bytes, list[int]]:
+    samples = [level if index % 4 < 2 else -level for index in range(2 * sample_rate_hz)]
     file = io.BytesIO()
     with wave.open(file, "wb") as output:
         output.setnchannels(1)
         output.setsampwidth(2)
-        output.setframerate(8000)
+        output.setframerate(sample_rate_hz)
         output.writeframes(struct.pack("<" + "h" * len(samples), *samples))
     return file.getvalue(), samples
 
 
-def suite(destination: str | Path) -> dict:
+def suite(destination: str | Path, *, sample_rate_hz: int = 8000) -> dict:
     try:
         from playwright.sync_api import expect, sync_playwright
     except ImportError as exc:
@@ -42,7 +42,11 @@ def suite(destination: str | Path) -> dict:
     out.mkdir(parents=True)
     workspace = out / "workspace"
     workspace.mkdir()
-    assets = [source_wav(3000), source_wav(6200)]
+    if sample_rate_hz not in (8000, 44100, 48000):
+        raise ValueError("G1 evidence requires a declared tested 8k/44.1k/48k exact sample rate")
+    source_frames = 2 * sample_rate_hz
+    output_frames = 12 * sample_rate_hz
+    assets = [source_wav(3000, sample_rate_hz), source_wav(6200, sample_rate_hz)]
     asset_ids = ["sha256:" + hashlib.sha256(item[0]).hexdigest() for item in assets]
     assert asset_ids[0] != asset_ids[1]
     console_errors, page_errors, network_errors, images = [], [], [], []
@@ -155,15 +159,15 @@ def suite(destination: str | Path) -> dict:
             rendered = (out / "two-track-accepted.wav").read_bytes()
             assert hashlib.sha256(rendered).hexdigest() == wav_sha
             with wave.open(io.BytesIO(rendered), "rb") as reader:
-                assert (reader.getnchannels(), reader.getframerate(), reader.getsampwidth(), reader.getnframes()) == (2, 8000, 2, 96000)
+                assert (reader.getnchannels(), reader.getframerate(), reader.getsampwidth(), reader.getnframes()) == (2, sample_rate_hz, 2, output_frames)
                 payload = reader.readframes(reader.getnframes())
             mix = struct.unpack("<" + "h" * (len(payload) // 2), payload)
             left, right = mix[::2], mix[1::2]
             # Independent deterministic PCM oracle: each track contributes an
             # exact different source only to its assigned stereo channel.
-            assert list(left[:16000]) == assets[0][1], "Melody contribution missing or altered"
-            assert list(right[:16000]) == assets[1][1], "Drum contribution missing or altered"
-            assert all(value == 0 for value in left[16000:] + right[16000:])
+            assert list(left[:source_frames]) == assets[0][1], "Melody contribution missing or altered"
+            assert list(right[:source_frames]) == assets[1][1], "Drum contribution missing or altered"
+            assert all(value == 0 for value in left[source_frames:] + right[source_frames:])
             assert max(map(abs, mix)) == 6200
             assert sum(abs(value) >= 32767 for value in mix) == 0
 
@@ -232,7 +236,8 @@ def suite(destination: str | Path) -> dict:
         "stereo_pan": [-1.0, 1.0],
         "independent_pcm_oracle": True,
         "output_wav_sha256": wav_sha,
-        "output_frames": 96000, "nonzero_scalar_samples": 32000,
+        "output_sample_rate_hz": sample_rate_hz, "output_frames": output_frames,
+        "nonzero_scalar_samples": 2 * source_frames,
         "peak_pcm16": 6200, "clipped_samples": 0,
         "accepted_head_reopened_exact": True,
         "wav_reopened_byte_exact": True,

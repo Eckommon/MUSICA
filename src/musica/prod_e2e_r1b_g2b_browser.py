@@ -31,17 +31,18 @@ def _pcm(data: bytes) -> tuple[int, int, int, list[int]]:
     return rate, channels, frames, list(struct.unpack("<" + "h" * (len(raw) // 2), raw))
 
 
-def run_suite(destination: str | Path) -> dict:
+def run_suite(destination: str | Path, *, sample_rate_hz: int = 8000) -> dict:
     from playwright.sync_api import expect, sync_playwright
     out = Path(destination)
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    seed_g1(out / "seed-g1")
+    await_audio_timeout_ms = 90000 if sample_rate_hz >= 44100 else 35000
+    seed_g1(out / "seed-g1", sample_rate_hz=sample_rate_hz)
     workspace = out / "seed-g1" / "workspace"
     baseline = (out / "seed-g1" / "two-track-accepted.wav").read_bytes()
     rate, channels, frames, original = _pcm(baseline)
-    assert (rate, channels, frames) == (8000, 2, 96000)
+    assert (rate, channels, frames) == (sample_rate_hz, 2, 12 * sample_rate_hz)
     errors, page_errors, failures, images = [], [], [], []
     service, server, thread, url = _server(workspace)
     try:
@@ -65,7 +66,7 @@ def run_suite(destination: str | Path) -> dict:
             session = next(iter(service._sessions.values()))
             baseline_head = session.project.head_revision_id()
             page.locator("#mramPreviewStarterTwoBus").click()
-            expect(page.locator("#mramRoutingBadge")).to_have_text("PREVIEW · NOT ACCEPTED")
+            expect(page.locator("#mramRoutingBadge")).to_have_text("PREVIEW · NOT ACCEPTED", timeout=await_audio_timeout_ms)
             assert session.project.head_revision_id() == baseline_head
             expect(page.locator("#mramNodes [data-mram-type=node]")).to_have_count(3)
             expect(page.locator("#mramTrackOutputs [data-mram-type=track-output]")).to_have_count(2)
@@ -73,7 +74,7 @@ def run_suite(destination: str | Path) -> dict:
             page.screenshot(path=str(out / image), full_page=True)
             images.append(image)
             page.locator("#acceptButton").click()
-            expect(page.locator("#mramRoutingBadge")).to_have_text("ACCEPTED ROUTING")
+            expect(page.locator("#mramRoutingBadge")).to_have_text("ACCEPTED ROUTING", timeout=await_audio_timeout_ms)
             expect(page.locator("#mramNodes [data-mram-type=node]")).to_have_count(3)
             routed_head = session.project.head_revision_id()
             assert routed_head != baseline_head
@@ -84,13 +85,13 @@ def run_suite(destination: str | Path) -> dict:
             page.locator("#mramNodeSelect").select_option("BUS-UI-001")
             page.locator("#mramNodeGain").fill("-6")
             page.locator("#mramPreviewNodeMixer").click()
-            expect(page.locator("#mramRoutingBadge")).to_have_text("PREVIEW · NOT ACCEPTED")
+            expect(page.locator("#mramRoutingBadge")).to_have_text("PREVIEW · NOT ACCEPTED", timeout=await_audio_timeout_ms)
             assert session.project.head_revision_id() == routed_head
             image = "02-bus-gain-preview.png"
             page.screenshot(path=str(out / image), full_page=True)
             images.append(image)
             page.locator("#acceptButton").click()
-            expect(page.locator("#mramRoutingBadge")).to_have_text("ACCEPTED ROUTING")
+            expect(page.locator("#mramRoutingBadge")).to_have_text("ACCEPTED ROUTING", timeout=await_audio_timeout_ms)
             gain_head = session.project.head_revision_id()
             assert gain_head != routed_head
             # The accepted badge can briefly represent the prior revision:
@@ -100,7 +101,7 @@ def run_suite(destination: str | Path) -> dict:
               return r && !r.preview && r.revision_id === expected &&
                 r.nodes?.some(n => n.node_id === "BUS-UI-001" &&
                                      n.mixer.gain_db === -6);
-            }""", arg=gain_head, timeout=35000)
+            }""", arg=gain_head, timeout=await_audio_timeout_ms)
             accepted = page.evaluate("() => window.MUSICA_ROUTING.state.view")
             assert accepted["revision_id"] == gain_head
             assert next(n for n in accepted["nodes"] if n["node_id"]=="BUS-UI-001")["mixer"]["gain_db"] == -6.0
@@ -113,7 +114,7 @@ def run_suite(destination: str | Path) -> dict:
               return audio && route && !audio.preview && !route.preview &&
                 audio.revision_id === route.revision_id &&
                 audio.accepted_audition?.available;
-            }""", timeout=35000)
+            }""", timeout=await_audio_timeout_ms)
             expect(page.locator("#r1bDownloadWav")).to_be_enabled()
             with page.expect_download() as info:
                 page.locator("#r1bDownloadWav").click()
@@ -149,7 +150,7 @@ def run_suite(destination: str | Path) -> dict:
             page.locator("#openForm button[type=submit]").click()
             expect(page.locator("#activeProject")).to_be_visible()
             page.locator('button[data-tab="inspect"]').click()
-            expect(page.locator("#mramRoutingBadge")).to_have_text("ACCEPTED ROUTING")
+            expect(page.locator("#mramRoutingBadge")).to_have_text("ACCEPTED ROUTING", timeout=await_audio_timeout_ms)
             assert next(iter(service2._sessions.values())).project.head_revision_id() == gain_head
             with page.expect_download() as dl:
                 page.locator("#r1bDownloadWav").click()

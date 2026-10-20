@@ -266,9 +266,11 @@
       return;
     }
     if (!available) {
-      availability.textContent = "NO CANONICAL AUTOMATION";
-      availability.className = "status-pill neutral";
-      el("m7AutomationUnavailable").textContent = "This accepted revision has no canonical materials.automation. MUSICA will not reverse-infer lanes from semantics, Music IR, renderer or DAW state.";
+      availability.textContent = view.preview ? "PREVIEW · NOT ACCEPTED" : "NO CANONICAL AUTOMATION";
+      availability.className = view.preview ? "status-pill preview" : "status-pill neutral";
+      el("m7AutomationUnavailable").textContent = view.preview
+        ? "First native gain lane is PREVIEW only; accepted revision is unchanged. Review and explicitly Accept or Discard."
+        : "This accepted revision has no canonical materials.automation. MUSICA will not reverse-infer lanes from semantics, Music IR, renderer or DAW state.";
       return;
     }
 

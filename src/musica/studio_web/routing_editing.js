@@ -401,6 +401,12 @@
         `/v0/sessions/${encodeURIComponent(routing.sessionId)}/mixer-routing`,
       );
       render();
+      // Projection order may differ under high-rate WAV rendering. After
+      // installing an actual accepted routing GET, notify read-only
+      // consumers to recheck exact matching accepted session + revision.
+      window.dispatchEvent(new CustomEvent("musica:routing-view-ready", {
+        detail: { sessionId: routing.sessionId, revisionId: routing.view.revision_id }
+      }));
       if (!quiet) status("Routing view refreshed.", "success");
     } catch (error) {
       routing.view = null;

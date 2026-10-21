@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import hashlib
+import json
+import os
+import shutil
 import io
 import resource
 import wave
@@ -168,5 +171,42 @@ def test_two_distinct_180s_tracks_exact_pcm_reopen_and_bounded_python_heap(tmp_p
     assert replay.wav_sha256 == mixed.wav_sha256
     assert replay.plan == mixed.plan
     assert reloaded.head_revision_id() == revision_id
+    artifact_dir = os.environ.get("MUSICA_G3B2_ARTIFACT_DIR")
+    if artifact_dir:
+        location = Path(artifact_dir).resolve()
+        location.mkdir(parents=True, exist_ok=True)
+        for name, original in (
+            ("accepted-source-a.wav", tmp_path / "a.wav"),
+            ("accepted-source-b.wav", tmp_path / "b.wav"),
+            ("accepted-mixed-180s.wav", mixed.wav_path),
+        ):
+            shutil.copyfile(original, location / name)
+        proof = {
+            "milestone": "PROD-E2E-R2A-G3B2A",
+            "project_accepted_revision_id": revision_id,
+            "two_distinct_accepted_sources": a["asset_id"] != b["asset_id"],
+            "source_a_sha256": a["object_sha256"],
+            "source_b_sha256": b["object_sha256"],
+            "source_bytes_each": 34_560_044,
+            "output_sha256": mixed.wav_sha256,
+            "reopened_output_sha256": replay.wav_sha256,
+            "exact_reopen_wav_sha_match": replay.wav_sha256 == mixed.wav_sha256,
+            "output_bytes": mixed.wav_size_bytes,
+            "output_pcm_channels": 2,
+            "output_sample_rate_hz": 48000,
+            "output_frames": 8_640_000,
+            "output_duration_seconds": 180,
+            "first_middle_last_stereo_pcm16": [4000, -2500],
+            "peak_pre_clip": mixed.peak_pre_clip,
+            "clipped_sample_count": mixed.clipped_sample_count,
+            "peak_process_rss_kib": peak_rss_kib,
+            "accepted_head_unchanged_after_render": reloaded.head_revision_id() == revision_id,
+            "routing_automation_proven": False,
+            "physical_device_proven": False,
+        }
+        (location / "proof.json").write_text(
+            json.dumps(proof, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8"
+        )
     mixed.wav_path.unlink()
     replay.wav_path.unlink()

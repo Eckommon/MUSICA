@@ -1,0 +1,38 @@
+name: PROD-E2E R2A G3B0 Bounded Staged WAV Import Evidence
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prod-g3b0-staged-wav:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install project and real Chromium / 설치
+        run: |
+          python -m pip install -e '.[dev,e2e]'
+          python -m playwright install --with-deps chromium
+      - name: Validate old and new WAV ingress safety / 이전·신규 전송 권한 검사
+        run: |
+          node --check src/musica/studio_web/native_audio.js
+          python -m compileall -q src/musica/studio_wav_staging.py src/musica/studio_http_r3.py src/musica/prod_e2e_r2a_g3b0_browser.py
+          pytest -q tests/test_prod_e2e_r2a_g3b0_staged.py tests/test_prod_e2e_r1a_browser_import.py tests/test_prod_e2e_r2a_g3a_rates.py
+      - name: Real Chromium bounded 17MiB WAV asset import / 실제 Browser 증거
+        run: python -m musica.prod_e2e_r2a_g3b0_browser --out artifacts/prod-g3b0
+      - name: Upload Browser evidence and SHA report / 근거 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-g3b0-17mib-staging
+          path: |
+            artifacts/prod-g3b0/*.json
+            artifacts/prod-g3b0/*.png
+          if-no-files-found: error

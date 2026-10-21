@@ -20,6 +20,16 @@ jobs:
       - name: Install dev tests
         run: python -m pip install -e '.[dev]'
       - name: Byte-exact old/streamed parity, two accepted 3min PCM tracks and memory ceiling
+        env:
+          MUSICA_G3B2_ARTIFACT_DIR: artifacts/g3b2a
         run: |
           python -m compileall -q src/musica/streamed_native_mixer.py
           /usr/bin/time -v pytest -q tests/test_prod_e2e_r2a_g3b2a_streamed_native.py tests/test_atcm_r2_native_mixer.py
+      - name: Upload independently inspectable two-source long PCM and streamed WAV
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r2a-g3b2a-180s-two-track
+          path: |
+            artifacts/g3b2a/*.wav
+            artifacts/g3b2a/proof.json
+          if-no-files-found: error

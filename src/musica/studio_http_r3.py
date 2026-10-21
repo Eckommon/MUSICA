@@ -13,6 +13,7 @@ from urllib.parse import urlsplit
 from .audio_contracts import audio_material_from_blueprint
 from .studio import StudioApplication, StudioService, StudioServiceError
 from .studio_audio import StudioAudioSurface
+from .studio_wav_staging import WavStagingStore, STAGED_CHUNK_BYTES
 from .studio_http import (
     DEFAULT_HOST,
     _browser_asset_bytes,
@@ -29,6 +30,7 @@ MAX_WAV_IMPORT_BYTES = 16 * 1024 * 1024
 def make_handler(application: StudioApplication):
     base_handler = make_base_handler(application)
     audio_surface = StudioAudioSurface(application.service)
+    wav_staging = WavStagingStore(application.service, audio_surface)
 
     class R3StudioRequestHandler(base_handler):
         server_version = "MUSICAStudio/0.7"
@@ -58,6 +60,54 @@ def make_handler(application: StudioApplication):
             clean_path = urlsplit(self.path).path
             parts = [part for part in clean_path.strip("/").split("/") if part]
             try:
+                # G3B-0: opaque local session-bound staged transport; no
+                # accepted creative revision is changed by start/chunk/finish.
+                # Keep the old 16 MiB direct-upload route independently intact.
+                if (method == "POST" and len(parts) == 6 and
+                        parts[:2] == ["v0", "sessions"] and
+                        parts[3:5] == ["audio", "stage"] and parts[5] == "start"):
+                    data = wav_staging.start(parts[2], self._read_json())
+                    self._send_json(HTTPStatus.OK, application._response("start_staged_wav", data))
+                    return
+                if (method == "POST" and len(parts) == 7 and
+                        parts[:2] == ["v0", "sessions"] and
+                        parts[3:5] == ["audio", "stage"]):
+                    upload_id, operation = parts[5], parts[6]
+                    if operation == "chunk":
+                        if self.headers.get("Transfer-Encoding"):
+                            raise StudioServiceError(
+                                "invalid_request", "unbounded chunked transfer encoding unsupported"
+                            )
+                        if self.headers.get("Content-Type", "").split(";", 1)[0].lower() != "application/octet-stream":
+                            raise StudioServiceError(
+                                "invalid_request", "staged chunk must be application/octet-stream"
+                            )
+                        try:
+                            size = int(self.headers.get("Content-Length", ""))
+                            offset = int(self.headers.get("X-MUSICA-Chunk-Offset", ""))
+                        except ValueError as exc:
+                            raise StudioServiceError(
+                                "invalid_request", "staged chunk requires numeric size/offset"
+                            ) from exc
+                        if not 1 <= size <= STAGED_CHUNK_BYTES or offset < 0:
+                            raise StudioServiceError("invalid_request", "staged chunk exceeds 1 MiB cap")
+                        data = self.rfile.read(size)
+                        if len(data) != size:
+                            raise StudioServiceError("invalid_request", "staged WAV chunk truncated")
+                        result = wav_staging.chunk(
+                            parts[2], upload_id, offset, data,
+                            self.headers.get("X-MUSICA-Chunk-SHA256", "")
+                        )
+                        self._send_json(HTTPStatus.OK, application._response("staged_wav_chunk", result))
+                        return
+                    if operation in {"finish", "cancel"}:
+                        if self._read_json():
+                            raise StudioServiceError("invalid_request", "staged finish/cancel body must be empty")
+                        result = (wav_staging.finish(parts[2], upload_id)
+                                  if operation == "finish" else wav_staging.cancel(parts[2], upload_id))
+                        self._send_json(HTTPStatus.OK, application._response("staged_wav_" + operation, result))
+                        return
+
                 if (
                     method == "POST"
                     and len(parts) == 5

@@ -128,17 +128,13 @@ def test_g3b0_wrong_offset_and_digest_fail_closed_and_clean_temp(tmp_path):
         with pytest.raises(HTTPError) as exc:
             _chunk(base, start["upload_id"], 1, data[:55])
         assert exc.value.code == 400
-        assert _json(base, "/start", {"size_bytes": len(data), "sha256": digest})
-        # The new transfer cannot accept a bogus per-chunk hash.
-        active = next(iter((service.workspace / ".wav-staging-g3b0").glob("*.part")))
-        assert active.exists()
-        # Obtain opaque token via fixture service state only for deliberate corruption test.
-        # We cannot use the old discarded upload ID.
-        token = next(iter(service.workspace.glob("nonexistent"))) if False else None
-        # Session has only one active stage. A wrong ID must fail.
-        with pytest.raises(HTTPError) as wrong:
-            _chunk(base, "../bad", 0, b"x")
-        assert wrong.value.code == 400
+        resumed = _json(base, "/start", {"size_bytes": len(data), "sha256": digest})
+        # The first invalid sequence was deleted and cannot be reused.
+        with pytest.raises(HTTPError) as old:
+            _chunk(base, start["upload_id"], 0, data[:55])
+        assert old.value.code == 400
+        assert _json(base, f"/{resumed['upload_id']}/cancel")["cancelled"]
+        assert not list((service.workspace / ".wav-staging-g3b0").glob("*.part"))
         assert list_audio_assets(project) == []
         assert project.head_revision_id() == head
         assert len(project._audit_events()) == audit

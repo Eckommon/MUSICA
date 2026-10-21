@@ -1,0 +1,25 @@
+name: PROD-E2E R2A G3B2A Streamed Native PCM Mix
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  two-long-tracks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dev tests
+        run: python -m pip install -e '.[dev]'
+      - name: Byte-exact old/streamed parity, two accepted 3min PCM tracks and memory ceiling
+        run: |
+          python -m compileall -q src/musica/streamed_native_mixer.py
+          /usr/bin/time -v pytest -q tests/test_prod_e2e_r2a_g3b2a_streamed_native.py tests/test_atcm_r2_native_mixer.py

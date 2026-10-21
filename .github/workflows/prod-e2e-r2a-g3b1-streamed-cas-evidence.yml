@@ -1,0 +1,24 @@
+name: PROD-E2E R2A G3B1A Streaming CAS WAV Intake
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  streamed-cas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install MUSICA development tests
+        run: python -m pip install -e '.[dev]'
+      - name: Verify 3min stereo 48k chunk intake streamed CAS, idempotence and creative HEAD unchanged
+        run: |
+          python -m compileall -q src/musica/audio_assets.py src/musica/staged_wav.py
+          pytest -q tests/test_prod_e2e_r2a_g3b1_streamed_cas.py tests/test_prod_e2e_r2a_g3b0_staging.py tests/test_prod_e2e_r1a_browser_import.py

@@ -8,6 +8,7 @@
     requestCounter: 0,
     lastSubmittedCandidate: null,
     lastAuthorityResult: null,
+    stagedTransfer: null,
   };
   const el = (id) => document.getElementById(id);
 
@@ -90,7 +91,8 @@
             <input id="r3WavFile" type="file" accept=".wav,audio/wav">
           </label>
           <button id="r3ImportWav" class="secondary" type="button">Import as asset only / 오디오 자산 가져오기</button>
-          <p class="muted small">Resource only. No track/clip and no accepted revision change; add a track/clip with a separate Preview and Accept.</p>
+          <button id="r3CancelStagedWav" type="button" class="danger" hidden>Cancel staged WAV / 업로드 취소</button>
+          <p class="muted small">Resource only; no accepted track/clip. Direct WAV ≤16 MiB; sliced 1 MiB staging up to 64 MiB. 3-minute mix/export remains unproven.</p>
           <p id="r3ImportedAsset" class="mono muted small" role="status" aria-live="polite"></p>
         </fieldset>
       </div>
@@ -136,12 +138,98 @@
     if (anchor) anchor.insertAdjacentElement("afterend", card);
     else panel.appendChild(card);
     el("r3ImportWav").addEventListener("click", importWav);
+    el("r3CancelStagedWav").addEventListener("click", () => {
+      if (nativeAudio.stagedTransfer) {
+        nativeAudio.stagedTransfer.cancelled = true;
+        status("Cancelling WAV upload. Accepted Project is unchanged.", "info");
+      }
+    });
     el("r3AddTrack").addEventListener("click", previewAddTrack);
     el("r3SuggestTrackId").addEventListener("click", suggestTrackId);
     el("r3SuggestClipId").addEventListener("click", suggestClipId);
     el("r3AddClip").addEventListener("click", previewAddClip);
     el("r3Accept").addEventListener("click", acceptPreview);
     el("r3Discard").addEventListener("click", discardPreview);
+  }
+
+  async function stagedRequest(url, options) {
+    const response = await originalFetch(url, options);
+    const payload = await response.json();
+    if (!response.ok || !payload || !payload.ok)
+      throw new Error(payload?.error?.message || ("Staged WAV HTTP " + response.status));
+    return payload.data;
+  }
+
+  async function importStagedWav(file) {
+    if (!window.MUSICA_SHA256_FILE || !window.crypto?.subtle)
+      throw new Error("Secure browser hashing is unavailable");
+    const session = nativeAudio.sessionId;
+    const base = "/v0/sessions/" + encodeURIComponent(session) + "/audio/stage";
+    const upload = {session, id: null, cancelled: false};
+    nativeAudio.stagedTransfer = upload;
+    el("r3CancelStagedWav").hidden = false;
+    let finished = false;
+    try {
+      // SHA-256 across 1MiB File slices; never materialize the full file.
+      const sha256 = await window.MUSICA_SHA256_FILE.hashFileSlices(
+        file,
+        (done, total) => status("Hashing WAV " + Math.floor(done * 100 / total) + "% · NOT A CLIP"),
+        () => upload.cancelled || nativeAudio.sessionId !== session
+      );
+      if (upload.cancelled || nativeAudio.sessionId !== session)
+        throw new Error("WAV upload cancelled or Studio session changed");
+      const start = await stagedRequest(base + "/start", {
+        method: "POST",
+        headers: {"Content-Type": "application/json", Accept: "application/json"},
+        body: JSON.stringify({size_bytes: file.size, sha256})
+      });
+      if (!start.accepted_revision_unchanged || !/^[A-Za-z0-9_-]{43}$/.test(start.upload_id))
+        throw new Error("Server rejected opaque upload authority");
+      upload.id = start.upload_id;
+      const step = Math.min(1024 * 1024, start.max_chunk_bytes);
+      if (!Number.isInteger(step) || step < 1) throw new Error("Invalid server chunk capacity");
+      for (let offset=0;offset<file.size;) {
+        if (upload.cancelled || nativeAudio.sessionId !== session)
+          throw new Error("WAV upload cancelled or Studio session changed");
+        const block = await file.slice(offset, Math.min(file.size, offset+step)).arrayBuffer();
+        const digest = await window.crypto.subtle.digest("SHA-256", block);
+        const chunkSha = Array.from(new Uint8Array(digest))
+          .map(x => x.toString(16).padStart(2, "0")).join("");
+        const receipt = await stagedRequest(base + "/" + encodeURIComponent(upload.id) + "/chunk", {
+          method: "POST",
+          headers: {"Content-Type": "application/octet-stream", Accept: "application/json",
+                    "X-MUSICA-Chunk-Offset": String(offset),
+                    "X-MUSICA-Chunk-SHA256": chunkSha},
+          body: block
+        });
+        if (!receipt.accepted_revision_unchanged || receipt.next_offset !== offset + block.byteLength)
+          throw new Error("Staged WAV offset / revision authority mismatch");
+        offset = receipt.next_offset;
+        status("Uploading WAV " + Math.floor(offset * 100 / file.size) + "% · NOT A CLIP");
+      }
+      if (upload.cancelled || nativeAudio.sessionId !== session)
+        throw new Error("WAV upload cancelled");
+      const committed = await stagedRequest(base + "/" + encodeURIComponent(upload.id) + "/finish", {
+        method: "POST",
+        headers: {"Content-Type": "application/json", Accept: "application/json"},
+        body: "{}"
+      });
+      if (committed.staged_upload_sha256 !== sha256 || committed.staged_upload_size_bytes !== file.size)
+        throw new Error("Server returned incorrect file identity");
+      finished = true;
+      return committed;
+    } finally {
+      if (!finished && upload.id) {
+        try {
+          await stagedRequest(base + "/" + encodeURIComponent(upload.id) + "/cancel", {
+            method: "POST", headers: {"Content-Type": "application/json", Accept: "application/json"},
+            body: "{}"
+          });
+        } catch (_error) { /* Server also expires and cleans abandoned private uploads. */ }
+      }
+      if (nativeAudio.stagedTransfer === upload) nativeAudio.stagedTransfer = null;
+      el("r3CancelStagedWav").hidden = true;
+    }
   }
 
   async function importWav() {
@@ -151,20 +239,25 @@
     const picker = el("r3WavFile");
     const file = picker && picker.files && picker.files[0];
     if (!file) return status("Select a PCM WAV file to import.", "error");
-    if (file.size < 44 || file.size > 16 * 1024 * 1024)
-      return status("WAV file must be between 44 bytes and 16 MiB.", "error");
+    if (file.size < 44 || file.size > 64 * 1024 * 1024)
+      return status("WAV file must be between 44 bytes and 64 MiB.", "error");
     const button = el("r3ImportWav");
     button.disabled = true;
     try {
-      const response = await originalFetch(
-        `/v0/sessions/${encodeURIComponent(nativeAudio.sessionId)}/audio/import-wav`,
-        {method: "POST", headers: {Accept: "application/json", "Content-Type": "audio/wav"}, body: file}
-      );
-      const payload = await response.json();
-      if (!response.ok || !payload || !payload.ok) {
-        throw new Error(payload && payload.error ? payload.error.message : `HTTP ${response.status}`);
+      let value;
+      if (file.size > 16 * 1024 * 1024) {
+        value = await importStagedWav(file);
+      } else {
+        const response = await originalFetch(
+          "/v0/sessions/" + encodeURIComponent(nativeAudio.sessionId) + "/audio/import-wav",
+          {method: "POST", headers: {Accept: "application/json", "Content-Type": "audio/wav"}, body: file}
+        );
+        const payload = await response.json();
+        if (!response.ok || !payload || !payload.ok) {
+          throw new Error(payload && payload.error ? payload.error.message : ("HTTP " + response.status));
+        }
+        value = payload.data;
       }
-      const value = payload.data;
       if (!value.accepted_revision_unchanged || !value.requires_separate_clip_preview_and_explicit_accept)
         throw new Error("Server did not confirm noncanonical resource-only import.");
       const descriptor = value.asset;

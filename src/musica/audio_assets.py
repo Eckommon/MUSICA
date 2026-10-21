@@ -173,23 +173,25 @@ def import_audio_asset_verified_path(
     else:
         with tempfile.NamedTemporaryFile(dir=target.parent, prefix="staged-object-", delete=False) as temp:
             temporary = Path(temp.name)
-            try:
-                copied_digest = hashlib.sha256()
-                copied_size = 0
-                with source.open("rb") as stream:
-                    while block := stream.read(1024 * 1024):
-                        temp.write(block)
-                        copied_digest.update(block)
-                        copied_size += len(block)
-                temp.flush()
-                os.fsync(temp.fileno())
-                if copied_digest.hexdigest() != actual_sha256 or copied_size != size:
-                    raise ProjectIntegrityError("source staging changed while copying CAS object")
-            except BaseException:
-                temporary.unlink(missing_ok=True)
-                raise
         try:
-            os.replace(temporary, target)
+            copied_digest = hashlib.sha256()
+            copied_size = 0
+            with temporary.open("wb") as target_stream, source.open("rb") as stream:
+                while block := stream.read(1024 * 1024):
+                    target_stream.write(block)
+                    copied_digest.update(block)
+                    copied_size += len(block)
+                target_stream.flush()
+                os.fsync(target_stream.fileno())
+            if copied_digest.hexdigest() != actual_sha256 or copied_size != size:
+                raise ProjectIntegrityError("source staging changed while copying CAS object")
+            # Link without replacement: an existing CAS object must never be
+            # overwritten, even on simultaneous imports.
+            try:
+                os.link(temporary, target)
+            except FileExistsError:
+                if target.stat().st_size != size or _file_sha256(target) != actual_sha256:
+                    raise ProjectIntegrityError("concurrent content-addressed object corruption")
         finally:
             temporary.unlink(missing_ok=True)
 

@@ -53,7 +53,7 @@ def run_suite(destination: str | Path) -> dict:
             page.goto(url + "/", wait_until="domcontentloaded")
             expect(page.locator("#connectionBadge")).to_contain_text("READY")
             page.locator("#projectSlug").fill("g3b0-large-wav")
-            page.locator("#durationSeconds").fill("120")
+            page.locator("#durationSeconds").fill("12")
             page.locator("#useCase").select_option("song")
             page.locator("#createForm button[type=submit]").click()
             expect(page.locator("#activeProject")).to_be_visible()

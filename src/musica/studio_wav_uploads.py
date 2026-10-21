@@ -30,6 +30,7 @@ class _Upload:
     expected_sha256: str
     expected_size: int
     touched: float
+    received: int = 0
 
 
 class StudioWavUploads:
@@ -93,10 +94,24 @@ class StudioWavUploads:
         record.touched = time.monotonic()
         return record, session
 
-    def check_chunk_authority(self, session_id: str, token: str) -> None:
-        """Reject unknown/cross-session/pending/stale upload BEFORE HTTP reads bytes."""
+    def check_chunk_authority(self, session_id: str, token: str, *,
+                              offset: int | None = None,
+                              length: int | None = None,
+                              chunk_sha256: str | None = None) -> None:
+        """Fail closed before HTTP reads bytes; verify exact offset and bounds."""
         with self._lock:
-            self._source(session_id, token)
+            record, _ = self._source(session_id, token)
+            if offset is None and length is None and chunk_sha256 is None:
+                return  # Initial authorization before parsing the headers.
+            if (type(offset) is not int or offset != record.received
+                    or type(length) is not int or not 1 <= length <= MAX_CHUNK_BYTES
+                    or record.received + length > record.expected_size
+                    or not isinstance(chunk_sha256, str)
+                    or not _SHA256.fullmatch(chunk_sha256)):
+                self._discard(session_id, token)
+                raise StudioServiceError(
+                    "invalid_request", "staged chunk preflight offset/length/hash failed"
+                )
 
     def begin(self, session_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         with self._lock:
@@ -145,6 +160,7 @@ class StudioWavUploads:
                 self._discard(session_id, token)
                 raise self.service._wrap_core_error(exc) from exc
             record.touched = time.monotonic()
+            record.received = next_offset
             return {
                 "upload_id": token,
                 "next_offset": next_offset,

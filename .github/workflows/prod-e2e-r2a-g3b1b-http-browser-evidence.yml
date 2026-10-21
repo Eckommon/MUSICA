@@ -1,0 +1,70 @@
+name: PROD-E2E R2A G3B1B Session-bound Browser WAV Staging
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  http-browser-staging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install development tests
+        run: python -m pip install -e '.[dev,e2e]'
+      - name: Verify HTTP staged import and all earlier staged CAS contracts
+        run: |
+          python -m compileall -q src/musica/studio_wav_uploads.py src/musica/studio_http_r3.py
+          pytest -q tests/test_prod_e2e_r2a_g3b1b_http.py tests/test_prod_e2e_r2a_g3b1_streamed_cas.py tests/test_prod_e2e_r2a_g3b0_staging.py
+      - name: Verify incremental Browser SHA-256 against Node crypto
+        run: |
+          node --check src/musica/studio_web/sha256_chunks.js
+          node --check src/musica/studio_web/native_audio.js
+          node - <<'NODE'
+          global.window = global;
+          require("./src/musica/studio_web/sha256_chunks.js");
+          const crypto = require("node:crypto");
+          const {IncrementalSha256, hashFileSlices} = global.MUSICA_SHA256_FILE;
+          const samples = [
+            Buffer.alloc(0), Buffer.from("abc"), Buffer.alloc(55, 0x61),
+            Buffer.alloc(56, 0x61), Buffer.alloc(63, 0x61),
+            Buffer.alloc(64, 0x61), Buffer.alloc(65, 0x61),
+            Buffer.alloc(1024 * 1024 + 173, 0x61)
+          ];
+          for (const bytes of samples) {
+            const v = new IncrementalSha256();
+            for (let offset=0;offset<bytes.length;offset+=123)
+              v.update(new Uint8Array(bytes.subarray(offset,offset+123)));
+            const expected = crypto.createHash("sha256").update(bytes).digest("hex");
+            if (v.digestHex() !== expected) throw Error("Incremental SHA mismatch at " + bytes.length);
+          }
+          (async () => {
+            const bytes = Buffer.alloc(3 * 1024 * 1024 + 189, 0x51);
+            const digest = await hashFileSlices(new Blob([bytes]));
+            if (digest !== crypto.createHash("sha256").update(bytes).digest("hex"))
+              throw Error("Browser Blob.slice SHA mismatch");
+            console.log("Incremental SHA-256 length/padding/blob checks PASS");
+          })().catch(err => { console.error(err); process.exitCode=1; });
+          NODE
+      - name: Install real Chromium / 실제 브라우저 환경
+        run: python -m playwright install --with-deps chromium
+      - name: Real Chromium 180s user-file import via File.slice and immutable CAS
+        run: |
+          python -m compileall -q src/musica/prod_e2e_r2a_g3b1b_browser.py
+          python -m musica.prod_e2e_r2a_g3b1b_browser --out artifacts/prod-r2a-g3b1b
+      - name: Upload original WAV, proof and Browser screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r2a-g3b1b-3min
+          path: |
+            artifacts/prod-r2a-g3b1b/proof.json
+            artifacts/prod-r2a-g3b1b/three-minute-source.wav
+            artifacts/prod-r2a-g3b1b/*.png
+          if-no-files-found: error

@@ -7,12 +7,15 @@ only native-audio projection/Preview/Accept/audition routes and same-origin UI a
 from __future__ import annotations
 
 from http import HTTPStatus
+import socket
 from http.server import ThreadingHTTPServer
 from urllib.parse import urlsplit
 
 from .audio_contracts import audio_material_from_blueprint
 from .studio import StudioApplication, StudioService, StudioServiceError
 from .studio_audio import StudioAudioSurface
+from .studio_wav_uploads import StudioWavUploads
+from .staged_wav import MAX_CHUNK_BYTES
 from .studio_http import (
     DEFAULT_HOST,
     _browser_asset_bytes,
@@ -29,13 +32,14 @@ MAX_WAV_IMPORT_BYTES = 16 * 1024 * 1024
 def make_handler(application: StudioApplication):
     base_handler = make_base_handler(application)
     audio_surface = StudioAudioSurface(application.service)
+    wav_uploads = StudioWavUploads(application.service)
 
     class R3StudioRequestHandler(base_handler):
         server_version = "MUSICAStudio/0.7"
 
         def _send_static(self, clean_path: str) -> bool:
             if clean_path == "/assets/app.js":
-                data = _browser_asset_bytes("app.js") + b"\n" + _static_bytes("native_audio.js") + b"\n" + _static_bytes("production_guide.js")
+                data = _browser_asset_bytes("app.js") + b"\n" + _static_bytes("sha256_chunks.js") + b"\n" + _static_bytes("native_audio.js") + b"\n" + _static_bytes("production_guide.js")
                 self._send_bytes(
                     HTTPStatus.OK,
                     "text/javascript; charset=utf-8",
@@ -58,6 +62,85 @@ def make_handler(application: StudioApplication):
             clean_path = urlsplit(self.path).path
             parts = [part for part in clean_path.strip("/").split("/") if part]
             try:
+                # G3B1B: localhost-first staged WAV intake. The browser sends
+                # no filesystem path. Verify session/token/size BEFORE reading bytes.
+                if (method == "POST" and len(parts) in {6, 7}
+                        and parts[:2] == ["v0", "sessions"]
+                        and parts[3:5] == ["audio", "stage"]):
+                    # Always close staged-transfer connections after a response.
+                    # If early validation fails, unread binary request data must
+                    # never be interpreted as another HTTP/1.1 request.
+                    self.close_connection = True
+                    if self.headers.get("Transfer-Encoding"):
+                        raise StudioServiceError(
+                            "invalid_request", "Transfer-Encoding is forbidden for staged WAV"
+                        )
+                    session_id = parts[2]
+                    if len(parts) == 6 and parts[5] == "start":
+                        result = wav_uploads.begin(session_id, self._read_json())
+                        self._send_json(HTTPStatus.OK, application._response("staged_wav_begin", result))
+                        return
+                    if len(parts) == 7:
+                        token, operation = parts[5:7]
+                        if operation == "chunk":
+                            wav_uploads.check_chunk_authority(session_id, token)
+                            if self.headers.get("Content-Type", "").split(";", 1)[0].strip().lower() != "application/octet-stream":
+                                raise StudioServiceError(
+                                    "invalid_request", "staged chunk must be application/octet-stream"
+                                )
+                            raw_length = self.headers.get("Content-Length", "")
+                            raw_offset = self.headers.get("X-MUSICA-Chunk-Offset", "")
+                            digest = self.headers.get("X-MUSICA-Chunk-SHA256", "")
+                            if (not raw_length.isascii() or not raw_length.isdecimal()
+                                    or not raw_offset.isascii() or not raw_offset.isdecimal()
+                                    or not 1 <= int(raw_length) <= MAX_CHUNK_BYTES):
+                                raise StudioServiceError(
+                                    "invalid_request", "staged chunk needs bounded length/offset"
+                                )
+                            count, offset = int(raw_length), int(raw_offset)
+                            try:
+                                self.connection.settimeout(15.0)
+                                data = self.rfile.read(count)
+                            except (socket.timeout, ConnectionResetError, OSError):
+                                try:
+                                    wav_uploads.cancel(session_id, token)
+                                except StudioServiceError:
+                                    pass
+                                self.close_connection = True
+                                raise StudioServiceError(
+                                    "invalid_request", "staged chunk connection failed"
+                                )
+                            if len(data) != count:
+                                try:
+                                    wav_uploads.cancel(session_id, token)
+                                except StudioServiceError:
+                                    pass
+                                self.close_connection = True
+                                raise StudioServiceError(
+                                    "invalid_request", "staged WAV chunk truncated"
+                                )
+                            result = wav_uploads.append(
+                                session_id, token, offset=offset, chunk=data,
+                                chunk_sha256=digest,
+                            )
+                        elif operation in {"finish", "cancel"}:
+                            if self._read_json():
+                                raise StudioServiceError(
+                                    "invalid_request", "staged finish/cancel must use empty JSON"
+                                )
+                            result = (wav_uploads.finish(session_id, token)
+                                      if operation == "finish"
+                                      else wav_uploads.cancel(session_id, token))
+                        else:
+                            raise StudioServiceError(
+                                "not_found", "unknown staged WAV action"
+                            )
+                        self._send_json(
+                            HTTPStatus.OK,
+                            application._response("staged_wav_" + operation, result),
+                        )
+                        return
+
                 if (
                     method == "POST"
                     and len(parts) == 5

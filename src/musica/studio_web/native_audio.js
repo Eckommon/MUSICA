@@ -8,6 +8,7 @@
     requestCounter: 0,
     lastSubmittedCandidate: null,
     lastAuthorityResult: null,
+    stagedTransfer: null,
   };
   const el = (id) => document.getElementById(id);
 
@@ -90,7 +91,8 @@
             <input id="r3WavFile" type="file" accept=".wav,audio/wav">
           </label>
           <button id="r3ImportWav" class="secondary" type="button">Import as asset only / 오디오 자산 가져오기</button>
-          <p class="muted small">Resource only. No track/clip and no accepted revision change; add a track/clip with a separate Preview and Accept.</p>
+          <button id="r3CancelStagedWav" type="button" class="danger" hidden>Cancel staged WAV / 분할 업로드 취소</button>
+          <p class="muted small">Resource only; no track/clip or accepted revision change. Direct ≤16 MiB; bounded staging >16–64 MiB in 1 MiB chunks. Large finalize currently uses bounded whole-file memory, not streaming render.</p>
           <p id="r3ImportedAsset" class="mono muted small" role="status" aria-live="polite"></p>
         </fieldset>
       </div>
@@ -136,12 +138,94 @@
     if (anchor) anchor.insertAdjacentElement("afterend", card);
     else panel.appendChild(card);
     el("r3ImportWav").addEventListener("click", importWav);
+    el("r3CancelStagedWav").addEventListener("click", () => {
+      if (nativeAudio.stagedTransfer) {
+        nativeAudio.stagedTransfer.cancelled = true;
+        status("Cancelling staged WAV transfer; accepted revision remains unchanged.", "info");
+      }
+    });
     el("r3AddTrack").addEventListener("click", previewAddTrack);
     el("r3SuggestTrackId").addEventListener("click", suggestTrackId);
     el("r3SuggestClipId").addEventListener("click", suggestClipId);
     el("r3AddClip").addEventListener("click", previewAddClip);
     el("r3Accept").addEventListener("click", acceptPreview);
     el("r3Discard").addEventListener("click", discardPreview);
+  }
+
+  async function stagedResponse(url, options) {
+    const response = await originalFetch(url, options);
+    const payload = await response.json();
+    if (!response.ok || !payload || !payload.ok) {
+      throw new Error(payload?.error?.message || `Staged WAV HTTP ${response.status}`);
+    }
+    return payload.data;
+  }
+
+  async function fileSha256(buffer) {
+    if (!window.crypto || !window.crypto.subtle)
+      throw new Error("Secure local Browser SHA-256 is required for staged WAV upload.");
+    const digest = await window.crypto.subtle.digest("SHA-256", buffer);
+    return [...new Uint8Array(digest)].map(value => value.toString(16).padStart(2, "0")).join("");
+  }
+
+  async function importLargeWav(file) {
+    // G3B-0: bounded File arrayBuffer (64 MiB max), not streaming final
+    // hashing or 3-minute mix proof. G3B-1 will remove whole-file memory.
+    const session = nativeAudio.sessionId;
+    const base = `/v0/sessions/${encodeURIComponent(session)}/audio/stage`;
+    const sha256 = await fileSha256(await file.arrayBuffer());
+    const started = await stagedResponse(base + "/start", {
+      method: "POST", headers: {"Content-Type": "application/json", Accept: "application/json"},
+      body: JSON.stringify({size_bytes: file.size, sha256})
+    });
+    if (!started.accepted_revision_unchanged || !/^[a-f0-9]{32}$/.test(started.upload_id))
+      throw new Error("Untrusted opaque staging authorization.");
+    const transfer = {id: started.upload_id, cancelled: false, session};
+    nativeAudio.stagedTransfer = transfer;
+    el("r3CancelStagedWav").hidden = false;
+    try {
+      const chunkSize = Math.min(1024 * 1024, started.max_chunk_bytes);
+      if (!Number.isInteger(chunkSize) || chunkSize < 1)
+        throw new Error("Server refused bounded chunk size");
+      let offset = 0;
+      while (offset < file.size) {
+        if (transfer.cancelled || nativeAudio.sessionId !== session)
+          throw new Error("Staged WAV transfer cancelled or session changed.");
+        const part = file.slice(offset, Math.min(file.size, offset + chunkSize));
+        const data = await part.arrayBuffer();
+        const chunkSha = await fileSha256(data);
+        const written = await stagedResponse(base + "/" + encodeURIComponent(transfer.id) + "/chunk", {
+          method: "POST",
+          headers: {"Content-Type": "application/octet-stream", Accept: "application/json",
+                    "X-MUSICA-Chunk-Offset": String(offset), "X-MUSICA-Chunk-SHA256": chunkSha},
+          body: data
+        });
+        if (written.next_offset !== offset + part.size || !written.accepted_revision_unchanged)
+          throw new Error("Server returned incorrect staged WAV offset or creative authority");
+        offset = written.next_offset;
+        status(`Staging WAV ${Math.floor(100 * offset / file.size)}% · NOT A CLIP`, "info");
+      }
+      if (transfer.cancelled) throw new Error("Staged WAV transfer cancelled.");
+      const result = await stagedResponse(base + "/" + encodeURIComponent(transfer.id) + "/finish", {
+        method: "POST", headers: {"Content-Type": "application/json", Accept: "application/json"},
+        body: "{}"
+      });
+      if (result.staged_upload_sha256 !== sha256 ||
+          result.staged_upload_size_bytes !== file.size)
+        throw new Error("Staged WAV verification did not match selected file.");
+      return result;
+    } catch (error) {
+      try {
+        await stagedResponse(base + "/" + encodeURIComponent(transfer.id) + "/cancel", {
+          method: "POST", headers: {"Content-Type": "application/json", Accept: "application/json"},
+          body: "{}"
+        });
+      } catch (_) { /* server may already have deleted invalid transfer */ }
+      throw error;
+    } finally {
+      nativeAudio.stagedTransfer = null;
+      el("r3CancelStagedWav").hidden = true;
+    }
   }
 
   async function importWav() {
@@ -151,20 +235,17 @@
     const picker = el("r3WavFile");
     const file = picker && picker.files && picker.files[0];
     if (!file) return status("Select a PCM WAV file to import.", "error");
-    if (file.size < 44 || file.size > 16 * 1024 * 1024)
-      return status("WAV file must be between 44 bytes and 16 MiB.", "error");
+    if (file.size < 44 || file.size > 64 * 1024 * 1024)
+      return status("WAV file must be between 44 bytes and 64 MiB.", "error");
     const button = el("r3ImportWav");
     button.disabled = true;
     try {
-      const response = await originalFetch(
-        `/v0/sessions/${encodeURIComponent(nativeAudio.sessionId)}/audio/import-wav`,
-        {method: "POST", headers: {Accept: "application/json", "Content-Type": "audio/wav"}, body: file}
-      );
-      const payload = await response.json();
-      if (!response.ok || !payload || !payload.ok) {
-        throw new Error(payload && payload.error ? payload.error.message : `HTTP ${response.status}`);
-      }
-      const value = payload.data;
+      const value = file.size > 16 * 1024 * 1024
+        ? await importLargeWav(file)
+        : await stagedResponse(
+            `/v0/sessions/${encodeURIComponent(nativeAudio.sessionId)}/audio/import-wav`,
+            {method: "POST", headers: {Accept: "application/json", "Content-Type": "audio/wav"}, body: file}
+          );
       if (!value.accepted_revision_unchanged || !value.requires_separate_clip_preview_and_explicit_accept)
         throw new Error("Server did not confirm noncanonical resource-only import.");
       const descriptor = value.asset;

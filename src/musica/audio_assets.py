@@ -9,6 +9,8 @@ resource operation; it does not create or accept a creative Blueprint revision.
 from __future__ import annotations
 
 import hashlib
+import os
+import tempfile
 import json
 import re
 import wave
@@ -84,6 +86,124 @@ def _inspect_wav(data: bytes) -> dict[str, Any]:
     }
 
 
+def _file_sha256(source: Path) -> str:
+    h = hashlib.sha256()
+    with source.open("rb") as stream:
+        while chunk := stream.read(1024 * 1024):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _inspect_wav_file(source: Path) -> dict[str, Any]:
+    """Validate exact source PCM frames while retaining only bounded chunks."""
+    try:
+        with wave.open(str(source), "rb") as reader:
+            channels, width, rate = (
+                int(reader.getnchannels()), int(reader.getsampwidth()),
+                int(reader.getframerate()),
+            )
+            frame_count = int(reader.getnframes())
+            compression = reader.getcomptype()
+            if compression != "NONE" or channels not in {1, 2} or width not in {1, 2, 3, 4}:
+                raise ContractError("staged WAV requires mono/stereo uncompressed integer PCM")
+            if not 8000 <= rate <= 192000 or frame_count <= 0:
+                raise ContractError("staged WAV sample rate or duration out of bounds")
+            remaining = frame_count
+            total = 0
+            while remaining:
+                requested = min(remaining, 65536)
+                block = reader.readframes(requested)
+                if not block or len(block) % (channels * width):
+                    raise ContractError("staged WAV PCM frame payload truncated")
+                frames = len(block) // (channels * width)
+                remaining -= frames
+                total += len(block)
+            if total != frame_count * channels * width:
+                raise ContractError("staged WAV PCM length mismatch")
+    except (OSError, EOFError, wave.Error) as exc:
+        raise ContractError("staged audio asset must be a readable RIFF/WAVE file") from exc
+    return {
+        "container": "wav", "codec": "pcm_integer", "channels": channels,
+        "sample_rate_hz": rate, "sample_width_bytes": width,
+        "frame_count": frame_count, "duration_seconds": frame_count / rate,
+    }
+
+
+def import_audio_asset_verified_path(
+    project: MusicaProject, source: Path, *, expected_sha256: str
+) -> dict[str, Any]:
+    """Stream verified private staging bytes to immutable project CAS, without creative Accept.
+
+    The source path MUST come from trusted BoundedWavStaging. Never expose this
+    method as a user-provided HTTP filesystem path.
+    """
+    source = Path(source)
+    if not source.is_file() or source.is_symlink():
+        raise ContractError("verified staging file is unavailable")
+    if _DIGEST.fullmatch(expected_sha256) is None:
+        raise ContractError("invalid source SHA256")
+    size = source.stat().st_size
+    from .staged_wav import MAX_STAGED_WAV_BYTES
+    if not 44 <= size <= MAX_STAGED_WAV_BYTES:
+        raise ContractError("staged WAV source length outside 64MiB safety cap")
+    actual_sha256 = _file_sha256(source)
+    if actual_sha256 != expected_sha256:
+        raise ContractError("staged WAV content digest mismatch")
+    descriptor = {
+        "asset_version": "0", "asset_id": f"sha256:{actual_sha256}",
+        "media_type": "audio/wav", "object_sha256": actual_sha256,
+        "size_bytes": size, "format": _inspect_wav_file(source),
+    }
+    validate_contract(descriptor, "audio-asset-v0.schema.json")
+    asset_id = descriptor["asset_id"]
+    descriptor_path = _descriptor_path(project, actual_sha256)
+    if descriptor_path.exists():
+        existing = read_audio_asset(project, asset_id)
+        if existing != descriptor:
+            raise ProjectIntegrityError("existing immutable asset descriptor mismatch")
+        return existing
+
+    # Full existing integrity before object publication: never heal corruption.
+    verify_audio_assets(project)
+    target = project._object_path(actual_sha256)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        if target.stat().st_size != size or _file_sha256(target) != actual_sha256:
+            raise ProjectIntegrityError("content-addressed object corruption")
+    else:
+        with tempfile.NamedTemporaryFile(dir=target.parent, prefix="staged-object-", delete=False) as temp:
+            temporary = Path(temp.name)
+        try:
+            copied_digest = hashlib.sha256()
+            copied_size = 0
+            with temporary.open("wb") as target_stream, source.open("rb") as stream:
+                while block := stream.read(1024 * 1024):
+                    target_stream.write(block)
+                    copied_digest.update(block)
+                    copied_size += len(block)
+                target_stream.flush()
+                os.fsync(target_stream.fileno())
+            if copied_digest.hexdigest() != actual_sha256 or copied_size != size:
+                raise ProjectIntegrityError("source staging changed while copying CAS object")
+            # Link without replacement: an existing CAS object must never be
+            # overwritten, even on simultaneous imports.
+            try:
+                os.link(temporary, target)
+            except FileExistsError:
+                if target.stat().st_size != size or _file_sha256(target) != actual_sha256:
+                    raise ProjectIntegrityError("concurrent content-addressed object corruption")
+        finally:
+            temporary.unlink(missing_ok=True)
+
+    descriptor_sha = project._store_json(descriptor)
+    _atomic_write(descriptor_path, _json_bytes(descriptor))
+    project._append_audit(
+        "import_audio_asset", asset_id=asset_id,
+        object_sha256=actual_sha256, descriptor_sha256=descriptor_sha,
+    )
+    return read_audio_asset(project, asset_id)
+
+
 def _descriptor_for_bytes(data: bytes) -> dict[str, Any]:
     digest = _sha256_bytes(data)
     descriptor = {
@@ -149,15 +269,14 @@ def read_audio_asset(project: MusicaProject, asset_id: str) -> dict[str, Any]:
     object_path = project._object_path(digest)
     if not object_path.is_file():
         raise ProjectIntegrityError(f"missing audio asset object: {asset_id}")
-    data = object_path.read_bytes()
-    actual_digest = _sha256_bytes(data)
+    actual_digest = _file_sha256(object_path)
     if actual_digest != digest:
         raise ProjectIntegrityError(f"audio asset object hash mismatch: {asset_id}")
-    if len(data) != int(descriptor["size_bytes"]):
+    if object_path.stat().st_size != int(descriptor["size_bytes"]):
         raise ProjectIntegrityError(f"audio asset object size mismatch: {asset_id}")
 
     try:
-        actual_format = _inspect_wav(data)
+        actual_format = _inspect_wav_file(object_path)
     except ContractError as exc:
         raise ProjectIntegrityError(f"audio asset WAV integrity failed: {asset_id}: {exc}") from exc
     if actual_format != descriptor["format"]:

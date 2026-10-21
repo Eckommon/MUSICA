@@ -3,6 +3,9 @@ from __future__ import annotations
 
 import hashlib
 import io
+import http.client
+import socket
+from urllib.parse import urlsplit
 import json
 import struct
 import threading
@@ -192,3 +195,34 @@ def test_g3b0_cross_session_oversize_conflict_and_direct_route_unchanged(tmp_pat
         assert ex.value.code in {400, 404}
         assert _json(base, f"/{init['upload_id']}/cancel")["cancelled"]
         assert not list((service.workspace / ".wav-staging-g3b0").glob("*.part"))
+
+
+def test_g3b0_truncated_chunk_disconnect_cleans_staged_partial(tmp_path):
+    """No orphan after a client half-closes before its Content-Length is sent."""
+    with _studio(tmp_path) as (service, _, base):
+        payload = b"RIFF" + b"\\x00" * 128
+        start = _json(base, "/start", {
+            "size_bytes": len(payload), "sha256": hashlib.sha256(payload).hexdigest()
+        })
+        uri = urlsplit(base)
+        conn = http.client.HTTPConnection(uri.hostname, uri.port, timeout=10)
+        try:
+            path = (f"/v0/sessions/long-wav-owner/audio/stage/"
+                    f"{start['upload_id']}/chunk")
+            conn.putrequest("POST", path)
+            conn.putheader("Content-Type", "application/octet-stream")
+            conn.putheader("Content-Length", "100")
+            conn.putheader("X-MUSICA-Chunk-Offset", "0")
+            conn.putheader("X-MUSICA-Chunk-SHA256", hashlib.sha256(b"x" * 100).hexdigest())
+            conn.endheaders()
+            conn.send(b"x" * 10)
+            conn.sock.shutdown(socket.SHUT_WR)
+            response = conn.getresponse()
+            assert response.status == 400
+            response.read()
+        finally:
+            conn.close()
+        assert not list((service.workspace / ".wav-staging-g3b0").glob("*.part"))
+        session = service._get_session("long-wav-owner")
+        assert list_audio_assets(session.project) == []
+        assert session.pending is None

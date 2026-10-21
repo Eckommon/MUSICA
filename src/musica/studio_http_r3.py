@@ -85,6 +85,7 @@ def make_handler(application: StudioApplication):
                         if operation == "chunk":
                             wav_uploads.check_chunk_authority(session_id, token)
                             if self.headers.get("Content-Type", "").split(";", 1)[0].strip().lower() != "application/octet-stream":
+                                wav_uploads.cancel(session_id, token)
                                 raise StudioServiceError(
                                     "invalid_request", "staged chunk must be application/octet-stream"
                                 )
@@ -94,10 +95,15 @@ def make_handler(application: StudioApplication):
                             if (not raw_length.isascii() or not raw_length.isdecimal()
                                     or not raw_offset.isascii() or not raw_offset.isdecimal()
                                     or not 1 <= int(raw_length) <= MAX_CHUNK_BYTES):
+                                wav_uploads.cancel(session_id, token)
                                 raise StudioServiceError(
                                     "invalid_request", "staged chunk needs bounded length/offset"
                                 )
                             count, offset = int(raw_length), int(raw_offset)
+                            wav_uploads.check_chunk_authority(
+                                session_id, token, offset=offset, length=count,
+                                chunk_sha256=digest,
+                            )
                             try:
                                 self.connection.settimeout(15.0)
                                 data = self.rfile.read(count)

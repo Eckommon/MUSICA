@@ -93,6 +93,10 @@ def make_handler(application: StudioApplication):
                             raise StudioServiceError("invalid_request", "staged chunk exceeds 1 MiB cap")
                         data = self.rfile.read(size)
                         if len(data) != size:
+                            # Client disconnect / short body: remove this opaque stage
+                            # immediately instead of retaining partial data until TTL.
+                            # A malicious wrong-session ID is still rejected by cancel.
+                            wav_staging.cancel(parts[2], upload_id)
                             raise StudioServiceError("invalid_request", "staged WAV chunk truncated")
                         result = wav_staging.chunk(
                             parts[2], upload_id, offset, data,

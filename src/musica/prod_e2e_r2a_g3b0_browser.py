@@ -13,6 +13,7 @@ import wave
 from pathlib import Path
 
 from .evidence import write_canonical_json
+from .audio_assets import list_audio_assets
 from .prod_e2e_r1a_browser import _record_request_failure, _server, _stop
 
 
@@ -71,7 +72,7 @@ def run_suite(destination: str | Path) -> dict:
             expect(page.locator("#r3ImportedAsset")).to_contain_text("NOT A CLIP")
             expect(page.locator("#r3CancelStagedWav")).to_be_hidden()
             assert session.project.head_revision_id() == head
-            descriptors = list(__import__("musica.audio_assets", fromlist=["list_audio_assets"]).list_audio_assets(session.project))
+            descriptors = list_audio_assets(session.project)
             assert len(descriptors) == 1
             assert descriptors[0]["object_sha256"] == sha
             assert descriptors[0]["size_bytes"] == len(payload)

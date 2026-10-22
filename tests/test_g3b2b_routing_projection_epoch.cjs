@@ -21,7 +21,7 @@ function makeFixture() {
   };
   const doc = {
     readyState: "loading",
-    getElementById: () => null,
+    getElementById: () => ({ hidden: false, textContent: "", className: "" }),
     addEventListener: () => {},
   };
   vm.runInNewContext(script, {

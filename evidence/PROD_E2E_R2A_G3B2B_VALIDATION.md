@@ -5,7 +5,7 @@
 - Parent G3B2 Issue [#203](https://github.com/Eckommon/MUSICA/issues/203), [#201](https://github.com/Eckommon/MUSICA/issues/201), #195/#192.
 - G3B2A merged main `7fbe235289d7d7526b7b4d1c2e7453625cd2dfe1`. G3B2B isolated *four-file-only* implementation rebased HEAD **`f10229f3c76631e0f68c361c1b7d3c5448548814`**, PR [#204](https://github.com/Eckommon/MUSICA/pull/204).
 - **54/54 GitHub Actions workflows SUCCESS; 58/58 individual checks SUCCESS** on that exact HEAD, including 53 inherited gates and new G3B2B permanent workflow; original pre-rebase G3B2B long automation suite also passed all 54 on `74c3354e7f9071eaeddaff8f62c59c3175fd26de`.
-- The rebase did *not* reintroduce four G3B2A or original Browser-G2B regression files as duplicate changes. All inherited canonical source files remain on verified G3B2A main.
+- The rebase did *not* reintroduce four G3B2A files as duplicate changes. Subsequent documentation CI exposed a **non-product-audio race** in inherited G2B Chromium: concurrent routing projection GETs could install an older response after the newly accepted HEAD. Latest Browser fix increments a projection epoch and drops out-of-order prior GETs; this *does not waive* accepted HEAD verification. Thus the latest successor has an additional Browser JS change, and it must itself pass the complete 54-workflow gate before promotion.
 
 ## Independent audio/WAV artifact audit / WAV 독립 검사
 - Exact-rebased-head dedicated run **[#39735593832](https://github.com/Eckommon/MUSICA/actions/runs/39735593832) SUCCESS**. Downloaded artifact **`12406689948`** `musica-prod-e2e-r2a-g3b2b-routed-180s`, ZIP SHA256 **`16abd83ac6d59fb6ed6af335f173508188322d1dd583bf3782433ba9e8cf111e`**, inspected archive members, JSON proof and decoded WAV sample frames independently of the test harness.
@@ -24,4 +24,4 @@
 - Preview → explicit user Accept remains the only source of canonical revision mutation. Derived output is not source media or canonical creation. Full project audit memory bounds and atomic crash recovery are not proved.
 
 ## Mandatory second gate / 필수 후속 검증
-This is a durable evidence successor. Do **not** merge until exact document-bearing successor commit passes **54/54** full workflows, then reconfirm PR head/main and merge with `expected_head_sha` protected squash. Keep #201/#195/#192 and #205 OPEN.
+This durable evidence record was initially added at `8cb2a3f61ae88292cb682cb239908cabf62e50fe`. An inherited G2B Browser UI projection timeout on that successor was diagnosed and corrected in the **new implementation successor** `e42ea58cd55e22b5b0cb3c16e30eeb054ae221b2`. Do **not** merge until the resulting latest evidence-bearing successor commit passes **54/54** full workflows, then reconfirm PR head/main and merge with `expected_head_sha` protected squash. Keep #201/#195/#192 and #205 OPEN.

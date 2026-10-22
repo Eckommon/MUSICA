@@ -7,6 +7,7 @@
     view: null,
     root: null,
     requestCounter: 0,
+    projectionEpoch: 0,
     lastSubmittedCandidate: null,
     lastAuthorityResult: null,
   };
@@ -396,10 +397,17 @@
 
   async function refreshRoutingView(quiet = false) {
     if (!routing.sessionId || !routing.root) return;
+    // Several native-audio and general Studio responses can independently
+    // trigger routing GETs. Only the newest request may install a projection.
+    // A slower, *older* GET must never clobber a newly accepted revision.
+    const sessionId = routing.sessionId;
+    const epoch = ++routing.projectionEpoch;
     try {
-      routing.view = await routingFetch(
-        `/v0/sessions/${encodeURIComponent(routing.sessionId)}/mixer-routing`,
+      const incoming = await routingFetch(
+        `/v0/sessions/${encodeURIComponent(sessionId)}/mixer-routing`,
       );
+      if (routing.sessionId !== sessionId || epoch !== routing.projectionEpoch) return;
+      routing.view = incoming;
       render();
       // Projection order may differ under high-rate WAV rendering. After
       // installing an actual accepted routing GET, notify read-only
@@ -409,6 +417,7 @@
       }));
       if (!quiet) status("Routing view refreshed.", "success");
     } catch (error) {
+      if (routing.sessionId !== sessionId || epoch !== routing.projectionEpoch) return;
       routing.view = null;
       render();
       if (!quiet) status(error.message || String(error), "error");

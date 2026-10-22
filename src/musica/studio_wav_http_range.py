@@ -1,9 +1,9 @@
 """G3B2C-R1: bounded HTTP Range transport for accepted derived WAV only.
 
-The client selects a session-bound route, never a filesystem path. A fresh
-accepted revision is lowered and rendered by G3B2A/B fixed-window engines
-to a private derived temporary WAV. HTTP copies at most 1MiB per write.
-This stage deliberately does NOT change Preview/Accept or legacy paths.
+The client selects a session-bound route, never a filesystem path. An
+accepted revision uses a bounded private WAV cache keyed by exact trusted
+plan and source CAS, allowing multiple byte Ranges without a fresh render.
+HTTP still copies at most 1MiB per write. Preview/Accept is untouched.
 """
 from __future__ import annotations
 
@@ -17,8 +17,7 @@ from .contracts import ContractError
 from .routing_contracts import routing_material_from_blueprint
 from .studio import StudioService, StudioServiceError
 from .studio_audio import _mix_rate
-from .streamed_native_mixer import render_native_mix_streamed
-from .streamed_routed_mixer import render_routed_mix_streamed
+from .studio_wav_cache import AcceptedWavFileCache
 
 HTTP_WRITE_CHUNK_BYTES = 1 << 20
 _RANGE = re.compile(r"bytes=(\d*)-(\d*)\Z", re.ASCII)
@@ -65,6 +64,7 @@ class AcceptedWavRangeHTTP:
         self._available = threading.Condition(self._guard)
         self._busy: set[str] = set()
         self._global_limit = threading.BoundedSemaphore(2)
+        self._cache = AcceptedWavFileCache(service.workspace)
 
     def _enter(self, session_id: str) -> None:
         if not self._global_limit.acquire(blocking=False):
@@ -103,7 +103,7 @@ class AcceptedWavRangeHTTP:
         range_headers: list[str],
         attachment: bool,
     ) -> None:
-        """Render accepted HEAD, send bounded bytes, delete temporary output.
+        """Lease accepted HEAD, send bounded bytes, expire derived output on TTL.
 
         No exceptions after response headers are emitted can be turned into a
         second response. We close the connection if the peer disconnects.
@@ -120,10 +120,9 @@ class AcceptedWavRangeHTTP:
             material = routing_material_from_blueprint(blueprint)
             assert material is not None
             has_routing = bool(material["nodes"] or material["track_outputs"] or material["sends"])
-            result = (
-                render_routed_mix_streamed(project, revision_id, mix_sample_rate_hz=rate)
-                if has_routing
-                else render_native_mix_streamed(project, revision_id, mix_sample_rate_hz=rate)
+            result = self._cache.acquire(
+                session_id, project, revision_id,
+                mix_sample_rate_hz=rate, routed=has_routing
             )
             output = result.wav_path
             if project.head_revision_id(project.current_branch()) != revision_id:
@@ -182,6 +181,8 @@ class AcceptedWavRangeHTTP:
                 return
             raise
         finally:
+            # Cached derived audio remains private and noncanonical until idle
+            # TTL eviction; session lease ends regardless of peer disconnect.
             if output is not None:
-                output.unlink(missing_ok=True)
+                self._cache.release(session_id)
             self._exit(session_id)

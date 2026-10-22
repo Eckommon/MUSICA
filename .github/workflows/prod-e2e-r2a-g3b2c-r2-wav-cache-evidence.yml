@@ -1,0 +1,36 @@
+name: PROD-E2E R2A G3B2C-R2 Accepted WAV Cache and 180s Seek
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bounded-reusable-derived-audio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python developer tests
+        run: python -m pip install -e '.[dev]'
+      - name: Compile bounded derived WAV cache and real HTTP
+        run: python -m compileall -q src/musica/studio_wav_cache.py src/musica/studio_wav_http_range.py
+      - name: Prove one DSP render across multiple 180s ranges, TTL, restart cleanup, CAS integrity
+        env:
+          MUSICA_G3B2C_R2_ARTIFACT_DIR: artifacts/g3b2c-r2
+        run: |
+          /usr/bin/time -v pytest -q tests/test_prod_e2e_r2a_g3b2c_r2_wav_cache.py tests/test_prod_e2e_r2a_g3b2c_http_range.py
+      - name: Upload original 180-second cached WAV and independent numerical proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r2a-g3b2c-r2-180s-range-cache
+          path: |
+            artifacts/g3b2c-r2/proof.json
+            artifacts/g3b2c-r2/accepted-range-cached-180s.wav
+          if-no-files-found: error

@@ -1,0 +1,39 @@
+name: PROD-E2E R2A G3B2C Session-bound Accepted WAV HTTP Range
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  accepted-wav-range:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install developer tests
+        run: python -m pip install -e '.[dev,e2e]'
+      - name: Exact WAV 200/206/416, accepted HEAD and session quota regressions
+        run: |
+          node --check src/musica/studio_web/native_audio.js
+          python -m compileall -q src/musica/studio_wav_http_range.py src/musica/studio_http_r3.py
+          pytest -q tests/test_prod_e2e_r2a_g3b2c_http_range.py tests/test_prod_e2e_r2a_g3b2a_streamed_native.py tests/test_prod_e2e_r2a_g3b2b_streamed_routed.py
+      - name: Install actual Chromium / 실제 브라우저
+        run: python -m playwright install --with-deps chromium
+      - name: Click streamed accepted WAV download in first-party Studio Browser
+        run: python -m musica.prod_e2e_r2a_g3b2c_browser --out artifacts/g3b2c-browser
+      - name: Upload clicked WAV and Chromium proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r2a-g3b2c-clicked-accepted-wav
+          path: |
+            artifacts/g3b2c-browser/proof.json
+            artifacts/g3b2c-browser/clicked-accepted.wav
+            artifacts/g3b2c-browser/*.png
+          if-no-files-found: error

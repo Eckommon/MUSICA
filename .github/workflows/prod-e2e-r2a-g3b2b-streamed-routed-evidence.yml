@@ -25,6 +25,10 @@ jobs:
         run: |
           python -m compileall -q src/musica/streamed_routed_mixer.py
           /usr/bin/time -v pytest -q tests/test_prod_e2e_r2a_g3b2b_streamed_routed.py tests/test_mram_r2_native_mixer_automation.py
+      - name: Verify out-of-order accepted routing Browser GET cannot overwrite HEAD
+        run: |
+          node --check src/musica/studio_web/routing_editing.js
+          node tests/test_g3b2b_routing_projection_epoch.cjs
       - name: Upload inspectable routed 180-second audio / 검증 산출물
         uses: actions/upload-artifact@v4
         with:

@@ -49,7 +49,7 @@ def suite(destination: str | Path, *, sample_rate_hz: int = 8000) -> dict:
     assets = [source_wav(3000, sample_rate_hz), source_wav(6200, sample_rate_hz)]
     asset_ids = ["sha256:" + hashlib.sha256(item[0]).hexdigest() for item in assets]
     assert asset_ids[0] != asset_ids[1]
-    console_errors, page_errors, network_errors, images = [], [], [], []
+    console_errors, page_errors, network_errors, images, http_errors = [], [], [], [], []
 
     service, server, thread, url = _server(workspace)
     browser = None
@@ -62,6 +62,9 @@ def suite(destination: str | Path, *, sample_rate_hz: int = 8000) -> dict:
             page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
             page.on("pageerror", lambda exc: page_errors.append(str(exc)))
             page.on("requestfailed", lambda req: _record_request_failure(req, network_errors))
+            page.on("response", lambda response: http_errors.append(
+                f"{response.status} {response.request.method} {response.url}"
+            ) if response.status >= 400 else None)
             page.goto(url + "/", wait_until="domcontentloaded")
             expect(page.locator("#connectionBadge")).to_contain_text("READY")
             page.locator("#projectSlug").fill("r1b-g1-two-track")
@@ -222,8 +225,8 @@ def suite(destination: str | Path, *, sample_rate_hz: int = 8000) -> dict:
 
     if console_errors or page_errors or network_errors:
         raise RuntimeError(
-            "Unexpected Chromium error console=%r page=%r network=%r"
-            % (console_errors, page_errors, network_errors)
+            "Unexpected Chromium error console=%r page=%r network=%r http=%r"
+            % (console_errors, page_errors, network_errors, http_errors)
         )
     report = {
         "milestone": "PROD-E2E-R1B-G1", "proof_version": "0",

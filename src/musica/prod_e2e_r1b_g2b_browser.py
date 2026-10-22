@@ -37,7 +37,9 @@ def run_suite(destination: str | Path, *, sample_rate_hz: int = 8000) -> dict:
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    await_audio_timeout_ms = 90000 if sample_rate_hz >= 44100 else 35000
+    # Both 8k and 44.1/48k Chromium runners can have delayed accepted-view
+    # projection under concurrent GitHub Actions; no authority gate is waived.
+    await_audio_timeout_ms = 90000
     seed_g1(out / "seed-g1", sample_rate_hz=sample_rate_hz)
     workspace = out / "seed-g1" / "workspace"
     baseline = (out / "seed-g1" / "two-track-accepted.wav").read_bytes()
@@ -95,7 +97,10 @@ def run_suite(destination: str | Path, *, sample_rate_hz: int = 8000) -> dict:
             gain_head = session.project.head_revision_id()
             assert gain_head != routed_head
             # The accepted badge can briefly represent the prior revision:
-            # wait for the *exact newly accepted server HEAD* and -6dB value.
+            # explicitly request the read-only projection, then require the
+            # *exact newly accepted server HEAD* and -6dB value. This does
+            # NOT create a Preview, accept a revision or modify an audio file.
+            page.evaluate("() => window.MUSICA_ROUTING.refresh(true)")
             page.wait_for_function("""(expected) => {
               const r = window.MUSICA_ROUTING?.state?.view;
               return r && !r.preview && r.revision_id === expected &&

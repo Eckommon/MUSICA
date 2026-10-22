@@ -15,6 +15,7 @@ from .audio_contracts import audio_material_from_blueprint
 from .studio import StudioApplication, StudioService, StudioServiceError
 from .studio_audio import StudioAudioSurface
 from .studio_wav_uploads import StudioWavUploads
+from .studio_wav_http_range import AcceptedWavRangeHTTP
 from .staged_wav import MAX_CHUNK_BYTES
 from .studio_http import (
     DEFAULT_HOST,
@@ -33,6 +34,7 @@ def make_handler(application: StudioApplication):
     base_handler = make_base_handler(application)
     audio_surface = StudioAudioSurface(application.service)
     wav_uploads = StudioWavUploads(application.service)
+    accepted_wav_ranges = AcceptedWavRangeHTTP(application.service)
 
     class R3StudioRequestHandler(base_handler):
         server_version = "MUSICAStudio/0.7"
@@ -211,6 +213,26 @@ def make_handler(application: StudioApplication):
                     else:
                         data = audio_surface.audio_view(parts[2])
                     self._send_json(HTTPStatus.OK, application._response("native_audio_view", data))
+                    return
+
+                # G3B2C-R1 is additive: the legacy short-song accepted/preview
+                # routes remain unchanged. No path, preview or Accept is read
+                # from user-supplied query values: only this accepted session.
+                if (
+                    method == "GET"
+                    and len(parts) == 6
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3:] == ["audio", "stream", "accepted.wav"]
+                ):
+                    query = urlsplit(self.path).query
+                    attachment = query == "download=1"
+                    if query not in {"", "download=1"}:
+                        raise StudioServiceError("invalid_request", "invalid WAV stream query")
+                    accepted_wav_ranges.serve(
+                        self, parts[2],
+                        range_headers=self.headers.get_all("Range", []),
+                        attachment=attachment,
+                    )
                     return
 
                 if (

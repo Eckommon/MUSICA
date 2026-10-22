@@ -108,6 +108,8 @@
         <div class="r3-audition">
           <div><strong id="r3AuditionLabel">Accepted native mix</strong><div id="r3AuditionMeta" class="mono muted small">—</div></div>
           <audio id="r3AudioPlayer" controls preload="metadata"></audio>
+          <a id="r3StreamedAcceptedWavDownload" class="secondary"
+             href="#" download="musica-accepted.wav" hidden>Download accepted WAV (bounded stream) / 승인된 WAV 다운로드</a>
         </div>
         <div id="r3TrackList" class="r3-track-list"></div>
         <div class="r3-create-grid">
@@ -560,6 +562,19 @@
     // the first user-created track fail the canonical contiguous-order check.
     if (!preview) el("r3NewTrackOrder").value = String((tracks || []).length);
     renderTracks(tracks || []);
+    // Explicit user-only download. Resource-only imports and pending Previews
+    // cannot silently Accept or download a speculative accepted revision.
+    const acceptedDownload = el("r3StreamedAcceptedWavDownload");
+    const hasAcceptedClips = Array.isArray(view.tracks) &&
+      view.tracks.some(track => Array.isArray(track.clips) && track.clips.length > 0);
+    acceptedDownload.hidden = Boolean(preview || !nativeAudio.sessionId || !hasAcceptedClips);
+    if (!acceptedDownload.hidden) {
+      acceptedDownload.href = "/v0/sessions/" +
+        encodeURIComponent(nativeAudio.sessionId) +
+        "/audio/stream/accepted.wav?download=1";
+    } else {
+      acceptedDownload.removeAttribute("href");
+    }
     const audition = preview ? preview.audition : view.accepted_audition;
     el("r3AuditionLabel").textContent = preview ? "Preview-derived native mix · NOT ACCEPTED" : "Accepted-revision derived native mix";
     el("r3AuditionMeta").textContent = audition && audition.available

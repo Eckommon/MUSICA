@@ -1,0 +1,41 @@
+name: PROD-E2E R2A G3B2C-R4 Trusted Pending 180s Preview PCM
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pending-candidate-bounded-render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install first-party developer tests
+        run: python -m pip install -e '.[dev,e2e]'
+      - name: Verify trusted pending candidate WAV remains noncanonical and bounded
+        run: |
+          python -m compileall -q src/musica/studio_audio.py src/musica/studio_routing.py src/musica/studio_pending_wav.py src/musica/studio_http_r3.py
+          node --check src/musica/studio_web/native_audio.js
+          node --check src/musica/studio_web/routing_editing.js
+          /usr/bin/time -v pytest -q tests/test_prod_e2e_r2a_g3b2c_r4_pending.py
+      - name: Install real Chromium for source-bound 180s pending Preview audition
+        run: python -m playwright install --with-deps chromium
+      - name: Actual Chromium 180s pending WAV metadata and explicit Discard
+        env:
+          MUSICA_G3B2C_R4_BROWSER_ARTIFACT_DIR: artifacts/g3b2c-r4-browser
+        run: pytest -q tests/test_prod_e2e_r2a_g3b2c_r4_browser.py
+      - name: Upload actual unaccepted 180s Browser screenshot and proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r2a-g3b2c-r4-pending-chromium-180s
+          path: |
+            artifacts/g3b2c-r4-browser/proof.json
+            artifacts/g3b2c-r4-browser/*.png
+          if-no-files-found: error

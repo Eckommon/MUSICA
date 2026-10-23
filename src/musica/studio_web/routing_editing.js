@@ -259,7 +259,17 @@
     const longAcceptedStream = !preview && audition && !audition.available &&
       typeof audition.error === "string" &&
       audition.error.startsWith("LONG_ACCEPTED_AUDIO_STREAM_REQUIRED");
-    if (longAcceptedStream) {
+    const longPendingStream = Boolean(preview && preview.preview_id &&
+      audition && !audition.available &&
+      typeof audition.error === "string" &&
+      audition.error.startsWith("LONG_PREVIEW_AUDITION_NOT_AVAILABLE"));
+    if (longPendingStream) {
+      audio.src = "/v0/sessions/" +
+        encodeURIComponent(routing.sessionId) +
+        "/audio/stream/preview.wav?preview_id=" +
+        encodeURIComponent(preview.preview_id);
+      audio.hidden = false;
+    } else if (longAcceptedStream) {
       audio.src = "/v0/sessions/" +
         encodeURIComponent(routing.sessionId) +
         "/audio/stream/accepted.wav";

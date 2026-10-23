@@ -338,14 +338,20 @@ class StudioAudioSurface:
             # Only skip the render for a genuinely clip-free candidate, never
             # disguise a failing render for a candidate that contains clips.
             has_clips = any(track["clips"] for track in _material(resolved.blueprint)["tracks"])
+            long_preview = (
+                has_clips and long_audio_needs_streaming(
+                    session.project, resolved.blueprint
+                )
+            )
+            # Do not assemble whole-song frame lists while merely installing a
+            # prospective candidate. The Preview stays pending and unaccepted.
+            # The R4 stream endpoint will render *this exact pending candidate*.
             rendered = (
                 self._render_blueprint(
-                    session_id,
-                    session.project,
-                    resolved.blueprint,
+                    session_id, session.project, resolved.blueprint,
                     source_kind="preview",
                 )
-                if has_clips else None
+                if has_clips and not long_preview else None
             )
             parent_revision_id = session.project.head_revision_id()
             if resolved.source_revision_id != parent_revision_id:
@@ -403,7 +409,12 @@ class StudioAudioSurface:
                         "authority": authority,
                         "audition": rendered.report() if rendered is not None else {
                             "available": False,
-                            "reason": "No accepted or proposed audio clips yet",
+                            "reason": (
+                                LONG_PREVIEW_STREAM_UNAVAILABLE +
+                                ": render via candidate-bound streaming endpoint"
+                                if long_preview else
+                                "No accepted or proposed audio clips yet"
+                            ),
                         },
                     }
                 },

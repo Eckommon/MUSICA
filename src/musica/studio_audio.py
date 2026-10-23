@@ -47,6 +47,22 @@ class _BlueprintProjectProxy:
         return getattr(self._project, name)
 
 
+# Bounded first-party Studio view: never decode an entire long-song WAV to
+# answer a read-only metadata GET. >=16MiB audio instead uses accepted-only
+# file-backed HTTP 200/206 transport; pending long Preview is explicit unavailable.
+MAX_LEGACY_IN_MEMORY_AUDITION_BYTES = 16 * 1024 * 1024
+LONG_AUDIO_STREAM_REQUIRED = "LONG_ACCEPTED_AUDIO_STREAM_REQUIRED"
+LONG_PREVIEW_STREAM_UNAVAILABLE = "LONG_PREVIEW_AUDITION_NOT_AVAILABLE"
+
+
+def long_audio_needs_streaming(project: Any, blueprint: dict[str, Any]) -> bool:
+    rate = _mix_rate(project, blueprint)
+    frames = int(round(float(blueprint["project"]["duration_seconds"]) * rate))
+    if frames <= 0:
+        raise ContractError("Studio native-audio duration produces no PCM frames")
+    return 44 + frames * 4 > MAX_LEGACY_IN_MEMORY_AUDITION_BYTES
+
+
 def _material(blueprint: dict[str, Any]) -> dict[str, Any]:
     value = audio_material_from_blueprint(blueprint)
     if value is None:
@@ -118,6 +134,28 @@ class StudioAudioSurface:
         source_kind: str,
     ) -> dict[str, Any]:
         try:
+            if long_audio_needs_streaming(project, blueprint):
+                # The legacy _render_blueprint produces Python lists for every
+                # frame plus complete WAV bytes. Do not call it on long audio.
+                # A SHA is intentionally omitted until a real file-backed WAV
+                # is rendered; do not fabricate or mislabel its SHA.
+                is_accepted = source_kind == "accepted"
+                return {
+                    "available": False,
+                    "source_kind": source_kind,
+                    "mix_sample_rate_hz": None,
+                    "mix_plan_sha256": None,
+                    "wav_sha256": None,
+                    "wav_size_bytes": None,
+                    "rendered_audio_is_canonical": False,
+                    "error": (
+                        LONG_AUDIO_STREAM_REQUIRED +
+                        ": accepted WAV uses bounded 200/206 Range streaming"
+                        if is_accepted else
+                        LONG_PREVIEW_STREAM_UNAVAILABLE +
+                        ": long Preview audition requires a separate safe renderer"
+                    ),
+                }
             rendered = self._render_blueprint(
                 session_id, project, blueprint, source_kind=source_kind
             )

@@ -28,6 +28,7 @@ from test_prod_e2e_r2a_g3b2a_streamed_native import _two_accepted_long_sources
 class _Service:
     def __init__(self, project) -> None:
         self.project = project
+        self.workspace = project.root.parent
 
     def _get_session(self, session_id: str):
         if session_id != "trusted-test-session":

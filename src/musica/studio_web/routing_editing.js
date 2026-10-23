@@ -256,7 +256,15 @@
 
     const audio = el("mramRoutingAudio");
     const audition = preview ? preview.audition : routing.view.accepted_audition;
-    if (audition && audition.available) {
+    const longAcceptedStream = !preview && audition && !audition.available &&
+      typeof audition.error === "string" &&
+      audition.error.startsWith("LONG_ACCEPTED_AUDIO_STREAM_REQUIRED");
+    if (longAcceptedStream) {
+      audio.src = "/v0/sessions/" +
+        encodeURIComponent(routing.sessionId) +
+        "/audio/stream/accepted.wav";
+      audio.hidden = false;
+    } else if (audition && audition.available) {
       const source = preview ? "preview" : "accepted";
       audio.src = `/v0/sessions/${encodeURIComponent(routing.sessionId)}/mixer-routing/media/${source}.wav?v=${Date.now()}`;
       audio.hidden = false;

@@ -20,7 +20,7 @@ from .diff import structured_diff
 from .routing_contracts import routing_material_from_blueprint, routing_material_sha256
 from .routing_edit import build_routing_edit_preview
 from .studio import StudioService, StudioServiceError, _PendingPreview
-from .studio_audio import StudioAudioSurface
+from .studio_audio import StudioAudioSurface, long_audio_needs_streaming, LONG_AUDIO_STREAM_REQUIRED, LONG_PREVIEW_STREAM_UNAVAILABLE
 
 
 def _routing(blueprint: dict[str, Any]) -> dict[str, Any]:
@@ -58,6 +58,24 @@ class StudioRoutingSurface:
                 "error": "accepted non-empty routing is required",
             }
         try:
+            if long_audio_needs_streaming(project, blueprint):
+                is_accepted = source_kind == "accepted-routing"
+                return {
+                    "available": False,
+                    "source_kind": source_kind,
+                    "mix_sample_rate_hz": None,
+                    "routed_mix_plan_sha256": None,
+                    "wav_sha256": None,
+                    "wav_size_bytes": None,
+                    "rendered_audio_is_canonical": False,
+                    "error": (
+                        LONG_AUDIO_STREAM_REQUIRED +
+                        ": accepted routed WAV uses bounded 200/206 Range streaming"
+                        if is_accepted else
+                        LONG_PREVIEW_STREAM_UNAVAILABLE +
+                        ": long routed Preview audition requires safe streaming"
+                    ),
+                }
             rendered = self.audio_surface._render_blueprint(
                 session_id,
                 project,

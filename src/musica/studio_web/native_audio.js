@@ -581,7 +581,20 @@
       ? `plan ${audition.mix_plan_sha256.slice(0, 12)}… · wav ${audition.wav_sha256.slice(0, 12)}… · ${audition.mix_sample_rate_hz} Hz · derived/non-canonical`
       : `Audition unavailable: ${audition && audition.error ? audition.error : "no renderable clips"}`;
     const player = el("r3AudioPlayer");
-    if (audition && audition.available && nativeAudio.sessionId) {
+    const longAcceptedStream = !preview && audition && !audition.available &&
+      typeof audition.error === "string" &&
+      audition.error.startsWith("LONG_ACCEPTED_AUDIO_STREAM_REQUIRED") &&
+      nativeAudio.sessionId && hasAcceptedClips;
+    if (longAcceptedStream) {
+      // Read-only 200/206 file-backed player, never a speculative Preview.
+      // Metadata deliberately has no forged SHA until the derived WAV exists.
+      player.src = "/v0/sessions/" +
+        encodeURIComponent(nativeAudio.sessionId) +
+        "/audio/stream/accepted.wav";
+      player.hidden = false;
+      el("r3AuditionMeta").textContent =
+        "Long accepted mix · bounded Range streaming · SHA validated on render";
+    } else if (audition && audition.available && nativeAudio.sessionId) {
       const file = preview ? "preview.wav" : "accepted.wav";
       player.src = `/v0/sessions/${encodeURIComponent(nativeAudio.sessionId)}/audio/${file}?v=${encodeURIComponent(audition.wav_sha256)}`;
       player.hidden = false;

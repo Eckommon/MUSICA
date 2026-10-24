@@ -9,13 +9,14 @@ from __future__ import annotations
 from http import HTTPStatus
 import socket
 from http.server import ThreadingHTTPServer
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 from .audio_contracts import audio_material_from_blueprint
 from .studio import StudioApplication, StudioService, StudioServiceError
 from .studio_audio import StudioAudioSurface
 from .studio_wav_uploads import StudioWavUploads
 from .studio_wav_http_range import AcceptedWavRangeHTTP
+from .studio_pending_wav import PendingWavRangeHTTP
 from .staged_wav import MAX_CHUNK_BYTES
 from .studio_http import (
     DEFAULT_HOST,
@@ -35,6 +36,7 @@ def make_handler(application: StudioApplication):
     audio_surface = StudioAudioSurface(application.service)
     wav_uploads = StudioWavUploads(application.service)
     accepted_wav_ranges = AcceptedWavRangeHTTP(application.service)
+    pending_wav_ranges = PendingWavRangeHTTP(application.service)
 
     class R3StudioRequestHandler(base_handler):
         server_version = "MUSICAStudio/0.7"
@@ -213,6 +215,27 @@ def make_handler(application: StudioApplication):
                     else:
                         data = audio_surface.audio_view(parts[2])
                     self._send_json(HTTPStatus.OK, application._response("native_audio_view", data))
+                    return
+
+                # G3B2C-R4 candidate audio: ONLY an already-installed trusted
+                # pending Preview, bound to its exact preview_id + parent HEAD.
+                # This endpoint never generates/Accepts creative candidates.
+                if (
+                    method == "GET"
+                    and len(parts) == 6
+                    and parts[:2] == ["v0", "sessions"]
+                    and parts[3:] == ["audio", "stream", "preview.wav"]
+                ):
+                    params = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                    ids = params.get("preview_id")
+                    if set(params) != {"preview_id"} or ids is None or len(ids) != 1 or not ids[0]:
+                        raise StudioServiceError(
+                            "invalid_request", "exact pending Preview ID is required"
+                        )
+                    pending_wav_ranges.serve(
+                        self, parts[2], preview_id=ids[0],
+                        range_headers=self.headers.get_all("Range", []),
+                    )
                     return
 
                 # G3B2C-R1 is additive: the legacy short-song accepted/preview

@@ -585,7 +585,20 @@
       typeof audition.error === "string" &&
       audition.error.startsWith("LONG_ACCEPTED_AUDIO_STREAM_REQUIRED") &&
       nativeAudio.sessionId && hasAcceptedClips;
-    if (longAcceptedStream) {
+    const longPendingStream = Boolean(preview && nativeAudio.sessionId &&
+      preview.preview_id && audition && !audition.available &&
+      typeof audition.error === "string" &&
+      audition.error.startsWith("LONG_PREVIEW_AUDITION_NOT_AVAILABLE"));
+    if (longPendingStream) {
+      // Exact pending candidate: source HEAD never changes by listening.
+      player.src = "/v0/sessions/" +
+        encodeURIComponent(nativeAudio.sessionId) +
+        "/audio/stream/preview.wav?preview_id=" +
+        encodeURIComponent(preview.preview_id);
+      player.hidden = false;
+      el("r3AuditionMeta").textContent =
+        "PREVIEW · NOT ACCEPTED · candidate-bound bounded WAV streaming";
+    } else if (longAcceptedStream) {
       // Read-only 200/206 file-backed player, never a speculative Preview.
       // Metadata deliberately has no forged SHA until the derived WAV exists.
       player.src = "/v0/sessions/" +

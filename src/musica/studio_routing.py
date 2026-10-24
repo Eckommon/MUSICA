@@ -224,11 +224,14 @@ class StudioRoutingSurface:
                     "routing_view": self.routing_view(session_id),
                 }
 
-            rendered = self.audio_surface._render_blueprint(
-                session_id,
-                session.project,
-                resolved.blueprint,
-                source_kind="preview-routing",
+            long_preview = long_audio_needs_streaming(
+                session.project, resolved.blueprint
+            )
+            rendered = (
+                self.audio_surface._render_blueprint(
+                    session_id, session.project, resolved.blueprint,
+                    source_kind="preview-routing",
+                ) if not long_preview else None
             )
             if session.project.head_revision_id(branch) != parent_revision_id:
                 raise StudioServiceError(
@@ -247,7 +250,8 @@ class StudioRoutingSurface:
                 shutil.rmtree(cache_root)
             cache_root.mkdir(parents=True, exist_ok=True)
             wav_path = cache_root / "preview.wav"
-            wav_path.write_bytes(rendered.wav_bytes)
+            if rendered is not None:
+                wav_path.write_bytes(rendered.wav_bytes)
             midi_path = cache_root / "preview.mid"
 
             generic_diff = structured_diff(parent, resolved.blueprint)
@@ -261,22 +265,35 @@ class StudioRoutingSurface:
                 ),
                 "branch": branch,
                 "diff_count": len(generic_diff),
-                "audio_available": True,
+                "audio_available": rendered is not None,
                 "midi_available": False,
             }
             validate_contract(descriptor, "studio-preview-v0.schema.json")
-            audition = {
-                "available": True,
-                "source_kind": "preview-routing",
-                "mix_sample_rate_hz": int(rendered.plan["mix_sample_rate_hz"]),
-                "routed_mix_plan_sha256": str(
-                    rendered.plan["routed_mix_plan_sha256"]
-                ),
-                "wav_sha256": str(rendered.wav_sha256),
-                "wav_size_bytes": len(rendered.wav_bytes),
-                "rendered_audio_is_canonical": False,
-                "error": None,
-            }
+            if rendered is not None:
+                audition = {
+                    "available": True,
+                    "source_kind": "preview-routing",
+                    "mix_sample_rate_hz": int(rendered.plan["mix_sample_rate_hz"]),
+                    "routed_mix_plan_sha256": str(
+                        rendered.plan["routed_mix_plan_sha256"]
+                    ),
+                    "wav_sha256": str(rendered.wav_sha256),
+                    "wav_size_bytes": len(rendered.wav_bytes),
+                    "rendered_audio_is_canonical": False,
+                    "error": None,
+                }
+            else:
+                audition = {
+                    "available": False,
+                    "source_kind": "preview-routing",
+                    "mix_sample_rate_hz": None,
+                    "routed_mix_plan_sha256": None,
+                    "wav_sha256": None,
+                    "wav_size_bytes": None,
+                    "rendered_audio_is_canonical": False,
+                    "error": LONG_PREVIEW_STREAM_UNAVAILABLE +
+                             ": render via candidate-bound streaming endpoint",
+                }
             self.service._clear_pending(session)
             session.pending = _PendingPreview(
                 descriptor=descriptor,

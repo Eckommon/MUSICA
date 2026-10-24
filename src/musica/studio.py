@@ -281,7 +281,14 @@ class StudioService:
             if confined.exists():
                 shutil.rmtree(confined)
         finally:
+            # A disposed/replaced/accepted Preview immediately invalidates
+            # its *derived, noncanonical* WAV cache. Do not make creative HEAD
+            # mutation wait for a concurrent HTTP stream's final write:
+            # in-flight leases are deleted as soon as their request exits.
             session.pending = None
+            pending_cache = getattr(self, "_pending_wav_cache_r5", None)
+            if pending_cache is not None:
+                pending_cache.invalidate_session(session.session_id)
 
     def _install_preview(
         self,

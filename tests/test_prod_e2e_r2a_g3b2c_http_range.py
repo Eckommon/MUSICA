@@ -6,6 +6,8 @@ import struct
 import resource
 import hashlib
 import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 from types import SimpleNamespace
@@ -140,23 +142,72 @@ def test_actual_accepted_pcm_byte_ranges_preserve_head_and_cleanup(tmp_path):
 
 
 def test_untrusted_session_and_busy_fail_without_new_output(tmp_path):
+    """A transient busy session is queued safely; untrusted sessions fail."""
     project, accepted, _, _ = _accept_arrangement(tmp_path)
     server = AcceptedWavRangeHTTP(_Service(project))
     with pytest.raises(StudioServiceError, match="unknown accepted session"):
         server.serve(
             _Response(), "foreign", range_headers=[], attachment=False
         )
+    # Simulate an accepted WAV metadata render already owning the session.
+    # The Browser may click Download before its metadata request finishes.
     server._enter("trusted-test-session")
+    response = _Response()
     try:
-        with pytest.raises(StudioServiceError, match="already active"):
-            server.serve(
-                _Response(), "trusted-test-session",
-                range_headers=[], attachment=False,
+        with ThreadPoolExecutor(max_workers=1) as workers:
+            waiting = workers.submit(
+                server.serve, response, "trusted-test-session",
+                range_headers=["bytes=44-47"], attachment=False,
             )
+            limit = time.monotonic() + 5
+            while server._waiting.get("trusted-test-session", 0) != 1:
+                assert time.monotonic() < limit, "second accepted Range not queued"
+                time.sleep(0.005)
+            assert not waiting.done(), "same-session request overlapped active stream"
+            server._exit("trusted-test-session")
+            waiting.result(timeout=20)
     finally:
-        server._exit("trusted-test-session")
+        if "trusted-test-session" in server._busy:
+            server._exit("trusted-test-session")
+    assert response.status == 206
+    assert len(response.wfile.getvalue()) == 4
     assert project.head_revision_id() == accepted["project"]["revision_id"]
 
+
+def test_bounded_accepted_same_session_waiters_deny_unbounded_queue(tmp_path):
+    """Never allow an unbounded pile-up of HTTP Browser seek requests."""
+    project, accepted, _, _ = _accept_arrangement(tmp_path)
+    server = AcceptedWavRangeHTTP(_Service(project))
+    server._enter("trusted-test-session")
+    try:
+        with ThreadPoolExecutor(max_workers=2) as workers:
+            outputs = [_Response(), _Response()]
+            futures = [
+                workers.submit(
+                    server.serve, outputs[index], "trusted-test-session",
+                    range_headers=[f"bytes={44 + 4*index}-{47 + 4*index}"],
+                    attachment=False,
+                )
+                for index in range(2)
+            ]
+            limit = time.monotonic() + 5
+            while server._waiting.get("trusted-test-session", 0) != 2:
+                assert time.monotonic() < limit, "both bounded waiters not queued"
+                time.sleep(0.005)
+            with pytest.raises(StudioServiceError, match="too many queued"):
+                server.serve(
+                    _Response(), "trusted-test-session",
+                    range_headers=[], attachment=False,
+                )
+            server._exit("trusted-test-session")
+            for future in futures:
+                future.result(timeout=30)
+            assert [response.status for response in outputs] == [206, 206]
+            assert all(len(response.wfile.getvalue()) == 4 for response in outputs)
+    finally:
+        if "trusted-test-session" in server._busy:
+            server._exit("trusted-test-session")
+    assert project.head_revision_id() == accepted["project"]["revision_id"]
 
 def test_real_local_http_200_206_416_acceptance_and_no_head_mutation(tmp_path):
     """Actual loopback ThreadingHTTPServer, not a fake handler."""

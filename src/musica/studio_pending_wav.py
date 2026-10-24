@@ -142,12 +142,20 @@ def render_pending_preview_streamed(
 class PendingWavRangeHTTP:
     """A bounded local-only transport for a single trusted active Preview.
 
-    This first increment purposely regenerates for a subsequent Range; unlike
-    accepted WAV cache it never reuses a Preview after discard/replacement.
+    The R5 cache reuses fixed-window WAV bytes only while *this exact*
+    pending object and parent HEAD remain authoritative. Accepted cache
+    storage and Preview cache storage are isolated.
     """
 
     def __init__(self, service: StudioService) -> None:
         self._service = service
+        # Import inside constructor to avoid cyclical trusted pending overlay.
+        from .studio_pending_cache import PendingWavFileCache
+        # Exactly one cache belongs to a StudioService. Reconstructing a
+        # separate HTTP transport must not sweep another live server's files.
+        existing = getattr(service, "_pending_wav_cache_r5", None)
+        self._cache = existing if existing is not None else PendingWavFileCache(service)
+        service._pending_wav_cache_r5 = self._cache
         self._global = threading.BoundedSemaphore(2)
         self._guard = threading.Lock()
         self._available = threading.Condition(self._guard)
@@ -186,9 +194,7 @@ class PendingWavRangeHTTP:
             pending = self._service._get_session(session_id).pending
             if pending is not preflight or pending.descriptor.get("preview_id") != preview_id:
                 raise StudioServiceError("not_found", "pending Preview ID is no longer active")
-            rendered = render_pending_preview_streamed(
-                self._service, session_id, preview_id=preview_id
-            )
+            rendered = self._cache.acquire(session_id, preview_id)
             output = rendered.wav_path
             size = rendered.wav_size_bytes
             if len(range_headers) > 1:
@@ -244,7 +250,9 @@ class PendingWavRangeHTTP:
             raise
         finally:
             if output is not None:
-                output.unlink(missing_ok=True)
+                # Do not unlink cache-backed noncanonical WAV while another
+                # byte Range may seek it. Idle TTL/eviction owns cleanup.
+                self._cache.release(session_id)
             if admitted:
                 with self._available:
                     self._busy.remove(session_id)

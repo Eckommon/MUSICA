@@ -1,0 +1,36 @@
+name: PROD-E2E R2A G3B2C-R5 Source-Bound Pending WAV Range Cache
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pending-preview-cache:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install first-party developer regression tests
+        run: python -m pip install -e '.[dev]'
+      - name: Compile trusted Preview source-bound WAV cache and HTTP transport
+        run: python -m compileall -q src/musica/studio_pending_cache.py src/musica/studio_pending_wav.py
+      - name: Verify 180s candidate 3 seeks one DSP, TTL, discard 404, symlink defense, RSS
+        env:
+          MUSICA_G3B2C_R5_ARTIFACT_DIR: artifacts/g3b2c-r5
+        run: |
+          /usr/bin/time -v pytest -q tests/test_prod_e2e_r2a_g3b2c_r5_pending_cache.py
+      - name: Upload noncanonical candidate 180s WAV and independent proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r2a-g3b2c-r5-pending-180s-seek-cache
+          path: |
+            artifacts/g3b2c-r5/pending-180s-source-bound.wav
+            artifacts/g3b2c-r5/proof.json
+          if-no-files-found: error

@@ -311,6 +311,10 @@
     const value = candidate(kind, operations);
     nativeAudio.lastSubmittedCandidate = JSON.parse(JSON.stringify(value));
     try {
+      // A previous accepted/pending 180s Range may still be rendering. The
+      // upcoming Preview replaces the player authority, so cancel the old
+      // media request before changing it on the server.
+      stopObsoleteAudioRequest();
       const data = await audioFetch(`/v0/sessions/${encodeURIComponent(nativeAudio.sessionId)}/preview/audio/${kind}`, {
         method: "POST",
         body: { candidate: value },
@@ -318,6 +322,7 @@
       nativeAudio.lastAuthorityResult = data.authority_result || null;
       if (!data.preview_installed) {
         const conflicts = (data.authority_result && data.authority_result.conflicts) || [];
+        render(); // Restore the still-authoritative accepted media after a denied Preview.
         status(conflicts.map((item) => item.reason).join("; ") || "Candidate was blocked", "error");
       } else {
         nativeAudio.view = data.audio_view;
@@ -327,6 +332,7 @@
         if (refresh) refresh.click();
       }
     } catch (error) {
+      await refreshAudioView(true); // Keep media bound to the current trusted revision.
       status(error.message || String(error), "error");
     }
   }
@@ -423,25 +429,33 @@
   async function acceptPreview() {
     if (!nativeAudio.sessionId) return;
     try {
+      stopObsoleteAudioRequest();
       const data = await audioFetch(`/v0/sessions/${encodeURIComponent(nativeAudio.sessionId)}/audio/accept`, { method: "POST", body: {} });
       nativeAudio.view = data.audio_view;
       render();
       status(`Accepted exactly one revision: ${data.revision_record.revision_id}`, "success");
       const refresh = el("refreshButton");
       if (refresh) refresh.click();
-    } catch (error) { status(error.message || String(error), "error"); }
+    } catch (error) {
+      await refreshAudioView(true);
+      status(error.message || String(error), "error");
+    }
   }
 
   async function discardPreview() {
     if (!nativeAudio.sessionId) return;
     try {
+      stopObsoleteAudioRequest();
       const data = await audioFetch(`/v0/sessions/${encodeURIComponent(nativeAudio.sessionId)}/audio/discard`, { method: "POST", body: {} });
       nativeAudio.view = data.audio_view;
       render();
       status("Native-audio Preview discarded; accepted HEAD unchanged.", "success");
       const refresh = el("refreshButton");
       if (refresh) refresh.click();
-    } catch (error) { status(error.message || String(error), "error"); }
+    } catch (error) {
+      await refreshAudioView(true);
+      status(error.message || String(error), "error");
+    }
   }
 
   function makeInput(type, value, min, max, step) {
@@ -539,11 +553,21 @@
     }
   }
 
+  function stopObsoleteAudioRequest() {
+    const player = el("r3AudioPlayer");
+    if (!player || !player.hasAttribute("src")) return;
+    player.pause();
+    player.removeAttribute("src");
+    player.removeAttribute("data-audio-authority-key");
+    player.load();
+  }
+
   function render() {
     injectSurface();
     const view = nativeAudio.view;
     el("r3AudioImport").hidden = !nativeAudio.sessionId;
     if (!view) {
+      stopObsoleteAudioRequest();
       el("r3AudioAuthorityBadge").textContent = "NO PROJECT";
       el("r3AudioWorkspace").hidden = true;
       el("r3AudioUnavailable").hidden = false;
@@ -589,9 +613,10 @@
       preview.preview_id && audition && !audition.available &&
       typeof audition.error === "string" &&
       audition.error.startsWith("LONG_PREVIEW_AUDITION_NOT_AVAILABLE"));
+    let source = null;
     if (longPendingStream) {
       // Exact pending candidate: source HEAD never changes by listening.
-      player.src = "/v0/sessions/" +
+      source = "/v0/sessions/" +
         encodeURIComponent(nativeAudio.sessionId) +
         "/audio/stream/preview.wav?preview_id=" +
         encodeURIComponent(preview.preview_id);
@@ -601,7 +626,7 @@
     } else if (longAcceptedStream) {
       // Read-only 200/206 file-backed player, never a speculative Preview.
       // Metadata deliberately has no forged SHA until the derived WAV exists.
-      player.src = "/v0/sessions/" +
+      source = "/v0/sessions/" +
         encodeURIComponent(nativeAudio.sessionId) +
         "/audio/stream/accepted.wav";
       player.hidden = false;
@@ -609,12 +634,23 @@
         "Long accepted mix · bounded Range streaming · SHA validated on render";
     } else if (audition && audition.available && nativeAudio.sessionId) {
       const file = preview ? "preview.wav" : "accepted.wav";
-      player.src = `/v0/sessions/${encodeURIComponent(nativeAudio.sessionId)}/audio/${file}?v=${encodeURIComponent(audition.wav_sha256)}`;
+      source = `/v0/sessions/${encodeURIComponent(nativeAudio.sessionId)}/audio/${file}?v=${encodeURIComponent(audition.wav_sha256)}`;
       player.hidden = false;
     } else {
-      player.removeAttribute("src");
-      player.load();
       player.hidden = true;
+    }
+    // render() also runs after status/metadata refresh. Assigning an identical
+    // media URL on every render starts redundant HTTP Range work. A different
+    // accepted revision or candidate must still invalidate the old player.
+    const authorityKey = [nativeAudio.sessionId, view.branch,
+      view.revision_id, preview ? preview.preview_id : "accepted",
+      audition && audition.mix_plan_sha256].join("|");
+    if (!source) stopObsoleteAudioRequest();
+    else if (player.getAttribute("src") !== source ||
+             player.dataset.audioAuthorityKey !== authorityKey) {
+      stopObsoleteAudioRequest();
+      player.src = source;
+      player.dataset.audioAuthorityKey = authorityKey;
     }
     const genericAccept = el("acceptButton");
     if (genericAccept && preview) {

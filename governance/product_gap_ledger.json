@@ -1,0 +1,124 @@
+{
+  "schema_version": "1.0",
+  "as_of": "2026-10-28",
+  "objective": "AI-assisted, local-first, general-purpose music workstation with explicit Preview-to-Accept and complete production workflow",
+  "canonical_main_at_assessment": "d594678d4662369c648ce86ddcca09e2537887d1",
+  "selection_rule": "P0 safety/authority > P0 integrated workflow > P1 editing/AI usability > P1 hardware and plugin feasibility > P2 distribution and market evidence; within class unblock dependency first",
+  "next_selected_issue": 217,
+  "not_release_ready": true,
+  "evidence_grades": [
+    "E0",
+    "E1",
+    "E2",
+    "E3",
+    "E4"
+  ],
+  "status_values": [
+    "bounded-verified",
+    "partial-integrated",
+    "in-progress",
+    "not-verified"
+  ],
+  "gaps": [
+    {
+      "id": "C01",
+      "domain": "Accepted creative authority",
+      "priority": "P0",
+      "status": "bounded-verified",
+      "grade": "E2",
+      "evidence": "Canonical Blueprint/Project revisions, source hashes, locks, Preview→explicit Accept tests",
+      "unproven": "Adversarial multi-session and every error condition across all UI routes",
+      "next_issue": 215
+    },
+    {
+      "id": "C02",
+      "domain": "Two-source long WAV workflow",
+      "priority": "P0",
+      "status": "in-progress",
+      "grade": "E2",
+      "evidence": "PR #216 exact implementation 60/60 workflow and 64/64 checks; actual Chromium 2×180s file picker, 4 explicit Accept, WAV and restart SHA",
+      "unproven": "Evidence successor 60/60 and guarded main promotion; user-created non-synthetic music",
+      "next_issue": 215
+    },
+    {
+      "id": "C03",
+      "domain": "Pending whole-song mixer edit and audible comparison",
+      "priority": "P0",
+      "status": "not-verified",
+      "grade": "E1",
+      "evidence": "Isolated R4 pending 180s WAV streaming and R5 candidate cache",
+      "unproven": "Real 2-track operator edit, A/B compare, Discard and explicit Accept in one browser user session",
+      "next_issue": 217
+    },
+    {
+      "id": "C04",
+      "domain": "Routed bus gain automation in whole-song Browser workflow",
+      "priority": "P0",
+      "status": "not-verified",
+      "grade": "E1",
+      "evidence": "Bounded routed 180s synthetic reference, browser routing editor in separate tests",
+      "unproven": "One real 180s Browser source import→gain automation Preview→Accept→reopen SHA",
+      "next_issue": 217
+    },
+    {
+      "id": "C05",
+      "domain": "Project archive export and independent import/reopen",
+      "priority": "P0",
+      "status": "partial-integrated",
+      "grade": "E1",
+      "evidence": "Standalone .musica/archive/interchange tests; G3B3-R0 Studio restart+WAV SHA",
+      "unproven": "Same 180s operator project .musica package export, fresh import and exact source/plan/WAV parity",
+      "next_issue": 217
+    },
+    {
+      "id": "C06",
+      "domain": "Audio editing UX and recovery",
+      "priority": "P1",
+      "status": "partial-integrated",
+      "grade": "E1",
+      "evidence": "Stable clip/track and note editor primitives, accepted revision snapshots",
+      "unproven": "Waveform-based select/trim/fade/crossfade, undo, recoverable crash and real session ergonomic performance",
+      "next_issue": 178
+    },
+    {
+      "id": "C07",
+      "domain": "AI composition and directed refinement quality",
+      "priority": "P1",
+      "status": "partial-integrated",
+      "grade": "E1",
+      "evidence": "Intent/Blueprint/locks/semantic edits and Music Director provider contract",
+      "unproven": "Live authorized provider, actual generated musical passages, human listening quality and lock-preservation task",
+      "next_issue": 178
+    },
+    {
+      "id": "C08",
+      "domain": "Realtime hardware recording and monitoring",
+      "priority": "P1",
+      "status": "not-verified",
+      "grade": "E1",
+      "evidence": "Simulated RTIO and recording callbacks, transport and synthetic dropout metrics",
+      "unproven": "Supported Windows real microphone/audio interface, clock/rate negotiation, latency/dropouts over long session",
+      "next_issue": 129
+    },
+    {
+      "id": "C09",
+      "domain": "Third-party plugin binary host",
+      "priority": "P1",
+      "status": "not-verified",
+      "grade": "E1",
+      "evidence": "Simulated offline processor, bus PDC and Browser plugin operation",
+      "unproven": "Authorized real CLAP/VST3 plugin binary load/process/state/reopen/sandbox and license verification",
+      "next_issue": 177
+    },
+    {
+      "id": "C10",
+      "domain": "Windows release, scale and user adoption",
+      "priority": "P2",
+      "status": "not-verified",
+      "grade": "E0",
+      "evidence": "Developer Python install and bounded CI/Linux/browser source tests",
+      "unproven": "Signed installer/update/uninstall, 100-track+ long-session scale, accessibility and human time-to-complete study",
+      "next_issue": 178
+    }
+  ]
+}

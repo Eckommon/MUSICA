@@ -54,7 +54,7 @@ def validate(root: Path) -> dict:
             assert record["grade"] not in {"E3", "E4"}, "unsupported human/release proof"
     for term in (
         "OBSERVE", "GAP", "PRIORITIZE", "PLAN", "EXECUTE",
-        "VALIDATE", "RELEASE/NEXT", "expected-head",
+        "VALIDATE", "IMPROVE", "RELEASE/ROLLBACK", "NEXT", "expected-head",
         "explicit", "Preview", "rollback",
     ):
         assert term.lower() in policy.lower(), f"missing loop or safeguard: {term}"

@@ -1,53 +1,31 @@
 # MUSICA Current State / 공식 현재 상태
 
-**Last state refresh / 상태 기준:** 2026-10-15, post-PLUG-R3B expected-head squash merge. **Canonical GitHub `main`: `5ca2836639c348eaa7efb65fc2c03eb452ea9867`.** This is the new truth after PR #176. If `origin/main` later advances, inspect the new exact HEAD/CI and update these pointers before acting.
+**As-of 2026-10-28** | Canonical `main`: `d594678d4662369c648ce86ddcca09e2537887d1` (G3B2C-R5 PR #214 merged); this is the baseline at assessment, **not** a promise about future main. Read live GitHub refs and exact CI on every continuation. `docs/PRODUCT_EXECUTION_LOOP.md` is proposed via PR #218 until independently green and merged.
 
-## Product phase / 제품 단계
+## Objective and product-level conclusion
 
-**AI-native core creative control VALIDATED — bounded; native audio, mixer routing, simulated realtime and recording foundations VALIDATED — bounded; simulated plugin two-bus causal offline PDC and Studio/Browser plugin edit loop VALIDATED — bounded; one-song integrated production, real third-party plugin binaries, physical-device support and commercial-release readiness NOT YET VALIDATED.**
+Goal: an AI-assisted local-first **general-purpose music workstation** where users create/import, arrange, edit precisely, audition a source-bound candidate, Discard or explicitly Accept, route/automate, preserve/reopen an actual Project archive and export a reproducible supported WAV. Keep AI/provider, Browser, plugin and device data noncanonical until trusted human Accept.
 
-장기 목표: 사용자의 자연어 의도에서 실제 편곡·녹음·믹싱·수정·저장·출력까지 MUSICA 내부에서 완결하는 범용 음악 제작 프로그램. 단, 모든 생성·실행·Browser·미터·플러그인 런타임 상태는 승인된 Music Blueprint/Project revision을 역으로 수정할 수 없습니다.
+**Current judgment:** strong bounded engineering foundations, **not completed as a usable commercial DAW**. CI cannot substitute for one real edited song nor human musician evaluation. Ten domain-level gaps and evidence grades E0–E4 are recorded in `docs/PRODUCT_CAPABILITY_GAP_LEDGER.md` and `governance/product_gap_ledger.json`.
 
-## Completed project foundations / 완료한 제한적 기반
+## Last verified main + active implementation
 
-| Track | Issue | Evidence |
-|---|---|---|
-| M0–M7 + revision Compare | #89 | accepted creation/edit/automation/compare; `evidence/POST_M7_REVISION_COMPARE_VALIDATION.md` |
-| ATCM audio assets/tracks/clips/mixer | #95 CLOSED | `evidence/ATCM_R4_VALIDATION.md` |
-| MRAM routing + native mixer automation | #115 CLOSED | `evidence/MRAM_R3_VALIDATION.md` |
-| RTIO simulated realtime callback/runtime | #129 CLOSED | `evidence/RTIO_R3_VALIDATION.md` |
-| REC simulated capture/monitoring + trusted finalize | #142 CLOSED | `evidence/REC_R3_VALIDATION.md` |
-| PLUG-R0 simulated processor contract | #156 CLOSED; PR #158 MERGED | `evidence/PLUG_R0_VALIDATION.md` |
-| PLUG-R1 accepted master plugin state | #159 CLOSED; PR #161 MERGED | `evidence/PLUG_R1_VALIDATION.md` |
-| PLUG-R2 offline two-path causal PDC | #162 CLOSED, #166 CLOSED; PRs #165/#167/#168/#169 MERGED | `evidence/PLUG_R2B_K1B_VALIDATION.md` |
-| PLUG-R2B K2 Studio accepted opt-in offline WAV | PR #171 MERGED | `evidence/PLUG_R2B_K2_VALIDATION.md` |
-| PLUG-R3A Studio Preview→Accept | PR #173 MERGED | `evidence/PLUG_R3A_STUDIO_VALIDATION.md` |
-| PLUG-R3B real Browser editing | #174 CLOSED; PR #176 MERGED | `evidence/PLUG_R3B_BROWSER_VALIDATION.md` |
+- G3B2C-R5 accepted and pending 180s 48kHz WAV Range streaming and SHA/source-bound cache, expiry + eager Preview lifecycle cleanup, **official PR #214 merged**; exact canonical main above.
+- Native assets/tracks/clips, bounded mixer/routed buses and supported automation; prior ATCM/MRAM results verified in isolated engine and first-party Browser. Strict Project/Blueprint accepted HEAD and Preview→explicit Accept remain invariant.
+- Simulated RTIO/REC/PLUGIN, and bounded standalone Browser/plugin control evidence, **not** real physical audio or actual third-party plugin binary support.
+- **G3B3-R0 Issue #215 / Draft PR #216**, implementation exact head `75a95c51b6795ef6faa47c5b82af9c18cedb6c70`: **60/60 workflows and 64/64 checks SUCCESS**. Actual first-party Chromium new 180s Project: 2 independently user-file-picked 34,560,044B 48kHz stereo WAVs; imported as resource only, 2 track Preview→Accept, 2 clip Preview→Accept (4 visible human-style Accept clicks); 180s WAV output, studio restart/reopen and byte-exact second WAV. Independent GitHub artifact #12714651924 ZIP SHA `2caf12319f5a255d75fed93b9e971b970232050f7748779d974b57bb1f20ba1b`; both WAV SHA `6a7b3cbc3b779a5997b76b673fb6476d7c383cae9776a1f6116b30e2c8b2f6db`, PCM `(3200,-1400)` at start/middle/end. **Evidence successor `f4c9f94cb29629c4507e1e0ae5c5a23da817c2c5` requires full exact-head CI before guarded merge**. One inherited G2B Chromium view test timed out in the successor suite and was legitimately rerun; no waiver.
+- **Product-goal governance Draft PR #218**: 9-stage OBSERVE→GAP→PRIORITIZE→PLAN→EXECUTE→VALIDATE→IMPROVE→RELEASE/ROLLBACK→NEXT, a maintained quantitative/qualitative capability gap ledger and a new CI gate. This is the requested fixed operating rule once safely merged, **not a completed release gate**.
 
-Last verified PLUG-R3B implementation head `7ed8c8e40235716edf16349c6e360ace2bc5a333`: **41/41 SUCCESS**. Evidence/validation successor `f572a9466fad7989d6c2feb76e32a158d6031c06`: **41/41 SUCCESS**, expected-head squash merge `5ca2836639c348eaa7efb65fc2c03eb452ea9867`. Dedicated corrected-head Chromium run `38654626234`, artifact `11936550747`, independently verified ZIP SHA-256 `8f9f14da6211c6975355c54848a657a4d7011f228e472e696cf92f0e2d685570`; two-bus alignment frame 9 stereo PCM16 `(24576,24576)`, bypass with 5 creative frames preserved.
+## Biggest live gaps (priority)
 
-## Live program gaps / 진행 중인 진짜 제품 격차
+**P0 #217:** same genuine 180s Browser two-WAV Project with meaningful **pending mixer change, audible A/B vs accepted, explicit Discard/Accept**, supported routed bus automation and actual **.musica archive export/import** with exact WAV/plan/asset SHA parity. Current #216 does **not** prove this.
 
-- **#155 Plugin Hosting & Latency Compensation Foundation v0:** parent OPEN pending **evidence-backed scoped closure evaluation** of its 17 minimum requirements. All current plugin success is simulated/offline only; no actual plugin binary or realtime PDC. Parent v0 closure must NOT be misread as a real plugin ecosystem.
-- **#177 PLUG-R4:** real authorized plugin ABI feasibility, licensed SDK selection and actual binary execution proof OPEN. One format and one supported OS first.
-- **#178 PROD-E2E-R0:** a real one-song end-to-end production vertical slice OPEN; integrate accepted arrangement, routed audio, automation, simulated plugin, human Preview/Accept, A/B compare, WAV deliverable and export/reopen. Report any unsupported step transparently.
-- Windows physical device/recording, general routing and plugin graphs, audible end-to-end real production, real provider generation quality, deep waveform/comping/warp, long-session robustness, migration/installer/security/licensing, product UX and commercial acceptance **remain unproven**.
+**P1:** practical waveform/timeline and undo/crash recovery; actual AI provider-directed output and listening-quality/lock audit; supported Windows physical audio-interface/RTIO capture and monitoring; one legally authorized real plugin ABI (#177); reproducible scale/platform UX.
 
-## Authority and promotion / 권한·검증 규칙
+**P2:** installer/signing/version migration/license audit, human pilot and market validation. Do not claim mature commercial workflow, realistic music composition, hardware low latency or native plugin support from synthetic audio proof.
 
-```text
-accepted exact Project revision
-→ typed source-bound candidate + constraints + locks
-→ Preview (NOT ACCEPTED)
-→ explicit Accept only
-→ new immutable canonical revision
-→ deterministic/declared derived media and Browser projections
-```
+## Authority, promotion and evidence
 
-- No rendered or recorded samples may silently become canonical. No browser/plugin/device callback commits creative state.
-- For changes with new contracts: implementation+numerical evidence, exact-head all green, independent artifact/hash/PCM, durable validation, full CI on successor, **expected-head squash merge**.
-- Do not conflate deterministic simulated backend with physical I/O; do not treat synthetic plugin delay as real plugin-reported latency.
-- If CI/browser fails, investigate or rerun genuinely transient environment failure, never waive a required gate.
-- Product success requires both feature-specific correctness and at least one truthful integrated production workflow; green CI alone is not a product-completion verdict.
-
-**Exact next action is `memory/NEXT_ACTION.md`. Repository evidence outranks chat and outdated historical milestone documents.**
+- Live GitHub exact accepted main > actual generated implementation + evidence successor artifacts/checks > `memory/` pointers > issue narratives > chats.
+- Each product cycle follows `docs/PRODUCT_EXECUTION_LOOP.md`; plan+proof controls are absolute. No disabling/flaking inherited workflows, no false SHA from unrendered audio, no client/AI auto-Accept.
+- Only after both exact implementation head and bilingual evidence successor have **all inherited + new GitHub workflows and all checks SUCCESS**, independently inspect physical WAV/PNG/JSON evidence, check project/source SHA, then expected-head guarded squash merge and update the capability ledger and this state in a state-only follow-up.

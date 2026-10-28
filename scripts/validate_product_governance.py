@@ -32,7 +32,7 @@ def validate(root: Path) -> dict:
     assert data.get("schema_version") == "1.0", "unsupported ledger schema"
     assert data.get("not_release_ready") is True, "cannot silently claim release readiness"
     assert data.get("evidence_grades") == ["E0", "E1", "E2", "E3", "E4"]
-    assert data.get("status_values") == sorted(STATUS), "status vocabulary drift"
+    assert set(data.get("status_values", [])) == STATUS, "status vocabulary drift"
     assert data.get("canonical_main_at_assessment"), "missing baseline exact HEAD"
     assert data.get("selection_rule") and data.get("next_selected_issue"), "missing next action"
     entries = data.get("gaps")

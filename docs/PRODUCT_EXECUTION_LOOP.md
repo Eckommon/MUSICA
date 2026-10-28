@@ -8,17 +8,19 @@ An **AI-assisted, local-first, general-purpose music workstation**: an ordinary 
 
 MUSICA의 성공 기준은 기능 파일 개수·테스트 개수·PR 개수가 아니라 **일반 사용자가 처음부터 끝까지 음악을 만들어 수정·청취·승인·저장·출력할 수 있는가**이다. AI 제안이나 Browser 상태가 사람의 명시적 Accept 없이 정본 창작 상태를 갱신해서는 안 된다.
 
-## Non-negotiable single-cycle loop / 모든 개발 작업에 적용할 7단계 루프
+## Non-negotiable single-cycle loop / 모든 개발 작업에 적용할 9단계 루프
 
 ```text
-1. OBSERVE       current canonical main + exact PR/head/workflow/artifact + real user journey
-2. GAP           product capability ledger, evidence strength, unsupported states
-3. PRIORITIZE    biggest user-workflow blocker given safety/dependencies/effort
-4. PLAN          smallest vertical, testable contract, measurable pass/fail/rollback
-5. EXECUTE       implementation, UI and programmatic tests + actual audio evidence
-6. VALIDATE      exact-head full CI, browser/audio SHA/PCM, negative tests, security
-7. RELEASE/NEXT  guarded squash or rollback; update ledger/state; queue next gap
-                    ↑_____________________________________________________|
+1. OBSERVE        current canonical main + exact PR/head/workflow/artifact + real user journey
+2. GAP            product capability ledger, evidence strength, unsupported states
+3. PRIORITIZE     biggest user-workflow blocker given safety/dependencies/effort
+4. PLAN           smallest vertical, testable contract, measurable pass/fail/rollback
+5. EXECUTE        actual implementation, Browser actions, numerical audio evidence
+6. VALIDATE       exact-head full CI, source/HEAD/audio SHA, negative + performance tests
+7. IMPROVE        repair root causes, rerun full exact-head CI; do not waive failures
+8. RELEASE/ROLLBACK guarded squash only when all proof gates pass, otherwise leave Draft
+9. NEXT           update ledger/state and design next highest blocked user-workflow slice
+                     ↑______________________________________________________________|
 ```
 
 Do **not** replace a failed implementation with a new feature or close a parent Issue merely because an isolated unit test passes. Each user-requested continuation re-enters at Step 1 using live GitHub, **never an old chat summary**. If no gate-compliant promotion is possible in the current session, preserve a Draft, reproducible failure details, and the next exact action; never describe unverified future work as complete.

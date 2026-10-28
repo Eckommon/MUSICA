@@ -24,16 +24,28 @@ def validate(root: Path) -> dict:
     policy_path = root / "docs/PRODUCT_EXECUTION_LOOP.md"
     ledger_path = root / "governance/product_gap_ledger.json"
     report_path = root / "docs/PRODUCT_CAPABILITY_GAP_LEDGER.md"
-    for path in (policy_path, ledger_path, report_path):
+    state_path = root / "memory/CURRENT_STATE.md"
+    next_path = root / "memory/NEXT_ACTION.md"
+    readme_path = root / "README.md"
+    for path in (policy_path, ledger_path, report_path, state_path, next_path, readme_path):
         if not path.is_file():
             raise ValueError(f"missing canonical goal-governance input: {path}")
     policy, report = policy_path.read_text("utf-8"), report_path.read_text("utf-8")
+    state = state_path.read_text("utf-8")
+    next_action = next_path.read_text("utf-8")
+    readme = readme_path.read_text("utf-8")
     data = json.loads(ledger_path.read_text("utf-8"))
     assert data.get("schema_version") == "1.0", "unsupported ledger schema"
     assert data.get("not_release_ready") is True, "cannot silently claim release readiness"
     assert data.get("evidence_grades") == ["E0", "E1", "E2", "E3", "E4"]
     assert set(data.get("status_values", [])) == STATUS, "status vocabulary drift"
-    assert data.get("canonical_main_at_assessment"), "missing baseline exact HEAD"
+    main_sha = data.get("canonical_main_at_assessment")
+    assert isinstance(main_sha, str) and len(main_sha) == 40, "missing 40-hex canonical baseline"
+    assert all(c in "0123456789abcdef" for c in main_sha), "invalid main SHA"
+    for title, text_data in (("README", readme), ("CURRENT_STATE", state), ("NEXT_ACTION", next_action)):
+        assert main_sha in text_data, f"{title} canonical baseline drift"
+        assert "#217" in text_data, f"{title} product next-action drift"
+    assert "docs/PRODUCT_EXECUTION_LOOP.md" in readme, "README omits mandatory loop"
     assert data.get("selection_rule") and data.get("next_selected_issue"), "missing next action"
     entries = data.get("gaps")
     assert isinstance(entries, list) and len(entries) >= len(EXPECTED)

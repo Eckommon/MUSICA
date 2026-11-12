@@ -83,7 +83,25 @@ def _attach_observers(
     page_errors: list[str],
     request_failures: list[str],
     expected_media_aborts: list[str],
-) -> None:
+):
+    # Only Chromium GET requests already alive immediately before an
+    # intentional page.reload() can be classified as navigation cancellations.
+    # New requests after reload and every HTTP 4xx/5xx remain hard failures.
+    in_flight: set[object] = set()
+    old_requests_at_reload: set[object] = set()
+
+    def arm_intentional_reload() -> None:
+        old_requests_at_reload.update(in_flight)
+
+    def on_started(request) -> None:
+        in_flight.add(request)
+
+    def on_finished(request) -> None:
+        in_flight.discard(request)
+
+    page.on("request", on_started)
+    page.on("requestfinished", on_finished)
+
     def on_console(message) -> None:
         if message.type == "error":
             console_errors.append(
@@ -110,19 +128,43 @@ def _attach_observers(
     page.on("response", on_bad_response)
 
     def on_request_failed(request) -> None:
+        in_flight.discard(request)
         failure = str(request.failure or "")
         record = f"{request.method} {request.url}: {failure}"
-        if (
+        # Existing source-switch cancellation is an explicitly expected
+        # browser media interruption, not a missing asset.
+        revision_media_abort = (
             request.method == "GET"
             and "/revisions/" in request.url
             and "/media/audio.wav" in request.url
             and "ERR_ABORTED" in failure
-        ):
+        )
+        # On Chromium reload, an in-flight accepted-session audio or health
+        # probe can be intentionally aborted even though every comparison,
+        # downloaded WAV/MIDI SHA and canonical HEAD check passed. Only the
+        # *same tracked Request objects* alive BEFORE explicit reload qualify.
+        from urllib.parse import urlsplit
+        path = urlsplit(request.url).path
+        navigation_abort = (
+            request in old_requests_at_reload
+            and request.method == "GET"
+            and "ERR_ABORTED" in failure
+            and (
+                path == "/v0/health"
+                or (
+                    path.startswith("/v0/sessions/")
+                    and path.endswith("/media/audio.wav")
+                )
+            )
+        )
+        old_requests_at_reload.discard(request)
+        if revision_media_abort or navigation_abort:
             expected_media_aborts.append(record)
             return
         request_failures.append(record)
 
     page.on("requestfailed", on_request_failed)
+    return arm_intentional_reload
 
 
 def _open_project(page, base: str, expect) -> dict[str, Any]:
@@ -234,7 +276,10 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
         context.set_default_timeout(30_000)
         try:
             page = context.new_page()
-            _attach_observers(page, console_errors, page_errors, request_failures, expected_media_aborts)
+            arm_reload_cancellations = _attach_observers(
+                page, console_errors, page_errors, request_failures,
+                expected_media_aborts,
+            )
             opened = _open_project(page, base, expect)
             session_id = str(opened["session_id"])
             head_before = service._get_session(session_id).project.head_revision_id()
@@ -266,6 +311,9 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
                 raise RuntimeError("Compare Browser media/audition changed canonical HEAD")
             screenshots.append(_screenshot(page, root / "01-accepted-revision-ab-compare.png"))
 
+            # Scope allowed GET cancellations exclusively to requests already
+            # active at this intentional navigation. Do not hide new errors.
+            arm_reload_cancellations()
             page.reload(wait_until="domcontentloaded")
             reopened = _open_project(page, base, expect)
             reopened_sid = str(reopened["session_id"])

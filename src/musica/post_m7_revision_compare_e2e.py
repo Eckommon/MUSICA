@@ -328,6 +328,10 @@ def run_suite(out_dir: str | Path) -> dict[str, Any]:
             if service._get_session(reopened_sid).project.head_revision_id() != reopened_head_before:
                 raise RuntimeError("Compare Browser refresh/reopen comparison changed canonical HEAD")
             screenshots.append(_screenshot(page, root / "02-refresh-reopen-compare.png"))
+            # Chromium also cancels an already in-flight /v0/health GET
+            # during the explicit Browser close. Classify ONLY the old
+            # tracked requests, never new-page failures or HTTP error codes.
+            arm_reload_cancellations()
             page.close()
         finally:
             context.close()

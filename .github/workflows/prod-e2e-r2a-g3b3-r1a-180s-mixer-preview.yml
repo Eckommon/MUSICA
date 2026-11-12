@@ -1,0 +1,38 @@
+name: PROD-E2E R2A G3B3-R1A Real 180s Mixer Preview A-B Accept
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  actual-browser-two-source-mixer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install real Browser and first-party Studio
+        run: |
+          python -m pip install -e '.[dev,e2e]'
+          python -m playwright install --with-deps chromium
+      - name: Real 180s 2-WAV Browser creation, mix Preview A/B, Discard, Accept and reopen WAV SHA
+        run: |
+          python -m compileall -q src/musica/prod_e2e_r2a_g3b3_r1a_browser.py
+          /usr/bin/time -v python -m musica.prod_e2e_r2a_g3b3_r1a_browser --out artifacts/g3b3-r1a
+      - name: Preserve independently inspectable 180s edited output and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r2a-g3b3-r1a-real-180s-mixer-preview
+          path: |
+            artifacts/g3b3-r1a/proof.json
+            artifacts/g3b3-r1a/browser-mixer-accepted-180s.wav
+            artifacts/g3b3-r1a/browser-mixer-reopened-180s.wav
+            artifacts/g3b3-r1a/*.png
+          if-no-files-found: warn

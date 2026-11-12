@@ -63,29 +63,47 @@ class AcceptedWavRangeHTTP:
         self._guard = threading.Lock()
         self._available = threading.Condition(self._guard)
         self._busy: set[str] = set()
+        # Prevent a Browser's metadata seek + immediate user download from
+        # creating an unbounded number of server-side blocked request threads.
+        self._waiting: dict[str, int] = {}
         self._global_limit = threading.BoundedSemaphore(2)
         self._cache = AcceptedWavFileCache(service.workspace)
 
     def _enter(self, session_id: str) -> None:
-        if not self._global_limit.acquire(blocking=False):
-            raise StudioServiceError("conflict", "too many derived WAV HTTP streams")
-        try:
-            with self._available:
-                # HTTP clients may have received the previous Content-Length
-                # while its server thread is still in finally/cleanup. Wait a
-                # small bounded grace rather than returning a spurious 409.
-                # This does NOT permit overlapping renders for one session.
-                available = self._available.wait_for(
-                    lambda: session_id not in self._busy, timeout=3.0
-                )
-                if not available:
+        # 180s accepted WAV creation can take materially longer than the
+        # previous 3s cleanup grace. Chromium often requests <audio> metadata
+        # and a user-clicked full download simultaneously on Project reopen.
+        # Admit one renderer/stream per session, but *queue* at most two same-
+        # session requests for up to 120s. Waiters do NOT occupy the separate
+        # global two-stream semaphore while blocked.
+        with self._available:
+            if session_id in self._busy:
+                waiting = self._waiting.get(session_id, 0)
+                if waiting >= 2:
                     raise StudioServiceError(
-                        "conflict", "accepted WAV stream already active for session"
+                        "conflict", "too many queued accepted WAV requests for session"
                     )
-                self._busy.add(session_id)
-        except BaseException:
-            self._global_limit.release()
-            raise
+                self._waiting[session_id] = waiting + 1
+                try:
+                    available = self._available.wait_for(
+                        lambda: session_id not in self._busy, timeout=120.0
+                    )
+                    if not available:
+                        raise StudioServiceError(
+                            "conflict", "accepted WAV renderer still busy for session"
+                        )
+                finally:
+                    remaining = self._waiting[session_id] - 1
+                    if remaining:
+                        self._waiting[session_id] = remaining
+                    else:
+                        self._waiting.pop(session_id, None)
+            self._busy.add(session_id)
+        if not self._global_limit.acquire(blocking=False):
+            with self._available:
+                self._busy.remove(session_id)
+                self._available.notify_all()
+            raise StudioServiceError("conflict", "too many derived WAV HTTP streams")
 
     def _exit(self, session_id: str) -> None:
         try:
@@ -175,6 +193,19 @@ class AcceptedWavRangeHTTP:
                     remaining -= len(block)
         except (BrokenPipeError, ConnectionResetError):
             handler.close_connection = True
+        except ContractError as exc:
+            if headers_sent:
+                handler.close_connection = True
+                return
+            # A user may explicitly Accept a new revision while Chromium's
+            # prior 180s metadata request is rendering. This is a stale
+            # accepted-HEAD conflict, never an internal server failure and
+            # never permission to serve an obsolete derived WAV.
+            if "accepted HEAD changed" in str(exc):
+                raise StudioServiceError(
+                    "conflict", "accepted HEAD changed during WAV streaming"
+                ) from exc
+            raise
         except BaseException:
             if headers_sent:
                 handler.close_connection = True

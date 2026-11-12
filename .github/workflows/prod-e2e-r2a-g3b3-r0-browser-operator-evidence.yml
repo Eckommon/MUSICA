@@ -1,0 +1,38 @@
+name: PROD-E2E R2A G3B3-R0 Real 2x180s Browser User Workflow
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  operator-two-source-full-length:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Studio and actual first-party Browser dependencies
+        run: python -m pip install -e '.[dev,e2e]'
+      - name: Install real Chromium and system dependencies
+        run: python -m playwright install --with-deps chromium
+      - name: Build actual user-chosen 2x180s WAV, track/clip Preview and Accept, download, restart
+        run: |
+          python -m compileall -q src/musica/prod_e2e_r2a_g3b3_r0_browser.py
+          /usr/bin/time -v python -m musica.prod_e2e_r2a_g3b3_r0_browser --out artifacts/g3b3-r0
+      - name: Upload real operator Browser WAV SHA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: musica-prod-e2e-r2a-g3b3-r0-operator-two-180s
+          path: |
+            artifacts/g3b3-r0/proof.json
+            artifacts/g3b3-r0/browser-accepted-180s.wav
+            artifacts/g3b3-r0/browser-reopened-180s.wav
+            artifacts/g3b3-r0/*.png
+          if-no-files-found: warn

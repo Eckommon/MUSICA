@@ -1,0 +1,28 @@
+name: MUSICA Product-Goal Closed-Loop Governance
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  enforce-product-evidence-and-next-work:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Reject missing user journey, unverifiable product claims, or next-action drift
+        run: |
+          python -m compileall -q scripts/validate_product_governance.py
+          python scripts/validate_product_governance.py --root .
+      - name: Preserve trusted creative-state and guarded promotion contract
+        run: |
+          grep -q 'expected-head' docs/PRODUCT_EXECUTION_LOOP.md
+          grep -q 'explicit' docs/PRODUCT_EXECUTION_LOOP.md
+          grep -q '#217' docs/PRODUCT_CAPABILITY_GAP_LEDGER.md

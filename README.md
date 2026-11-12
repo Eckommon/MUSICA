@@ -32,7 +32,9 @@ The accepted Project revision—not Browser, plugin, renderer, waveform cache, A
 | PLUG-R2 #162 | accepted two-bus **simulated** algorithmic latency, actual causal offline alignment, independent creative delay, bypass/error fail-closed |
 | PLUG-R3 #174 | Studio + real-Chromium Browser two-bus simulated plugin add/update/bypass/remove → Preview audition → explicit Accept/Discard, exact reopen |
 
-**Latest merged Browser stage:** PR [#176](https://github.com/Eckommon/MUSICA/pull/176), canonical main `5ca2836639c348eaa7efb65fc2c03eb452ea9867`, exact implementation head `7ed8c8e40235716edf16349c6e360ace2bc5a333` **41/41 CI**, evidence-record successor `f572a9466fad7989d6c2feb76e32a158d6031c06` **41/41 CI**. Durable proof: `evidence/PLUG_R3B_BROWSER_VALIDATION.md`. This is a **bounded simulated plugin Browser milestone**, NOT a third-party native plugin host.
+**Latest official merged production stage (verified 2026-11-12):** G3B3-R0 [PR #216](https://github.com/Eckommon/MUSICA/pull/216), canonical main `4e4e8866652a7e49ca706c6e2e959bbccc96790e`. Exact implementation `75a95c51b6795ef6faa47c5b82af9c18cedb6c70` and audited evidence successor `f4c9f94cb29629c4507e1e0ae5c5a23da817c2c5` each passed **60/60 workflows and 64/64 checks**. Real first-party headless Chromium imported two independent 180s user-selected PCM WAVs, explicitly accepted two tracks+two clips, downloaded a full WAV, restarted Studio and reopened with exact WAV SHA. This is bounded synthetic-PCM Browser E2, **not** a human musical pilot.
+
+**Fixed product execution loop (Draft PR #218, new-main full CI required):** `docs/PRODUCT_EXECUTION_LOOP.md`, `docs/PRODUCT_CAPABILITY_GAP_LEDGER.md`, machine-readable `governance/product_gap_ledger.json` and a CI enforcement gate; status remains Draft until exact-head full CI + guarded merge.
 
 ## Getting started / 로컬 실행
 
@@ -47,10 +49,10 @@ Opens localhost Browser Studio (default port 8765). For real-Chromium developmen
 
 ## Next product mission / 다음 개발
 
-1. **Product state alignment and bounded plugin v0 closure assessment**: `memory/CURRENT_STATE.md`, `memory/NEXT_ACTION.md`, Issue [#155](https://github.com/Eckommon/MUSICA/issues/155). Keep real third-party ABI support explicitly separate.
-2. **[PROD-E2E-R0 #178](https://github.com/Eckommon/MUSICA/issues/178)**: one-song vertical-slice feature inventory, accepted arrangement/routing/automation, Preview/Accept, honest generated stereo WAV, archive/reopen reproducibility and explicit unsupported gates for missing steps. Prioritize production usability, not just isolated green unit tests.
-3. **[PLUG-R4 #177](https://github.com/Eckommon/MUSICA/issues/177)**: assess official SDK and distribution rights, then prove **one real authorized third-party plugin binary** on one supported OS and format. A simulated processor is not proof of VST3, CLAP or AU compatibility.
-4. Physical audio device/recording validation, deeper native editing, real AI provider/quality study, scalability, crash recovery, installer/signing/update and release readiness.
+1. **G3B3-R0 #216 is officially merged**: both 60/60 exact-head CI suites and independent 2×180s WAV/reopen hash evidence passed. Preserve this regression as the baseline; do not repeat completed work.
+2. **Ratify [product-goal execution loop PR #218](https://github.com/Eckommon/MUSICA/pull/218)**: capability gap ledger, P0 safety/user-journey blockers, measurable PLAN→EXECUTE→VALIDATE→IMPROVE→RELEASE/ROLLBACK→NEXT, permanent CI and updated state documents.
+3. **[G3B3-R1 #217](https://github.com/Eckommon/MUSICA/issues/217)**: in the same actual 180s two-source Browser session, pending mixer editing and audible A/B before explicit Accept; supported routed gain automation; true .musica archive export, fresh import and exact WAV/plan/source parity.
+4. **Real general-purpose evidence:** waveform/undo/comping and crash recovery, live AI provider quality and lock preservation, physical Windows device monitoring/latency, one licensed third-party plugin binary [#177](https://github.com/Eckommon/MUSICA/issues/177), supported installer and human usability pilot. Simulated RTIO/plugin tests are not substitutes.
 
 ## Current nonclaims / 현재 지원이 입증되지 않은 범위
 
@@ -61,6 +63,6 @@ Opens localhost Browser Studio (default port 8765). For real-Chromium developmen
 
 ## Source of truth / 공식 기록
 
-`docs/PRODUCT_THESIS.md` · `docs/COMMERCIAL_WORKSTATION_TARGET.md` · `memory/CURRENT_STATE.md` · `memory/NEXT_ACTION.md` · `evidence/` · exact GitHub PR/issue/CI artifacts.
+`docs/PRODUCT_THESIS.md` · `docs/COMMERCIAL_WORKSTATION_TARGET.md` · `docs/PRODUCT_EXECUTION_LOOP.md` · `docs/PRODUCT_CAPABILITY_GAP_LEDGER.md` · `memory/CURRENT_STATE.md` · `memory/NEXT_ACTION.md` · `evidence/` · exact GitHub PR/issue/CI artifacts.
 
 **Exact accepted evidence and merged Git history > current state docs > Issue/PR descriptions > chat summaries.** Archived PR-specific acceptance documents keep their historical statuses; they are not today's active next action.

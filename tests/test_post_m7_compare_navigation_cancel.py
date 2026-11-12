@@ -98,3 +98,17 @@ def test_http_error_remains_hard_failure_even_at_reload():
     page.emit("response", Response())
     assert len(failed) == 1 and "HTTP 502" in failed[0]
     assert not expected
+
+
+def test_explicit_browser_close_only_categorizes_prior_health_probe():
+    """An in-flight health poll abort on page.close is not a server failure."""
+    page, arm_close, failed, expected = recorder()
+    stale_health = Request("GET", "http://127.0.0.1:4321/v0/health")
+    page.emit("request", stale_health)
+    arm_close()  # immediately before the test explicitly calls page.close()
+    page.emit("requestfailed", stale_health)
+    new_health = Request("GET", "http://127.0.0.1:4321/v0/health")
+    page.emit("request", new_health)
+    page.emit("requestfailed", new_health)
+    assert len(expected) == 1 and "/v0/health" in expected[0]
+    assert len(failed) == 1 and "/v0/health" in failed[0]
